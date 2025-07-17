@@ -1,8 +1,12 @@
 package kr.hhplus.be.server.presentation.coupon;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class CouponRequest {
     public record Issue(
+        @Schema(description = "사용자 ID", requiredMode = Schema.RequiredMode.REQUIRED)
         long user_id,
+        @Schema(description = "쿠폰 ID", requiredMode = Schema.RequiredMode.REQUIRED)
         long coupon_id
     ){
     }
