@@ -4,7 +4,7 @@ import kr.hhplus.be.server.presentation.coupon.CouponResponse;
 import kr.hhplus.be.server.presentation.order.OrderResponse;
 import kr.hhplus.be.server.presentation.payment.PaymentResponse;
 import kr.hhplus.be.server.presentation.product.ProductResponse;
-import kr.hhplus.be.server.presentation.user.UserResponse;
+import kr.hhplus.be.server.presentation.balance.BalanceResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -141,11 +141,11 @@ public class DummyDataUtil {
     }
 
     //유저 더미 테이터
-    public UserResponse.Charge getUserBalanceCharge(){
-        return new UserResponse.Charge(1L,50_000L,60_000L);
+    public BalanceResponse.Charge getUserBalanceCharge(){
+        return new BalanceResponse.Charge(1L,50_000L,60_000L);
     }
 
-    public UserResponse.SelectBalanceByUserId getUserSelectBalanceByUserId(){
-        return new UserResponse.SelectBalanceByUserId(1L,10_000L);
+    public BalanceResponse.SelectBalanceByUserId getUserSelectBalanceByUserId(){
+        return new BalanceResponse.SelectBalanceByUserId(1L,10_000L);
     }
 }
