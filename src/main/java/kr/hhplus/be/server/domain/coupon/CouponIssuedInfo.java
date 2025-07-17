@@ -18,9 +18,6 @@ public class CouponIssuedInfo {
     @Column(name = "coupon_issued_id")
     private Long coupon_issued_id;
 
-    @Column(name = "coupon_id", nullable = false)
-    private Long coupon_id;
-
     @Column(name = "user_id", nullable = false)
     private Long user_id;
 
@@ -40,7 +37,6 @@ public class CouponIssuedInfo {
     @Builder
     public CouponIssuedInfo(Long coupon_issued_id, Long coupon_id, Long user_id, String use_yn, LocalDateTime issued_at, LocalDateTime end_date, Coupon coupon) {
         this.coupon_issued_id = coupon_issued_id;
-        this.coupon_id = coupon_id;
         this.user_id = user_id;
         this.use_yn = use_yn;
         this.issued_at = issued_at;
