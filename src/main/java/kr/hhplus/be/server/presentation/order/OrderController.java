@@ -1,12 +1,13 @@
 package kr.hhplus.be.server.presentation.order;
 
+import kr.hhplus.be.server.swagger.OrderApiSpec;
 import kr.hhplus.be.server.util.DummyDataUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/")
-public class OrderController {
+public class OrderController implements OrderApiSpec {
 
     private final DummyDataUtil dummyDataUtil;
 
@@ -15,6 +16,7 @@ public class OrderController {
     }
 
     @PostMapping("/order")
+    @Override
     public ResponseEntity<OrderResponse.Create> orderCreate(@RequestBody OrderRequest.Create request){
         return ResponseEntity.ok(OrderResponse.Create.from(dummyDataUtil.getOrderCreate()));
     }

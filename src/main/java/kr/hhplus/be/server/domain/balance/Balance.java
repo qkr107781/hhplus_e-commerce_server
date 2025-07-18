@@ -17,37 +17,37 @@ public class Balance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "balance_id")
-    private Long balance_id;
+    private Long balanceId;
 
     @Column(name = "user_id", nullable = false)
-    private Long user_id;
+    private Long userId;
 
     @Column(name = "balance", nullable = false)
     private Long balance;
 
     @Column(name = "last_charge_date", nullable = false)
-    private LocalDateTime last_charge_date;
+    private LocalDateTime lastChargeDate;
 
     @Builder
-    public Balance(Long balance_id, Long user_id, Long balance, LocalDateTime last_charge_date) {
-        this.balance_id = balance_id;
-        this.user_id = user_id;
+    public Balance(Long balanceId, Long userId, Long balance, LocalDateTime lastChargeDate) {
+        this.balanceId = balanceId;
+        this.userId = userId;
         this.balance = balance;
-        this.last_charge_date = last_charge_date;
+        this.lastChargeDate = lastChargeDate;
     }
 
     private final long MIN_CHARGE_AMOUNT = 1L;
     private final long NAX_CHARGE_AMOUNT_PER = 100_000L;
     private final long OVER_BALANCE = 1_000_000L;
 
-    public boolean validateChargeAmount(long charge_amount, long balance){
-        if(MIN_CHARGE_AMOUNT > charge_amount){
+    public boolean validateChargeAmount(long chargeAmount, long balance){
+        if(MIN_CHARGE_AMOUNT > chargeAmount){
             return false;
         }
-        if(NAX_CHARGE_AMOUNT_PER < charge_amount){
+        if(NAX_CHARGE_AMOUNT_PER < chargeAmount){
             return false;
         }
-        if(OVER_BALANCE < (charge_amount + balance)){
+        if(OVER_BALANCE < (chargeAmount + balance)){
             return false;
         }
         return true;

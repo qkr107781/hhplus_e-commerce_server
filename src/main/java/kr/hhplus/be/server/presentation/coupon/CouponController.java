@@ -1,12 +1,13 @@
 package kr.hhplus.be.server.presentation.coupon;
 
+import kr.hhplus.be.server.swagger.CouponApiSpec;
 import kr.hhplus.be.server.util.DummyDataUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/")
-public class CouponController {
+public class CouponController implements CouponApiSpec {
 
     private final DummyDataUtil dummyDataUtil;
 
@@ -15,12 +16,14 @@ public class CouponController {
     }
 
     @PostMapping("/coupon/issue")
+    @Override
     public ResponseEntity<CouponResponse.Issue> issue(@RequestBody CouponRequest.Issue request){
         return ResponseEntity.ok(CouponResponse.Issue.from(dummyDataUtil.getCouponIssue()));
     }
 
-    @GetMapping("/coupons/user/{user_id}")
-    public ResponseEntity<CouponResponse.SelectByUserId> selectByUserId(@PathVariable long user_id){
+    @GetMapping("/coupons/user/{userId}") // user_id -> userId
+    @Override
+    public ResponseEntity<CouponResponse.SelectByUserId> selectByUserId(@PathVariable long userId){ // user_id -> userId
         return ResponseEntity.ok(CouponResponse.SelectByUserId.from(dummyDataUtil.getCouponSelectByUserId()));
     }
 

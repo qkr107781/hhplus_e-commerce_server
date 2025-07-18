@@ -1,9 +1,13 @@
 package kr.hhplus.be.server.presentation.payment;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class PaymentRequest {
     public record Create(
-        long user_id,
-        long order_id
+            @Schema(description = "사용자 ID", requiredMode = Schema.RequiredMode.REQUIRED)
+            long userId,
+            @Schema(description = "주문 ID", requiredMode = Schema.RequiredMode.REQUIRED)
+            long orderId
     ){
     }
 }
