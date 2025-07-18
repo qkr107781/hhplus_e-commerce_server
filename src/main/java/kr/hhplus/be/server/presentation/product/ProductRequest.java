@@ -8,19 +8,19 @@ public class ProductRequest {
 
     public record Option(
             @Schema(description = "상품 옵션 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            long product_option_id
+            long productOptionId
     ) {
     }
 
     public record Select(
             @Schema(description = "상품 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            long product_id,
+            long productId,
             @Schema(description = "상품 옵션 목록", requiredMode = Schema.RequiredMode.REQUIRED)
             List<ProductRequest.Option> options
     ) {
         public static ProductRequest.Select from(ProductRequest.Select product) {
             return new ProductRequest.Select(
-                    product.product_id(),
+                    product.productId(),
                     product.options());
         }
     }

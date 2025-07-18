@@ -10,25 +10,25 @@ public class ProductResponse {
 
     public record Option(
             @Schema(description = "상품 옵션 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            long product_option_id,
+            long productOptionId,
             @Schema(description = "상품 옵션 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            String option_name,
+            String optionName,
             @Schema(description = "단가", requiredMode = Schema.RequiredMode.REQUIRED)
             long price,
             @Schema(description = "총 수량", requiredMode = Schema.RequiredMode.REQUIRED)
-            long total_quantity,
+            long totalQuantity,
             @Schema(description = "잔여 수량", requiredMode = Schema.RequiredMode.REQUIRED)
-            long stock_quantity,
+            long stockQuantity,
             @Schema(description = "판매 여부", requiredMode = Schema.RequiredMode.REQUIRED)
-            String sales_yn,
+            String salesYn,
             @Schema(description = "등록일", requiredMode = Schema.RequiredMode.REQUIRED)
-            LocalDateTime reg_date
+            LocalDateTime regDate
     ) {
     }
 
     public record Select(
             @Schema(description = "상품 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            long product_id,
+            long productId,
             @Schema(description = "상품명", requiredMode = Schema.RequiredMode.REQUIRED)
             String name,
             @Schema(description = "설명", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -42,22 +42,22 @@ public class ProductResponse {
     }
 
     public record Statistics(
-        @Schema(description = "상품 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-        long product_id,
-        @Schema(description = "상품 옵션 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-        long product_option_id,
-        @Schema(description = "상품명", requiredMode = Schema.RequiredMode.REQUIRED)
-        String product_name,
-        @Schema(description = "상품 옵션명", requiredMode = Schema.RequiredMode.REQUIRED)
-        String product_option_name,
-        @Schema(description = "단가", requiredMode = Schema.RequiredMode.REQUIRED)
-        long price,
-        @Schema(description = "판매 수량", requiredMode = Schema.RequiredMode.REQUIRED)
-        long sales_quantity ,
-        @Schema(description = "인기 상품 순위", requiredMode = Schema.RequiredMode.REQUIRED)
-        long ranking,
-        @Schema(description = "선정일", requiredMode = Schema.RequiredMode.REQUIRED)
-        LocalDateTime selection_date
+            @Schema(description = "상품 ID", requiredMode = Schema.RequiredMode.REQUIRED)
+            long productId,
+            @Schema(description = "상품 옵션 ID", requiredMode = Schema.RequiredMode.REQUIRED)
+            long productOptionId,
+            @Schema(description = "상품명", requiredMode = Schema.RequiredMode.REQUIRED)
+            String productName,
+            @Schema(description = "상품 옵션명", requiredMode = Schema.RequiredMode.REQUIRED)
+            String productOptionName,
+            @Schema(description = "단가", requiredMode = Schema.RequiredMode.REQUIRED)
+            long price,
+            @Schema(description = "판매 수량", requiredMode = Schema.RequiredMode.REQUIRED)
+            long salesQuantity ,
+            @Schema(description = "인기 상품 순위", requiredMode = Schema.RequiredMode.REQUIRED)
+            long ranking,
+            @Schema(description = "선정일", requiredMode = Schema.RequiredMode.REQUIRED)
+            LocalDateTime selectionDate
     ){
         public static List<Statistics> from(List<Statistics> statistics) {
             return new ArrayList<>(statistics);

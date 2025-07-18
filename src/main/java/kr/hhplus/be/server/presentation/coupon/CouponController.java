@@ -21,9 +21,9 @@ public class CouponController implements CouponApiSpec {
         return ResponseEntity.ok(CouponResponse.Issue.from(dummyDataUtil.getCouponIssue()));
     }
 
-    @GetMapping("/coupons/user/{user_id}")
+    @GetMapping("/coupons/user/{userId}") // user_id -> userId
     @Override
-    public ResponseEntity<CouponResponse.SelectByUserId> selectByUserId(@PathVariable long user_id){
+    public ResponseEntity<CouponResponse.SelectByUserId> selectByUserId(@PathVariable long userId){ // user_id -> userId
         return ResponseEntity.ok(CouponResponse.SelectByUserId.from(dummyDataUtil.getCouponSelectByUserId()));
     }
 

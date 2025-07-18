@@ -16,45 +16,31 @@ public class CouponIssuedInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coupon_issued_id")
-    private Long coupon_issued_id;
+    private Long couponIssuedId;
 
     @Column(name = "user_id", nullable = false)
-    private Long user_id;
+    private Long userId;
 
     @Column(name = "use_yn", length = 1, nullable = false)
-    private String use_yn;
+    private String useYn;
 
     @Column(name = "issued_at", nullable = false)
-    private LocalDateTime issued_at;
+    private LocalDateTime issuedAt;
 
     @Column(name = "end_date", nullable = false)
-    private LocalDateTime end_date;
+    private LocalDateTime endDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="coupon_id", nullable = false)
     private Coupon coupon;
 
     @Builder
-    public CouponIssuedInfo(Long coupon_issued_id, Long coupon_id, Long user_id, String use_yn, LocalDateTime issued_at, LocalDateTime end_date, Coupon coupon) {
-        this.coupon_issued_id = coupon_issued_id;
-        this.user_id = user_id;
-        this.use_yn = use_yn;
-        this.issued_at = issued_at;
-        this.end_date = end_date;
+    public CouponIssuedInfo(Long couponIssuedId, Long userId, String useYn, LocalDateTime issuedAt, LocalDateTime endDate, Coupon coupon) {
+        this.couponIssuedId = couponIssuedId;
+        this.userId = userId;
+        this.useYn = useYn;
+        this.issuedAt = issuedAt;
+        this.endDate = endDate;
         this.coupon = coupon;
-    }
-
-    public boolean validateCoupon(CouponIssuedInfo couponIssuedInfo,long user_id){
-        if(couponIssuedInfo.coupon.getRemaining_coupon_amount() == 0){
-            return false;
-        }
-        if(couponIssuedInfo.coupon.getIssuance_start_time().isAfter(LocalDateTime.now()) &&
-            couponIssuedInfo.coupon.getIssuance_end_time().isBefore(LocalDateTime.now())){
-            return false;
-        }
-        if(user_id == couponIssuedInfo.user_id){
-            return false;
-        }
-        return true;
     }
 }
