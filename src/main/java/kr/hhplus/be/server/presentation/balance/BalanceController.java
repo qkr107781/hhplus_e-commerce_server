@@ -21,9 +21,9 @@ public class BalanceController implements BalanceApiSpec {
         return ResponseEntity.ok(BalanceResponse.Charge.from(dummyDataUtil.getUserBalanceCharge()));
     }
 
-    @GetMapping("/user/balance/{user_id}")
+    @GetMapping("/user/balance/{userId}")
     @Override
-    public ResponseEntity<BalanceResponse.SelectBalanceByUserId> selectBalanceByUserId(@PathVariable long user_id){
+    public ResponseEntity<BalanceResponse.SelectBalanceByUserId> selectBalanceByUserId(@PathVariable long userId){
         return ResponseEntity.ok(BalanceResponse.SelectBalanceByUserId.from(dummyDataUtil.getUserSelectBalanceByUserId()));
     }
 }
