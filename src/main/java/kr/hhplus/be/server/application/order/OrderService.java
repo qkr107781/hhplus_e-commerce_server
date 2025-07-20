@@ -1,4 +1,7 @@
 package kr.hhplus.be.server.application.order;
 
-public interface OrderService {
+import org.springframework.stereotype.Service;
+
+@Service
+public class OrderService implements OrderUsecase {
 }

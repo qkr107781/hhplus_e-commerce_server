@@ -1,5 +1,8 @@
 package kr.hhplus.be.server.application.coupon;
 
-public interface CouponService {
+import org.springframework.stereotype.Service;
+
+@Service
+public class CouponService implements CouponUsecase{
 
 }
