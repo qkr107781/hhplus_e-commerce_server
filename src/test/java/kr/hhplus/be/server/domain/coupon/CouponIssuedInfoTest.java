@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.domain.coupon;
 
-import kr.hhplus.be.server.infrastructure.coupon.CouponIssuedInfoRepository;
+import kr.hhplus.be.server.application.coupon.CouponIssuedInfoRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
