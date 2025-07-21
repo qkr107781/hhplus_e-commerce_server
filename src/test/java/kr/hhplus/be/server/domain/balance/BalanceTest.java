@@ -2,6 +2,7 @@ package kr.hhplus.be.server.domain.balance;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -21,6 +22,31 @@ class BalanceTest {
         balance = new Balance(1L,1L,990_000L,LocalDateTime.now());
     }
 
+    @Test
+    @DisplayName("[잔액 조회]조회 성공(잔액: 990,000원)")
+    void selectBalance(){
+        //Given
+        //@BeforeEach에서 진행
+        long userId = 1L;
+        //When
+        long userBalance = balance.selectBalance(userId);
+        //Then
+        assertEquals(990_000L,userBalance);
+    }
+
+    @Test
+    @DisplayName("[잔액 조회]조회 실패(타 유저 잔액 조회)")
+    void selectBalanceFail(){
+        //Given
+        //@BeforeEach에서 진행
+        long userId = 2L;
+        //When
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                                            () -> balance.selectBalance(userId),"user compare fail");
+        //Then
+        assertTrue(thrown.getMessage().contains("user compare fail"));
+    }
+
     @ParameterizedTest
     @ValueSource(longs = {1L,500L,9_999L,1_000L,})
     @DisplayName("[잔액 충전]충전 성공(잔액: 990_000L원, 충전: [1원, 500원, 9,999원, 1,000원]")
@@ -30,6 +56,7 @@ class BalanceTest {
         //When
         localBalance.charge(chargeAmount);
         //Then
+        assertEquals(chargeAmount,localBalance.getBalance());
     }
 
     @ParameterizedTest

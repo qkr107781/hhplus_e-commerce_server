@@ -37,8 +37,15 @@ public class Balance {
     }
 
     public void charge(long chargeAmount){
-        validateChargeAmount(chargeAmount, balance);
+        validateChargeAmount(chargeAmount, this.balance);
         this.balance += chargeAmount;
         this.lastChargeDate = LocalDateTime.now();
+    }
+
+    public long selectBalance(long userId){
+        if(this.userId != userId){
+            throw new IllegalArgumentException("user compare fail");
+        }
+        return this.balance;
     }
 }
