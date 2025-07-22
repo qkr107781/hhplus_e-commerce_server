@@ -1,10 +1,11 @@
 package kr.hhplus.be.server.application.balance;
 
-import kr.hhplus.be.server.domain.user.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import kr.hhplus.be.server.domain.balance.Balance;
 
-@Repository
-public interface BalanceRepository extends JpaRepository<User, Long> {
+public interface BalanceRepository {
+
+    Balance findByUserId(long userId);
+
+    Balance save(Balance balance);
 
 }

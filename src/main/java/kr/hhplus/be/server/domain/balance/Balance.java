@@ -16,10 +16,6 @@ public class Balance {
         this.lastChargeDate = lastChargeDate;
     }
 
-    public long getBalance(){
-        return balance;
-    }
-
     private final long MIN_CHARGE_AMOUNT = 1L;
     private final long NAX_CHARGE_AMOUNT_PER = 100_000L;
     private final long OVER_BALANCE = 1_000_000L;
@@ -61,5 +57,21 @@ public class Balance {
             throw new IllegalArgumentException("user compare fail");
         }
         return this.balance;
+    }
+
+    public Long getBalanceId() {
+        return balanceId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public Long getBalance() {
+        return balance;
+    }
+
+    public LocalDateTime getLastChargeDate() {
+        return lastChargeDate;
     }
 }

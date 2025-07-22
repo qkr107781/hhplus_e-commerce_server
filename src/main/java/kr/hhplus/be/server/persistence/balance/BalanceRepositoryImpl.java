@@ -1,4 +1,17 @@
 package kr.hhplus.be.server.persistence.balance;
 
-public class BalanceRepositoryImpl {
+import kr.hhplus.be.server.application.balance.BalanceRepository;
+import kr.hhplus.be.server.domain.balance.Balance;
+
+public class BalanceRepositoryImpl implements BalanceRepository {
+
+    @Override
+    public Balance findByUserId(long userId) {
+        return null;
+    }
+
+    @Override
+    public Balance save(Balance balance) {
+        return null;
+    }
 }
