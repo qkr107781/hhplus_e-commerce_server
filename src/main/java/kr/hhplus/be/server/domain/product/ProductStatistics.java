@@ -1,52 +1,20 @@
 package kr.hhplus.be.server.domain.product;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "product_statistics")
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductStatistics {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "statistics_id")
     private Long statisticsId;
-
-    @Column(name = "product_id", nullable = false)
     private Long productId;
-
-    @Column(name = "product_option_id", nullable = false)
     private Long productOptionId;
-
-    @Column(name = "product_name", length = 50, nullable = false)
     private String productName;
-
-    @Column(name = "product_option_name", length = 50, nullable = false)
     private String productOptionName;
-
-    @Column(name = "price", nullable = false)
     private Long price;
-
-    @Column(name = "sales_quantity", nullable = false)
     private Long salesQuantity;
-
-    @Column(name = "ranking", nullable = false)
     private Long ranking;
-
-    @Column(name = "selection_date", nullable = false)
     private LocalDateTime selectionDate;
 
-    @Builder
-    public ProductStatistics(Long statisticsId, Long productId, Long productOptionId, String productName,
-                             String productOptionName, Long price, Long salesQuantity,
-                             Long ranking, LocalDateTime selectionDate) {
+    public ProductStatistics(Long statisticsId, Long productId, Long productOptionId, String productName, String productOptionName, Long price, Long salesQuantity, Long ranking, LocalDateTime selectionDate) {
         this.statisticsId = statisticsId;
         this.productId = productId;
         this.productOptionId = productOptionId;
@@ -56,5 +24,41 @@ public class ProductStatistics {
         this.salesQuantity = salesQuantity;
         this.ranking = ranking;
         this.selectionDate = selectionDate;
+    }
+
+    public Long getStatisticsId() {
+        return statisticsId;
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public Long getProductOptionId() {
+        return productOptionId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public String getProductOptionName() {
+        return productOptionName;
+    }
+
+    public Long getPrice() {
+        return price;
+    }
+
+    public Long getSalesQuantity() {
+        return salesQuantity;
+    }
+
+    public Long getRanking() {
+        return ranking;
+    }
+
+    public LocalDateTime getSelectionDate() {
+        return selectionDate;
     }
 }
