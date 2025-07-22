@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProductStatisticsTest {
 
     @Test
-    @DisplayName("")
+    @DisplayName("[상위 상품 조회]통계 테이블에서 기간별 많이 팔린 상품 상위 5개를 조회")
     void selectSalesTop5Product(){
         //Given
         long productId = 1L;
