@@ -1,32 +1,48 @@
 package kr.hhplus.be.server.domain.product;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
 
-@Entity
-@Table(name = "product")
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_id")
     private Long productId;
-
-    @Column(name = "name", length = 50, nullable = false)
     private String name;
-
-    @Column(name = "description", length = 200)
     private String description;
+    private List<ProductOption> productOptions;
 
-    @Builder
-    public Product(Long productId, String name, String description) {
-        this.productId = productId;
-        this.name = name;
-        this.description = description;
+    public Product(Long productId, String name, String description, List<ProductOption> productOptions) {
+        //상품 판매 여부 체크
+        List<ProductOption> salesProductOptionList = new ArrayList<>();
+        if(!productOptions.isEmpty()){
+            for (ProductOption productOption : productOptions) {
+                if ("Y".equalsIgnoreCase(productOption.getSalesYn())) {
+                    salesProductOptionList.add(productOption);
+                }
+            }
+        }
+
+        //상품 옵션 중 1개라도 판매 중 일때만 할당
+        if(!salesProductOptionList.isEmpty()){
+            this.productId = productId;
+            this.name = name;
+            this.description = description;
+            this.productOptions = salesProductOptionList;
+        }
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public List<ProductOption> getProductOptions() {
+        return productOptions;
     }
 }
