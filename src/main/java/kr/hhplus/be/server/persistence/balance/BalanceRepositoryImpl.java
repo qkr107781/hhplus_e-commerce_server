@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.persistence.balance;
 
-import kr.hhplus.be.server.application.balance.BalanceRepository;
+import kr.hhplus.be.server.application.balance.repository.BalanceRepository;
 import kr.hhplus.be.server.domain.balance.Balance;
 
 public class BalanceRepositoryImpl implements BalanceRepository {

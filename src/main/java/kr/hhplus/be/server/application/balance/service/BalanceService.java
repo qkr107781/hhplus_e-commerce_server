@@ -1,7 +1,8 @@
-package kr.hhplus.be.server.application.balance;
+package kr.hhplus.be.server.application.balance.service;
 
 import kr.hhplus.be.server.application.balance.dto.BalanceRequest;
 import kr.hhplus.be.server.application.balance.dto.BalanceResponse;
+import kr.hhplus.be.server.application.balance.repository.BalanceRepository;
 import kr.hhplus.be.server.domain.balance.Balance;
 import org.springframework.stereotype.Service;
 

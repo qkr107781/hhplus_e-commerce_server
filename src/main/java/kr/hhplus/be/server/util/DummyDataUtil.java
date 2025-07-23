@@ -4,7 +4,7 @@ import kr.hhplus.be.server.application.balance.dto.BalanceResponse;
 import kr.hhplus.be.server.presentation.coupon.CouponResponse;
 import kr.hhplus.be.server.presentation.order.OrderResponse;
 import kr.hhplus.be.server.presentation.payment.PaymentResponse;
-import kr.hhplus.be.server.presentation.product.ProductResponse;
+import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
