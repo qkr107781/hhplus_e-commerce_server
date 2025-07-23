@@ -1,10 +1,13 @@
-package kr.hhplus.be.server.presentation.product;
+package kr.hhplus.be.server.application.product.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import kr.hhplus.be.server.domain.product.Product;
+import kr.hhplus.be.server.domain.product.ProductStatistics;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProductResponse {
 
@@ -36,8 +39,21 @@ public class ProductResponse {
             @Schema(description = "상품 옵션 목록", requiredMode = Schema.RequiredMode.REQUIRED)
             List<ProductResponse.Option> options
     ) {
-        public static List<Select> from(List<Select> products) {
-            return new ArrayList<>(products);
+        public static List<ProductResponse.Select> from(List<Product> products) {
+            return products.stream()
+                    .map(product -> new ProductResponse.Select(product.getProductId(),
+                                                                        product.getName(),
+                                                                        product.getDescription(),
+                                                                        product.getProductOptions().stream()
+                                                                                                    .map(productOption -> new ProductResponse.Option(
+                                                                                                                productOption.getProductOptionId(),
+                                                                                                                productOption.getOptionName(),
+                                                                                                                productOption.getPrice(),
+                                                                                                                productOption.getTotalQuantity(),
+                                                                                                                productOption.getStockQuantity(),
+                                                                                                                productOption.getSalesYn(),
+                                                                                                                productOption.getRegDate())).collect(Collectors.toList())))
+                    .collect(Collectors.toList());
         }
     }
 
@@ -59,8 +75,6 @@ public class ProductResponse {
             @Schema(description = "선정일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime selectionDate
     ){
-        public static List<Statistics> from(List<Statistics> statistics) {
-            return new ArrayList<>(statistics);
-        }
+        public static List<ProductStatistics> from(List<ProductStatistics> statistics) {return new ArrayList<>(statistics);}
     }
 }
