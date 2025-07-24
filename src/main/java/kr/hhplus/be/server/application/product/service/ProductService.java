@@ -104,6 +104,7 @@ public class ProductService implements ProductUseCase {
      * 예: 오늘이 7월 25일이면, 7월 21일 00:00:00 부터 7월 24일 23:59:59.999999999까지의 데이터를 조회합니다.
      * @return 상위 5개 통계 데이터 리스트
      */
+    @Override
     public List<ProductStatistics> selectTop5SalesStatisticsSpecificRange() {
         LocalDate today = LocalDate.now(); // 2025-07-25
 
