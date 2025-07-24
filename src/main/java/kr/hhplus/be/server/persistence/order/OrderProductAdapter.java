@@ -6,14 +6,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class OrderProductAdapter implements OrderProductRepository {
-    private final OrderProductRepository orderProductRepository;
+    private final OrderProductJpaRepository orderProductJpaRepository;
 
-    public OrderProductAdapter(OrderProductRepository orderProductRepository) {
-        this.orderProductRepository = orderProductRepository;
+    public OrderProductAdapter(OrderProductJpaRepository orderProductJpaRepository) {
+        this.orderProductJpaRepository = orderProductJpaRepository;
     }
 
     @Override
     public OrderProduct save(OrderProduct orderProduct) {
-        return orderProductRepository.save(orderProduct);
+        return orderProductJpaRepository.save(orderProduct);
     }
 }

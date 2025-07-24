@@ -6,5 +6,5 @@ public interface CouponRepository{
 
     Coupon findByCouponId(long couponId);
 
-    Coupon findByStatus(String status);
+    Coupon findByCouponStatus(String status);
 }

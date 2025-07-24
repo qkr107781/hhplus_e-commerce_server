@@ -96,7 +96,7 @@ class CouponServiceTest {
 
     @Test
     @DisplayName("[쿠폰 사용]쿠폰 유효성 검증 후 사용 처리")
-    void useCoupon() throws Exception {
+    void useCoupon() {
         //Given
         long totalOrderPrice = 24_000L;
 
@@ -145,7 +145,7 @@ class CouponServiceTest {
                                                             .coupon(coupon)
                                                             .build();
 
-        when(couponIssuedInfoRepository.findByCouponIdAndUserId(couponId,userId)).thenReturn(couponIssuedInfo);
+        when(couponIssuedInfoRepository.findByCoupon_couponIdAndUserId(couponId,userId)).thenReturn(couponIssuedInfo);
         when(couponIssuedInfoRepository.useCoupon(any(CouponIssuedInfo.class))).thenAnswer(invocation -> {
             CouponIssuedInfo info = invocation.getArgument(0);
             info.useCoupon();
@@ -159,7 +159,7 @@ class CouponServiceTest {
         //Then
         assertEquals("Y", result.getUseYn());
 
-        verify(couponIssuedInfoRepository, times(1)).findByCouponIdAndUserId(couponId,userId);
+        verify(couponIssuedInfoRepository, times(1)).findByCoupon_couponIdAndUserId(couponId,userId);
         verify(couponIssuedInfoRepository, times(1)).useCoupon(any(CouponIssuedInfo.class));
     }
 

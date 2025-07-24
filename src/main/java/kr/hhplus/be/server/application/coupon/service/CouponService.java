@@ -30,7 +30,7 @@ public class CouponService implements CouponUseCase{
      */
     public CouponIssuedInfo useCoupon(long requestCouponId, long requestUserId, long totalOrderPrice) {
         //쿠폰 사용 유효성 검증
-        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoRepository.findByCouponIdAndUserId(requestCouponId,requestUserId);
+        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoRepository.findByCoupon_couponIdAndUserId(requestCouponId,requestUserId);
         if(couponIssuedInfo.validateCouponUsage(totalOrderPrice)){
             //쿠폰 사용
             couponIssuedInfo.useCoupon();
@@ -56,7 +56,7 @@ public class CouponService implements CouponUseCase{
      * @return CouponIssuedInfo
      */
     public CouponIssuedInfo selectCouponByCouponIdAndUserId(long couponId, long userId){
-        return couponIssuedInfoRepository.findByCouponIdAndUserId(couponId,userId);
+        return couponIssuedInfoRepository.findByCoupon_couponIdAndUserId(couponId,userId);
     }
 
     /**
@@ -95,6 +95,6 @@ public class CouponService implements CouponUseCase{
 
     @Override
     public CouponResponse.SelectByStatus selectCouponByStatus(String couponStatus) {
-        return CouponResponse.SelectByStatus.from(couponRepository.findByStatus(couponStatus));
+        return CouponResponse.SelectByStatus.from(couponRepository.findByCouponStatus(couponStatus));
     }
 }

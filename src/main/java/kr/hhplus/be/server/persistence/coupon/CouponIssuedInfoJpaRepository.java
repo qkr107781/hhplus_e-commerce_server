@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CouponIssuedInfoJpaRepository extends JpaRepository<CouponIssuedInfo,Long> {
 
-    CouponIssuedInfo findByCouponIdAndUserId(long couponId,long userId);
+    CouponIssuedInfo findByCoupon_couponIdAndUserId(long couponId,long userId);
 
     CouponIssuedInfo findByUserId(long userId);
 

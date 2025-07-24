@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface ProductRepository {
 
-    List<Product> findAllBySalseYn(String salseYn);
+    List<Product> findByProductOptions_SalesYn(String salseYn);
 
-    List<ProductOption> findByProductOptionIds(List<Long> productOptionIds);
+    List<ProductOption> findByProductOptionsIn(List<Long> productOptionIds);
 
-    ProductOption updateStockQuantity(ProductOption productOption);
+    ProductOption save(ProductOption productOption);
 
     Product findByProductId(long productId);
 
-    ProductOption findByProductIdAndProductOptionId(long productId,long productOptionId);
+    ProductOption findByProductIdAndProductOptions_ProductOptionId(long productId,long productOptionId);
 }

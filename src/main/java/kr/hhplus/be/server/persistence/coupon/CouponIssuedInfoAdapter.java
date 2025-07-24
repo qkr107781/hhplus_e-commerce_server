@@ -13,8 +13,8 @@ public class CouponIssuedInfoAdapter implements CouponIssuedInfoRepository {
     }
 
     @Override
-    public CouponIssuedInfo findByCouponIdAndUserId(long couponId, long userId) {
-        return couponIssuedInfoJpaRepository.findByCouponIdAndUserId(couponId,userId);
+    public CouponIssuedInfo findByCoupon_couponIdAndUserId(long couponId, long userId) {
+        return couponIssuedInfoJpaRepository.findByCoupon_couponIdAndUserId(couponId,userId);
     }
 
     @Override

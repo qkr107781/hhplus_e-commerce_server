@@ -24,7 +24,7 @@ public class ProductService implements ProductUseCase{
      */
     @Override
     public List<ProductResponse.Select> selectSalesProductList() {
-        List<Product> salesProductList = productRepository.findAllBySalseYn("Y");
+        List<Product> salesProductList = productRepository.findByProductOptions_SalesYn("Y");
         return ProductResponse.Select.from(salesProductList);
     }
 
@@ -37,7 +37,7 @@ public class ProductService implements ProductUseCase{
     public List<ProductOption> decreaseStock(List<Long> requestProductOptionIds) throws Exception {
         //상품 잔여 갯수 확인
         List<ProductOption> productOptionListForDecreaseStock = new ArrayList<>();
-        List<ProductOption> productOptionList = productRepository.findByProductOptionIds(requestProductOptionIds);
+        List<ProductOption> productOptionList = productRepository.findByProductOptionsIn(requestProductOptionIds);
         for(ProductOption productOption : productOptionList){
             if(productOption.getStockQuantity() == 0){
                 throw new Exception("stock empty");
@@ -50,7 +50,7 @@ public class ProductService implements ProductUseCase{
         //재고 차감
         for(ProductOption productOption : productOptionListForDecreaseStock){
             productOption.decreaseProductQuantity();
-            productRepository.updateStockQuantity(productOption);
+            productRepository.save(productOption);
         }
 
         return productOptionListForDecreaseStock;
@@ -88,6 +88,6 @@ public class ProductService implements ProductUseCase{
      * @return ProductOption
      */
     public ProductOption selectProductOptionByProductIdAndProductOptionId(long productId,long productOptionId){
-        return productRepository.findByProductIdAndProductOptionId(productId,productOptionId);
+        return productRepository.findByProductIdAndProductOptions_ProductOptionId(productId,productOptionId);
     }
 }

@@ -4,7 +4,7 @@ import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 
 public interface CouponIssuedInfoRepository {
 
-    CouponIssuedInfo findByCouponIdAndUserId(long couponId, long userId);
+    CouponIssuedInfo findByCoupon_couponIdAndUserId(long couponId, long userId);
 
     CouponIssuedInfo useCoupon(CouponIssuedInfo couponIssuedInfo);
 

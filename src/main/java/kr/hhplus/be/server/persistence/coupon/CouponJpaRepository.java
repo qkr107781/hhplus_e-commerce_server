@@ -9,5 +9,5 @@ public interface CouponJpaRepository extends JpaRepository<Coupon,Long> {
 
     Coupon findByCouponId(long couponId);
 
-    Coupon findByStatus(String status);
+    Coupon findByCouponStatus(String status);
 }

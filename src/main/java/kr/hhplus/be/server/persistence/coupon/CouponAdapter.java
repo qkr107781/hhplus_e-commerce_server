@@ -18,7 +18,7 @@ public class CouponAdapter implements CouponRepository {
     }
 
     @Override
-    public Coupon findByStatus(String status) {
-        return couponJpaRepository.findByStatus(status);
+    public Coupon findByCouponStatus(String status) {
+        return couponJpaRepository.findByCouponStatus(status);
     }
 }

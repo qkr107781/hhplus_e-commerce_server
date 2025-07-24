@@ -17,18 +17,18 @@ public class ProductAdapter implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllBySalseYn(String salseYn) {
-        return productJpaRepository.findAllBySalseYn(salseYn);
+    public List<Product> findByProductOptions_SalesYn(String salseYn) {
+        return productJpaRepository.findByProductOptions_SalesYn(salseYn);
     }
 
     @Override
-    public List<ProductOption> findByProductOptionIds(List<Long> productOptionIds) {
-        return productJpaRepository.findByProductOptionIds(productOptionIds);
+    public List<ProductOption> findByProductOptionsIn(List<Long> productOptionIds) {
+        return productJpaRepository.findByProductOptionsIn(productOptionIds);
     }
 
     @Override
-    public ProductOption updateStockQuantity(ProductOption productOption) {
-        return productJpaRepository.updateStockQuantity(productOption);
+    public ProductOption save(ProductOption productOption) {
+        return productJpaRepository.save(productOption);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ProductAdapter implements ProductRepository {
     }
 
     @Override
-    public ProductOption findByProductIdAndProductOptionId(long productId, long productOptionId) {
-        return productJpaRepository.findByProductIdAndProductOptionId(productId,productOptionId);
+    public ProductOption findByProductIdAndProductOptions_ProductOptionId(long productId, long productOptionId) {
+        return productJpaRepository.findByProductIdAndProductOptions_ProductOptionId(productId,productOptionId);
     }
 }

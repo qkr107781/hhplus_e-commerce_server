@@ -76,7 +76,7 @@ class ProductServiceTest {
         productList.add(product);
         productList.add(product2);
 
-        when(productRepository.findAllBySalseYn("Y")).thenReturn(productList);
+        when(productRepository.findByProductOptions_SalesYn("Y")).thenReturn(productList);
 
         //When
         ProductService productService = new ProductService(productRepository);
@@ -120,8 +120,8 @@ class ProductServiceTest {
 
         product.addProductOptionList(products);
 
-        when(productRepository.findByProductOptionIds(productOptionIds)).thenReturn(products);
-        when(productRepository.updateStockQuantity(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(productRepository.findByProductOptionsIn(productOptionIds)).thenReturn(products);
+        when(productRepository.save(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
         //When
         ProductService productService = new ProductService(productRepository);
         productService.decreaseStock(productOptionIds);
@@ -131,8 +131,8 @@ class ProductServiceTest {
         assertEquals(2L, productOption2.getStockQuantity()); // 5 - 3 = 2
         assertEquals(1L, productOption3.getStockQuantity()); // 2 - 1 = 1
 
-        verify(productRepository, times(1)).findByProductOptionIds(productOptionIds);
-        verify(productRepository, times(5)).updateStockQuantity(any(ProductOption.class));
+        verify(productRepository, times(1)).findByProductOptionsIn(productOptionIds);
+        verify(productRepository, times(5)).save(any(ProductOption.class));
     }
 
     @Test
