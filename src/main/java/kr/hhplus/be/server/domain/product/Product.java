@@ -1,12 +1,15 @@
 package kr.hhplus.be.server.domain.product;
 
 import jakarta.persistence.*;
+import kr.hhplus.be.server.domain.order.OrderProduct;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "product")
@@ -25,8 +28,7 @@ public class Product {
     @Column(name = "description", length = 200)
     private String description;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name="product_option_id", nullable = false)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductOption> productOptions;
 
     @Builder
@@ -34,6 +36,10 @@ public class Product {
         this.productId = productId;
         this.name = name;
         this.description = description;
-        this.productOptions = productOptions;
+        this.productOptions = Objects.requireNonNullElseGet(productOptions, ArrayList::new);
+    }
+
+    public void addProductOptionList(List<ProductOption> productOptionList) {
+        this.productOptions = productOptionList;
     }
 }

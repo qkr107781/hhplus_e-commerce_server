@@ -13,7 +13,12 @@ class ProductOptionTest {
     @DisplayName("[상품 주문][재고 부족]재고 0개 일때 차감 요청 시 실패 처리")
     void notIssuingStatus(){
         //Given
-        ProductOption productOption = new ProductOption(1L,1L,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
+        Product product = Product.builder()
+                .productId(1L)
+                .name("티셔츠")
+                .description("티셔츠 설명")
+                .build();
+        ProductOption productOption = new ProductOption(1L,product,"XL",20_000L,30L,0L,"Y", LocalDateTime.now());
 
         //When
         Exception thrown = assertThrows(Exception.class,
@@ -26,7 +31,12 @@ class ProductOptionTest {
     @DisplayName("[상품 주문][재고 차감]재고 차감 성공")
     void canIssueCoupon() throws Exception {
         //Given
-        ProductOption productOption = new ProductOption(1L,1L,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
+        Product product = Product.builder()
+                .productId(1L)
+                .name("티셔츠")
+                .description("티셔츠 설명")
+                .build();
+        ProductOption productOption = new ProductOption(1L,product,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
 
         //When
         productOption.decreaseProductQuantity();

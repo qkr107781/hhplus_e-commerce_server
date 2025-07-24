@@ -55,25 +55,6 @@ class PaymentFacadeServiceTest {
     @DisplayName("[결제] 결제 성공")
     void createPayment() throws Exception{
         //Given
-        OrderProduct orderProduct1 = OrderProduct.builder()
-                .orderProductId(1L)
-                .orderId(1L)
-                .productId(1L)
-                .productOptionId(1L)
-                .productQuantity(2L)
-                .productPrice(10_000L)
-                .build();
-        OrderProduct orderProduct2 = OrderProduct.builder()
-                .orderProductId(2L)
-                .orderId(1L)
-                .productId(1L)
-                .productOptionId(2L)
-                .productQuantity(3L)
-                .productPrice(10_000L)
-                .build();
-        List<OrderProduct> orderProductList = new ArrayList<>();
-        orderProductList.add(orderProduct1);
-        orderProductList.add(orderProduct2);
 
         Order order = Order.builder()
                 .orderId(1L)
@@ -83,10 +64,31 @@ class PaymentFacadeServiceTest {
                 .totalPrice(50_000L)
                 .orderStatus("pending_payment")
                 .orderDate(LocalDateTime.now())
-                .orderProducts(orderProductList)
                 .build();
 
-        when(orderService.selectOrderByOrderId(1L)).thenReturn(order);
+        OrderProduct orderProduct1 = OrderProduct.builder()
+                .orderProductId(1L)
+                .order(order)
+                .productId(1L)
+                .productOptionId(1L)
+                .productQuantity(2L)
+                .productPrice(10_000L)
+                .build();
+        OrderProduct orderProduct2 = OrderProduct.builder()
+                .orderProductId(2L)
+                .order(order)
+                .productId(1L)
+                .productOptionId(2L)
+                .productQuantity(3L)
+                .productPrice(10_000L)
+                .build();
+        List<OrderProduct> orderProductList = new ArrayList<>();
+        orderProductList.add(orderProduct1);
+        orderProductList.add(orderProduct2);
+
+        order.addOrderProduct(orderProductList);
+
+        when(orderService.selectOrderByOrderIdWithOrderProducts(1L)).thenReturn(order);
 
         Balance balance = Balance.builder()
                 .balanceId(1L)
@@ -144,9 +146,15 @@ class PaymentFacadeServiceTest {
 
         when(couponService.selectCouponByCouponIdAndUserId(1L,1L)).thenReturn(couponIssuedInfo);
 
+        Product product = Product.builder()
+                .productId(1L)
+                .name("티셔츠")
+                .description("티셔츠 설명")
+                .build();
+
         ProductOption productOption1 = ProductOption.builder()
                 .productOptionId(1L)
-                .productId(1L)
+                .product(product)
                 .optionName("L")
                 .price(10_000L)
                 .totalQuantity(30L)
@@ -156,7 +164,7 @@ class PaymentFacadeServiceTest {
                 .build();
         ProductOption productOption2 = ProductOption.builder()
                 .productOptionId(2L)
-                .productId(1L)
+                .product(product)
                 .optionName("M")
                 .price(10_000L)
                 .totalQuantity(30L)
@@ -168,12 +176,8 @@ class PaymentFacadeServiceTest {
         List<ProductOption> productOptionList = new ArrayList<>();
         productOptionList.add(productOption1);
         productOptionList.add(productOption2);
-        Product product = Product.builder()
-                .productId(1L)
-                .name("티셔츠")
-                .description("티셔츠 설명")
-                .productOptions(productOptionList)
-                .build();
+
+        product.addProductOptionList(productOptionList);
 
         when(productService.selectProductByProductId(1L)).thenReturn(product);
         when(productService.selectProductOptionByProductIdAndProductOptionId(1L,1L)).thenReturn(productOption1);
@@ -211,7 +215,7 @@ class PaymentFacadeServiceTest {
 // 3. 의존하는 서비스 메서드들이 올바르게 호출되었는지 검증 (verify)
 
 // 3-1. OrderService 메서드 호출 검증
-        verify(orderService, times(1)).selectOrderByOrderId(1L);
+        verify(orderService, times(1)).selectOrderByOrderIdWithOrderProducts(1L);
         verify(orderService, times(1)).updateOrderStatusToPayment(order);
 
 // 3-2. BalanceService 메서드 호출 검증

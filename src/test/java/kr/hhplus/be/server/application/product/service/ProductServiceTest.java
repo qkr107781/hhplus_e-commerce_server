@@ -34,30 +34,43 @@ class ProductServiceTest {
         String name = "티셔츠";
         String description = "티셔츠 설명";
 
-        ProductOption productOption1 = new ProductOption(1L,productId,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
-        ProductOption productOption2 = new ProductOption(2L,productId,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
-        ProductOption productOption3 = new ProductOption(3L,productId,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
+        long productId2 = 2L;
+        String name2 = "티셔츠";
+        String description2 = "티셔츠 설명";
+
+        Product product = Product.builder()
+                .productId(productId)
+                .name(name)
+                .description(description)
+                .build();
+
+        Product product2 = Product.builder()
+                .productId(productId2)
+                .name(name2)
+                .description(description2)
+                .build();
+
+        ProductOption productOption1 = new ProductOption(1L,product,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
+        ProductOption productOption2 = new ProductOption(2L,product,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
+        ProductOption productOption3 = new ProductOption(3L,product,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
 
         List<ProductOption> products = new ArrayList<>();
         products.add(productOption1);
         products.add(productOption2);
         products.add(productOption3);
 
-        long productId2 = 2L;
-        String name2 = "티셔츠";
-        String description2 = "티셔츠 설명";
+        product.addProductOptionList(products);
 
-        ProductOption productOption11 = new ProductOption(4L,productId2,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
-        ProductOption productOption22 = new ProductOption(5L,productId2,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
-        ProductOption productOption33 = new ProductOption(6L,productId2,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
+        ProductOption productOption11 = new ProductOption(4L,product2,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
+        ProductOption productOption22 = new ProductOption(5L,product2,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
+        ProductOption productOption33 = new ProductOption(6L,product2,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
 
         List<ProductOption> products2 = new ArrayList<>();
         products2.add(productOption11);
         products2.add(productOption22);
         products2.add(productOption33);
 
-        Product product = new Product(productId,name,description,products);
-        Product product2 = new Product(productId2,name2,description2,products2);
+        product2.addProductOptionList(products2);
 
         List<Product> productList = new ArrayList<>();
         productList.add(product);
@@ -88,9 +101,15 @@ class ProductServiceTest {
         long productId = 1L;
         List<Long> productOptionIds = List.of(1L,2L,2L,2L,3L);
 
-        ProductOption productOption1 = new ProductOption(1L,productId,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
-        ProductOption productOption2 = new ProductOption(2L,productId,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
-        ProductOption productOption3 = new ProductOption(3L,productId,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
+        Product product = Product.builder()
+                .productId(1L)
+                .name("티셔츠")
+                .description("티셔츠 설명")
+                .build();
+
+        ProductOption productOption1 = new ProductOption(1L,product,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
+        ProductOption productOption2 = new ProductOption(2L,product,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
+        ProductOption productOption3 = new ProductOption(3L,product,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
 
         List<ProductOption> products = new ArrayList<>();
         products.add(productOption1);
@@ -98,6 +117,8 @@ class ProductServiceTest {
         products.add(productOption2);
         products.add(productOption2);
         products.add(productOption3);
+
+        product.addProductOptionList(products);
 
         when(productRepository.findByProductOptionIds(productOptionIds)).thenReturn(products);
         when(productRepository.updateStockQuantity(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -120,14 +141,22 @@ class ProductServiceTest {
         //Given
         long productId = 1L;
 
-        ProductOption productOption1 = new ProductOption(1L,productId,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
-        ProductOption productOption2 = new ProductOption(2L,productId,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
-        ProductOption productOption3 = new ProductOption(3L,productId,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
+        Product product = Product.builder()
+                .productId(1L)
+                .name("티셔츠")
+                .description("티셔츠 설명")
+                .build();
+
+        ProductOption productOption1 = new ProductOption(1L,product,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
+        ProductOption productOption2 = new ProductOption(2L,product,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
+        ProductOption productOption3 = new ProductOption(3L,product,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
 
         List<ProductOption> products = new ArrayList<>();
         products.add(productOption1);
         products.add(productOption2);
         products.add(productOption3);
+
+        product.addProductOptionList(products);
 
         //When
         ProductService productService = new ProductService(productRepository);

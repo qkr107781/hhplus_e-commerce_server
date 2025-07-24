@@ -74,11 +74,11 @@ public class OrderFacadeService implements OrderUseCase {
                     .count();
 
             //주문 상품 도메인 생성
-            OrderProduct createOrderProduct = new OrderProduct(0L,afterCreateOrder.getOrderId(),productOption.getProductId(),productOption.getProductOptionId(),orderQuantity,productOption.getPrice());
+            OrderProduct createOrderProduct = new OrderProduct(0L,afterCreateOrder,productOption.getProduct().getProductId(),productOption.getProductOptionId(),orderQuantity,productOption.getPrice());
             OrderProduct afterCreatrOrderProduct = orderService.createOrderProduct(createOrderProduct);
 
             //주문 완료 상품 조회
-            Product orderProduct = productService.selectProductByProductId(productOption.getProductId());
+            Product orderProduct = productService.selectProductByProductId(productOption.getProduct().getProductId());
             //주문 상품 리턴 DTO 생성을 위함
             orderCreateProductResponseList.add(OrderResponse.OrderCreateProduct.from(afterCreatrOrderProduct,orderProduct,productOption));
         }

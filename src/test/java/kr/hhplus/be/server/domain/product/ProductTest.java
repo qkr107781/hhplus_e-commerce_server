@@ -19,17 +19,29 @@ class ProductTest {
         String name = "티셔츠";
         String description = "티셔츠 설명";
 
-        ProductOption productOption1 = new ProductOption(1L,1L,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
-        ProductOption productOption2 = new ProductOption(2L,1L,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
-        ProductOption productOption3 = new ProductOption(3L,1L,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
+        Product product = Product.builder()
+                .productId(productId)
+                .name(name)
+                .description(description)
+                .build();
+
+        ProductOption productOption1 = new ProductOption(1L,product,"XL",20_000L,30L,15L,"Y", LocalDateTime.now());
+        ProductOption productOption2 = new ProductOption(2L,product,"L",20_000L,20L,5L,"Y", LocalDateTime.now());
+        ProductOption productOption3 = new ProductOption(3L,product,"M",20_000L,10L,2L,"Y", LocalDateTime.now());
 
         List<ProductOption> products = new ArrayList<>();
         products.add(productOption1);
         products.add(productOption2);
         products.add(productOption3);
 
+        product.addProductOptionList(products);
+
         //When
-        Product product = new Product(productId,name,description,products);
+        Product resultpProduct = Product.builder()
+                            .productId(productId)
+                            .name(name)
+                            .description(description)
+                            .build();
 
         //Then
         assertEquals(productId,product.getProductId());

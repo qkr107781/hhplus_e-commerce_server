@@ -55,10 +55,16 @@ class OrderFacadeServiceTest {
         long couponDiscountPrice = 1_000L;
         String orderStatus = "pending_payment";
 
+        Product product = Product.builder()
+                .productId(1L)
+                .name("티셔츠")
+                .description("티셔츠 설명")
+                .build();
+
         // 상품 옵션 세팅 (재고 차감 전의 초기 상태)
-        ProductOption productOption1 = new ProductOption(1L, 1L, "XL", 20_000L, 30L, 15L, "Y", LocalDateTime.now());
-        ProductOption productOption2 = new ProductOption(2L, 1L, "L", 20_000L, 20L, 5L, "Y", LocalDateTime.now());
-        ProductOption productOption3 = new ProductOption(3L, 1L, "M", 20_000L, 10L, 2L, "Y", LocalDateTime.now());
+        ProductOption productOption1 = new ProductOption(1L, product, "XL", 20_000L, 30L, 15L, "Y", LocalDateTime.now());
+        ProductOption productOption2 = new ProductOption(2L, product, "L", 20_000L, 20L, 5L, "Y", LocalDateTime.now());
+        ProductOption productOption3 = new ProductOption(3L, product, "M", 20_000L, 10L, 2L, "Y", LocalDateTime.now());
         List<ProductOption> products = new ArrayList<>();
         products.add(productOption1);
         products.add(productOption2);
@@ -124,8 +130,8 @@ class OrderFacadeServiceTest {
         when(orderService.createOrderProduct(any(OrderProduct.class))).thenAnswer(invocation -> invocation.getArgument(0, OrderProduct.class));
 
         //주문 완료 상품 Mocking
-        Product product = new Product(1L,"티셔츠", "티셔츠 설명",products);
-        when(productService.selectProductByProductId(1L)).thenReturn(product);
+        Product afterOrderProduct = new Product(1L,"티셔츠", "티셔츠 설명",products);
+        when(productService.selectProductByProductId(1L)).thenReturn(afterOrderProduct);
 
         //사용 쿠폰 Mocking
         when(couponService.selectCouponByCouponId(couponId)).thenReturn(coupon);
