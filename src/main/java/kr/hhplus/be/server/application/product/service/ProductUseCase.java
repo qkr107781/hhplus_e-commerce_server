@@ -6,6 +6,10 @@ import java.util.List;
 
 public interface ProductUseCase {
 
+    /**
+     * 상품 목록 조회
+     * @return List<ProductResponse.Select>
+     */
     List<ProductResponse.Select> selectSalesProductList();
 
 }
