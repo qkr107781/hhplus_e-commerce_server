@@ -2,7 +2,9 @@ package kr.hhplus.be.server.persistence.order;
 
 import kr.hhplus.be.server.application.order.repository.OrderProductRepository;
 import kr.hhplus.be.server.domain.order.OrderProduct;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OrderProductAdapter implements OrderProductRepository {
     private final OrderProductRepository orderProductRepository;
 

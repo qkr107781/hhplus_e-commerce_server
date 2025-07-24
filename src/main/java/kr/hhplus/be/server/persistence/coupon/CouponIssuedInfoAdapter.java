@@ -2,7 +2,9 @@ package kr.hhplus.be.server.persistence.coupon;
 
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoRepository;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CouponIssuedInfoAdapter implements CouponIssuedInfoRepository {
     private final CouponIssuedInfoJpaRepository couponIssuedInfoJpaRepository;
 

@@ -19,12 +19,14 @@ import kr.hhplus.be.server.domain.payment.Payment;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import kr.hhplus.be.server.persistence.dataplatform.AsyncDataPlatformSender;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+@Service
 public class PaymentFacadeService implements PaymentUseCase {
 
     private final BalanceService balanceService;
@@ -54,7 +56,7 @@ public class PaymentFacadeService implements PaymentUseCase {
         long paymentPrice = 0L;
 
         //주문 조회
-        Order order = orderService.selectOrderByOrderId(orderId);
+        Order order = orderService.selectOrderByOrderIdWithOrderProducts(orderId);
         if(order == null){
             throw new Exception("order empty");
         }

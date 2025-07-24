@@ -3,9 +3,11 @@ package kr.hhplus.be.server.persistence.product;
 import kr.hhplus.be.server.application.product.repository.ProductRepository;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class ProductAdapter implements ProductRepository {
 
     private final ProductJpaRepository productJpaRepository;

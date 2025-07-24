@@ -2,22 +2,24 @@ package kr.hhplus.be.server.persistence.order;
 
 import kr.hhplus.be.server.application.order.repository.OrderRepository;
 import kr.hhplus.be.server.domain.order.Order;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OrderAdapter implements OrderRepository {
 
-    private final OrderRepository orderRepository;
+    private final OrderJpaRepository orderJpaRepository;
 
-    public OrderAdapter(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
+    public OrderAdapter(OrderJpaRepository orderJpaRepository) {
+        this.orderJpaRepository = orderJpaRepository;
     }
 
     @Override
     public Order save(Order order) {
-        return orderRepository.save(order);
+        return orderJpaRepository.save(order);
     }
 
     @Override
-    public Order findByOrderId(long orderId) {
-        return orderRepository.findByOrderId(orderId);
+    public Order findByIdWithOrderProducts(long orderId) {
+        return orderJpaRepository.findByIdWithOrderProducts(orderId);
     }
 }
