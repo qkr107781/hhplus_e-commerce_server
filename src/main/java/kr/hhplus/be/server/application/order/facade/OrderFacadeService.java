@@ -13,6 +13,7 @@ import kr.hhplus.be.server.domain.order.OrderProduct;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class OrderFacadeService implements OrderUseCase {
         this.couponService = couponService;
     }
 
+    @Transactional
     @Override
     public OrderResponse.OrderCreate createOrder(OrderRequest.OrderCreate orderRequest) throws Exception {
         long useCouponId = 0L;

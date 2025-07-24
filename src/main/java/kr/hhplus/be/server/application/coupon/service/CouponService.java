@@ -6,6 +6,7 @@ import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -65,6 +66,7 @@ public class CouponService implements CouponUseCase{
      * @return CouponIssuedInfo
      * @throws Exception
      */
+    @Transactional
     @Override
     public CouponResponse.Issue issuingCoupon(long couponId,long userId) throws Exception {
         //발급 준비

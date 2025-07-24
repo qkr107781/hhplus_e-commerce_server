@@ -20,6 +20,7 @@ import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import kr.hhplus.be.server.persistence.dataplatform.AsyncDataPlatformSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class PaymentFacadeService implements PaymentUseCase {
      * @return PaymentResponse.Create
      * @throws Exception
      */
+    @Transactional
     @Override
     public PaymentResponse.Create createPayment(PaymentRequest.Create request) throws Exception {
         long orderId = request.orderId();

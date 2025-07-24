@@ -5,6 +5,7 @@ import kr.hhplus.be.server.application.balance.dto.BalanceResponse;
 import kr.hhplus.be.server.application.balance.repository.BalanceRepository;
 import kr.hhplus.be.server.domain.balance.Balance;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class BalanceService implements BalanceUseCase{
@@ -31,6 +32,7 @@ public class BalanceService implements BalanceUseCase{
      * @param balanceRequest: 사용자 ID, 충전 요청 금액
      * @return 사용자 ID, 충전 후 잔액, 마지막 충전일
      */
+    @Transactional
     @Override
     public BalanceResponse charge(BalanceRequest balanceRequest) {
         Balance userBalance = balanceRepository.findByUserId(balanceRequest.userId());
