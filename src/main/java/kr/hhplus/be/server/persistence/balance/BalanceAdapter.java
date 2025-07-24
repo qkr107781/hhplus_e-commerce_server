@@ -19,7 +19,7 @@ public class BalanceAdapter implements BalanceRepository {
     }
 
     @Override
-    public Balance saveBalance(Balance balance) {
+    public Balance save(Balance balance) {
         return balanceJpaRepository.save(balance);
     }
 }

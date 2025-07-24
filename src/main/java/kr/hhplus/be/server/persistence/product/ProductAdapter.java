@@ -33,4 +33,9 @@ public class ProductAdapter implements ProductRepository {
     public Product findByProductId(long productId) {
         return productJpaRepository.findByProductId(productId);
     }
+
+    @Override
+    public ProductOption findByProductIdAndProductOptionId(long productId, long productOptionId) {
+        return productJpaRepository.findByProductIdAndProductOptionId(productId,productOptionId);
+    }
 }

@@ -47,7 +47,7 @@ class BalanceServiceTest {
                                             .build();
 
         when(balanceRepository.findByUserId(userId)).thenReturn(balance);
-        when(balanceRepository.saveBalance(any(Balance.class))).thenReturn(afterChargeBalance);
+        when(balanceRepository.save(any(Balance.class))).thenReturn(afterChargeBalance);
 
         //When
         BalanceRequest request = new BalanceRequest(userId,chargeAmount);
@@ -56,6 +56,39 @@ class BalanceServiceTest {
 
         //Then
         assertEquals(userBalance+chargeAmount,response.balance());
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {990_000L,90_000L})
+    @DisplayName("[잔액 차감]차감 금액 만큼 잔액에서 차감")
+    void useBalance(long useAmount) throws Exception {
+        //Given
+        long ownBalance = 990_000L;
+        Balance balance = new Balance(1L,1L,ownBalance,LocalDateTime.now());
+
+        //When
+        BalanceService balanceService = new BalanceService(balanceRepository);
+        balanceService.useBalance(balance,useAmount);
+
+        //Then
+        assertEquals(ownBalance-useAmount,balance.getBalance());
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {990_001L,999_000L})
+    @DisplayName("[잔액 차감]잔액 이상으로 금액 차감 요청 시 실패처리")
+    void overUse(long useAmount){
+        //Given
+        long ownBalance = 990_000L;
+        Balance balance = new Balance(1L,1L,ownBalance,LocalDateTime.now());
+
+        //When
+        BalanceService balanceService = new BalanceService(balanceRepository);
+        Exception thrown = assertThrows(Exception.class,
+                () -> balanceService.useBalance(balance,useAmount),"not enough balance");
+
+        //Then
+        assertTrue(thrown.getMessage().contains("not enough balance"));
     }
 
 }

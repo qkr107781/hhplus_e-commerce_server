@@ -1,5 +1,7 @@
 package kr.hhplus.be.server.presentation.payment;
 
+import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
+import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.swagger.PaymentApiSpec;
 import kr.hhplus.be.server.util.DummyDataUtil;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,6 @@ public class PaymentController implements PaymentApiSpec {
     @PostMapping("/payment")
     @Override
     public ResponseEntity<PaymentResponse.Create> paymentCreate(@RequestBody PaymentRequest.Create request){
-        return ResponseEntity.ok(PaymentResponse.Create.from(dummyDataUtil.getPaymentCreate()));
+        return ResponseEntity.ok(dummyDataUtil.getPaymentCreate());
     }
 }

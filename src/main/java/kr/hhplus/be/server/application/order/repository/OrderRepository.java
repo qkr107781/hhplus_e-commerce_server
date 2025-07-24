@@ -8,4 +8,6 @@ public interface OrderRepository {
 
     Order save(Order order);
 
+    Order findByOrderId(long orderId);
+
 }

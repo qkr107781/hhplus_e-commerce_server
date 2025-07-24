@@ -6,6 +6,6 @@ public interface BalanceRepository {
 
     Balance findByUserId(long userId);
 
-    Balance saveBalance(Balance balance);
+    Balance save(Balance balance);
 
 }

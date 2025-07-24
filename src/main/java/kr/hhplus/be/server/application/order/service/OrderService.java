@@ -26,4 +26,12 @@ public class OrderService {
         return orderProductRepository.save(requestOrderProduct);
     }
 
+    public Order selectOrderByOrderId(long orderId){
+        return orderRepository.findByOrderId(orderId);
+    }
+
+    public void updateOrderStatusToPayment(Order order){
+        order.updateOrderStatusToPayment();
+    }
+
 }

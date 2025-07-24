@@ -78,4 +78,16 @@ public class Balance {
         }
         return this.balance;
     }
+
+    /**
+     * 잔액 차감
+     * @param useAmount: 차감 금액
+     * @throws Exception
+     */
+    public void useBalance(long useAmount) throws Exception {
+        if(this.balance - useAmount < 0){
+            throw new Exception("not enough balance");
+        }
+        this.balance -= useAmount;
+    }
 }

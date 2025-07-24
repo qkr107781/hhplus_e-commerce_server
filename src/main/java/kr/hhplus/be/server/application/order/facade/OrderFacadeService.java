@@ -12,11 +12,13 @@ import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.order.OrderProduct;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class OrderFacadeService implements OrderUseCase {
 
     private final OrderService orderService;
@@ -52,7 +54,16 @@ public class OrderFacadeService implements OrderUseCase {
         }
 
         //주문 도메인 생성
-        Order createOrder = new Order(0L,requestUserId,useCouponId,couponDiscountPrice,totalOrderPrice,"pending_payment", LocalDateTime.now());
+        Order createOrder = Order.builder()
+                                .orderId(0L)
+                                .userId(requestUserId)
+                                .couponId(useCouponId)
+                                .couponDiscountPrice(couponDiscountPrice)
+                                .totalPrice(totalOrderPrice)
+                                .orderStatus("pending_payment")
+                                .orderDate(LocalDateTime.now())
+                                .build();
+
         Order afterCreateOrder = orderService.createOrder(createOrder);
 
 

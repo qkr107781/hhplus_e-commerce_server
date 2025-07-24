@@ -94,4 +94,31 @@ class BalanceTest {
         //Then
         assertTrue(thrown.getMessage().contains("over charge illegal"));
     }
+
+    @ParameterizedTest
+    @ValueSource(longs = {990_000L,90_000L})
+    @DisplayName("[잔액 차감]차감 금액 만큼 잔액에서 차감")
+    void useBalance(long useAmount) throws Exception {
+        //Given
+        long ownBalance = 990_000L;
+        Balance balance = new Balance(1L,1L,ownBalance,LocalDateTime.now());
+        //When
+        balance.useBalance(useAmount);
+        //Then
+        assertEquals(ownBalance-useAmount,balance.getBalance());
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {990_001L,999_000L})
+    @DisplayName("[잔액 차감]잔액 이상으로 금액 차감 요청 시 실패처리")
+    void overUse(long useAmount){
+        //Given
+        long ownBalance = 990_000L;
+        Balance balance = new Balance(1L,1L,ownBalance,LocalDateTime.now());
+        //When
+        Exception thrown = assertThrows(Exception.class,
+                () -> balance.useBalance(useAmount),"not enough balance");
+        //Then
+        assertTrue(thrown.getMessage().contains("not enough balance"));
+    }
 }

@@ -41,8 +41,27 @@ public class BalanceService implements BalanceUseCase{
         userBalance.charge(balanceRequest.chargeAmount());
 
         //충전 금액 insert
-        Balance chargeBalance = balanceRepository.saveBalance(userBalance);
+        Balance chargeBalance = balanceRepository.save(userBalance);
         return BalanceResponse.from(chargeBalance);
+    }
+
+    /**
+     * FacadeService에서 잔액 조회
+     * @param userId: 사용자 ID
+     * @return
+     */
+    public Balance selectBalanceByUserIdUseInFacade(long userId){
+        return balanceRepository.findByUserId(userId);
+    }
+
+    /**
+     * 잔액 차감
+     * @param balance: Balance Domain
+     * @param useAmount: 차감 금액
+     * @throws Exception
+     */
+    public void useBalance(Balance balance, long useAmount) throws Exception {
+        balance.useBalance(useAmount);
     }
 
 }

@@ -1,4 +1,4 @@
 package kr.hhplus.be.server.persistence.payment;
 
-public class PaymentRepositoryImpl {
+public class PaymentAdapter {
 }

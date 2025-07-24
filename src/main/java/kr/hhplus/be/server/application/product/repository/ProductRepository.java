@@ -16,4 +16,6 @@ public interface ProductRepository {
     ProductOption updateStockQuantity(ProductOption productOption);
 
     Product findByProductId(long productId);
+
+    ProductOption findByProductIdAndProductOptionId(long productId,long productOptionId);
 }

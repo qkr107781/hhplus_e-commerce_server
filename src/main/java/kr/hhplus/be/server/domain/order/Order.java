@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "order_table")
@@ -37,8 +38,12 @@ public class Order {
     @Column(name = "order_date", nullable = false)
     private LocalDateTime orderDate;
 
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name="order_product_id", nullable = false)
+    private List<OrderProduct> orderProducts;
+
     @Builder
-    public Order(Long orderId, Long userId, Long couponId, Long couponDiscountPrice, Long totalPrice, String orderStatus, LocalDateTime orderDate) {
+    public Order(Long orderId, Long userId, Long couponId, Long couponDiscountPrice, Long totalPrice, String orderStatus, LocalDateTime orderDate, List<OrderProduct> orderProducts) {
         this.orderId = orderId;
         this.userId = userId;
         this.couponId = couponId;
@@ -46,5 +51,10 @@ public class Order {
         this.totalPrice = totalPrice;
         this.orderStatus = orderStatus;
         this.orderDate = orderDate;
+        this.orderProducts = orderProducts;
+    }
+
+    public void updateOrderStatusToPayment(){
+        this.orderStatus = "payment_completed";
     }
 }

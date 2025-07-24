@@ -111,7 +111,15 @@ class OrderFacadeServiceTest {
         });
 
         // 주문 및 주문 상품 Mocking
-        Order order = new Order(0L,requestUserId, requestCouponId, couponDiscountPrice, totalOrderPrice, orderStatus, LocalDateTime.now());
+        Order order = Order.builder()
+                .orderId(0L)
+                .userId(requestUserId)
+                .couponId(requestCouponId)
+                .couponDiscountPrice(couponDiscountPrice)
+                .totalPrice(totalOrderPrice)
+                .orderStatus(orderStatus)
+                .orderDate(LocalDateTime.now())
+                .build();
         when(orderService.createOrder(any(Order.class))).thenReturn(order);
         when(orderService.createOrderProduct(any(OrderProduct.class))).thenAnswer(invocation -> invocation.getArgument(0, OrderProduct.class));
 

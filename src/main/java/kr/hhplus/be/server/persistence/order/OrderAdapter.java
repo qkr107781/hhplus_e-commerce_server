@@ -15,4 +15,9 @@ public class OrderAdapter implements OrderRepository {
     public Order save(Order order) {
         return orderRepository.save(order);
     }
+
+    @Override
+    public Order findByOrderId(long orderId) {
+        return orderRepository.findByOrderId(orderId);
+    }
 }

@@ -29,4 +29,5 @@ public class CouponIssuedInfoAdapter implements CouponIssuedInfoRepository {
     public CouponIssuedInfo findByUserId(long userId) {
         return couponIssuedInfoJpaRepository.findByUserId(userId);
     }
+
 }

@@ -41,11 +41,21 @@ public class CouponService implements CouponUseCase{
 
     /**
      * 쿠폰 ID로 조회
-     * @param couponId:쿠폰 ID, 사용자 ID
+     * @param couponId:쿠폰 ID
      * @return Coupon
      */
     public Coupon selectCouponByCouponId(long couponId){
         return couponRepository.findByCouponId(couponId);
+    }
+
+    /**
+     * 쿠폰 ID, 사용자 ID로 소유 쿠폰 조회
+     * @param couponId: 쿠폰 ID
+     * @param userId: 사용자 ID
+     * @return CouponIssuedInfo
+     */
+    public CouponIssuedInfo selectCouponByCouponIdAndUserId(long couponId, long userId){
+        return couponIssuedInfoRepository.findByCouponIdAndUserId(couponId,userId);
     }
 
     /**
