@@ -1,11 +1,14 @@
 package kr.hhplus.be.server.persistence.dataplatform;
 
+import org.springframework.stereotype.Component;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 
+@Component
 public class AsyncDataPlatformSender {
 
     private final HttpClient httpClient;
