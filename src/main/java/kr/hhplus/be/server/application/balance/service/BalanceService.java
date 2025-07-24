@@ -41,7 +41,7 @@ public class BalanceService implements BalanceUseCase{
         userBalance.charge(balanceRequest.chargeAmount());
 
         //충전 금액 insert
-        Balance chargeBalance = balanceRepository.save(userBalance);
+        Balance chargeBalance = balanceRepository.saveBalance(userBalance);
         return BalanceResponse.from(chargeBalance);
     }
 

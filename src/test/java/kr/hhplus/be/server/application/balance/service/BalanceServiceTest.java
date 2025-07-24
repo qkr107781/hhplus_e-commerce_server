@@ -31,13 +31,23 @@ class BalanceServiceTest {
         //충전 전 잔액
         long userId = 1L;
         long userBalance = 50_000L;
-        Balance balance = new Balance(1L,userId,userBalance,LocalDateTime.now());
+        Balance balance = Balance.builder()
+                                .balanceId(1L)
+                                .userId(userId)
+                                .balance(userBalance)
+                                .lastChargeDate(LocalDateTime.now())
+                                .build();
 
         //충전 후 잔액
-        Balance afterChargeBalance = new Balance(1L,userId,userBalance+chargeAmount,LocalDateTime.now());
+        Balance afterChargeBalance = Balance.builder()
+                                            .balanceId(1L)
+                                            .userId(userId)
+                                            .balance(userBalance+chargeAmount)
+                                            .lastChargeDate(LocalDateTime.now())
+                                            .build();
 
         when(balanceRepository.findByUserId(userId)).thenReturn(balance);
-        when(balanceRepository.save(any(Balance.class))).thenReturn(afterChargeBalance);
+        when(balanceRepository.saveBalance(any(Balance.class))).thenReturn(afterChargeBalance);
 
         //When
         BalanceRequest request = new BalanceRequest(userId,chargeAmount);

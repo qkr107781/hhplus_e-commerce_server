@@ -1,20 +1,18 @@
 package kr.hhplus.be.server.domain.balance;
 
+import lombok.Builder;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
+@Builder
+@Getter
 public class Balance {
 
     private Long balanceId;
     private Long userId;
     private Long balance;
     private LocalDateTime lastChargeDate;
-
-    public Balance(Long balanceId, Long userId, Long balance, LocalDateTime lastChargeDate) {
-        this.balanceId = balanceId;
-        this.userId = userId;
-        this.balance = balance;
-        this.lastChargeDate = lastChargeDate;
-    }
 
     private final long MIN_CHARGE_AMOUNT = 1L;
     private final long NAX_CHARGE_AMOUNT_PER = 100_000L;
@@ -57,21 +55,5 @@ public class Balance {
             throw new IllegalArgumentException("user compare fail");
         }
         return this.balance;
-    }
-
-    public Long getBalanceId() {
-        return balanceId;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public Long getBalance() {
-        return balance;
-    }
-
-    public LocalDateTime getLastChargeDate() {
-        return lastChargeDate;
     }
 }

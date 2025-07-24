@@ -1,6 +1,7 @@
-package kr.hhplus.be.server.persistence.balance;
+package kr.hhplus.be.server.persistence.balance.entity;
 
 import jakarta.persistence.*;
+import kr.hhplus.be.server.domain.balance.Balance;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,5 +35,14 @@ public class BalanceJpaEntity {
         this.userId = userId;
         this.balance = balance;
         this.lastChargeDate = lastChargeDate;
+    }
+
+    /**
+     * 영속성 객체 상태 변경을 위함
+     * @param domain:Domain Layer Domain 객체
+     */
+    public void updateStatement(Balance domain){
+        this.balance = domain.getBalance();
+        this.lastChargeDate = domain.getLastChargeDate();
     }
 }
