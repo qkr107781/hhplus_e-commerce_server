@@ -1,6 +1,8 @@
-package kr.hhplus.be.server.presentation.coupon;
+package kr.hhplus.be.server.application.coupon.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import kr.hhplus.be.server.domain.coupon.Coupon;
+import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 
 import java.time.LocalDateTime;
 
@@ -22,14 +24,14 @@ public class CouponResponse {
             @Schema(description = "만료일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime endDate
     ) {
-        public static Issue from(Issue issue) {
-            return new Issue(issue.couponIssuedId,
-                    issue.couponId,
-                    issue.couponName,
-                    issue.discountPrice,
-                    issue.minUsePrice,
-                    issue.issuedAt,
-                    issue.endDate);
+        public static Issue from(CouponIssuedInfo couponIssuedInfo) {
+            return new Issue(couponIssuedInfo.getCouponIssuedId(),
+                    couponIssuedInfo.getCoupon().getCouponId(),
+                    couponIssuedInfo.getCoupon().getCouponName(),
+                    couponIssuedInfo.getCoupon().getDiscountPrice(),
+                    couponIssuedInfo.getCoupon().getMinUsePrice(),
+                    couponIssuedInfo.getIssuedAt(),
+                    couponIssuedInfo.getEndDate());
         }
     }
     public record SelectByUserId(
@@ -48,14 +50,14 @@ public class CouponResponse {
             @Schema(description = "사용여부", requiredMode = Schema.RequiredMode.REQUIRED)
             String useYn
     ){
-        public static SelectByUserId from(SelectByUserId selectByUserId){
-            return new SelectByUserId(selectByUserId.couponId,
-                    selectByUserId.couponName,
-                    selectByUserId.discountPrice,
-                    selectByUserId.minUsePrice,
-                    selectByUserId.issuedAt,
-                    selectByUserId.endDate,
-                    selectByUserId.useYn);
+        public static SelectByUserId from(CouponIssuedInfo couponIssuedInfo){
+            return new SelectByUserId(couponIssuedInfo.getCoupon().getCouponId(),
+                    couponIssuedInfo.getCoupon().getCouponName(),
+                    couponIssuedInfo.getCoupon().getDiscountPrice(),
+                    couponIssuedInfo.getCoupon().getMinUsePrice(),
+                    couponIssuedInfo.getIssuedAt(),
+                    couponIssuedInfo.getEndDate(),
+                    couponIssuedInfo.getUseYn());
         }
     }
     public record SelectByStatus(
@@ -82,18 +84,18 @@ public class CouponResponse {
             @Schema(description = "등록일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime regDate
     ){
-        public static SelectByStatus from(SelectByStatus selectByStatus){
-            return new SelectByStatus(selectByStatus.couponId,
-                    selectByStatus.couponName,
-                    selectByStatus.discountPrice,
-                    selectByStatus.totalCouponAmount,
-                    selectByStatus.remainingCouponAmount,
-                    selectByStatus.minUsePrice,
-                    selectByStatus.issuanceStartTime,
-                    selectByStatus.issuanceEndTime,
-                    selectByStatus.useLimitTime,
-                    selectByStatus.couponStatus,
-                    selectByStatus.regDate);
+        public static SelectByStatus from(Coupon coupon){
+            return new SelectByStatus(coupon.getCouponId(),
+                    coupon.getCouponName(),
+                    coupon.getDiscountPrice(),
+                    coupon.getTotalCouponAmount(),
+                    coupon.getRemainingCouponAmount(),
+                    coupon.getMinUsePrice(),
+                    coupon.getIssuanceStartTime(),
+                    coupon.getIssuanceEndTime(),
+                    coupon.getUseLimitTime(),
+                    coupon.getCouponStatus(),
+                    coupon.getRegDate());
         }
     }
 }
