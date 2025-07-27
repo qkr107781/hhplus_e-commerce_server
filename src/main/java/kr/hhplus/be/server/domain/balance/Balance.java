@@ -19,13 +19,13 @@ public class Balance {
     @Column(name = "balance_id")
     private Long balanceId;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
-    @Column(name = "balance", nullable = false)
+    @Column(name = "balance", nullable = true)
     private Long balance;
 
-    @Column(name = "last_charge_date", nullable = false)
+    @Column(name = "last_charge_date", nullable = true)
     private LocalDateTime lastChargeDate;
 
     @Builder

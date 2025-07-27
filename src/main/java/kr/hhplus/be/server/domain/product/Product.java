@@ -25,7 +25,7 @@ public class Product {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    @Column(name = "description", length = 200)
+    @Column(name = "description", length = 200, nullable = true)
     private String description;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
