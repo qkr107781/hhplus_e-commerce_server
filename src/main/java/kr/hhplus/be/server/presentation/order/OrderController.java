@@ -1,5 +1,7 @@
 package kr.hhplus.be.server.presentation.order;
 
+import kr.hhplus.be.server.application.order.dto.OrderRequest;
+import kr.hhplus.be.server.application.order.dto.OrderResponse;
 import kr.hhplus.be.server.swagger.OrderApiSpec;
 import kr.hhplus.be.server.util.DummyDataUtil;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +19,8 @@ public class OrderController implements OrderApiSpec {
 
     @PostMapping("/order")
     @Override
-    public ResponseEntity<OrderResponse.Create> orderCreate(@RequestBody OrderRequest.Create request){
-        return ResponseEntity.ok(OrderResponse.Create.from(dummyDataUtil.getOrderCreate()));
+    public ResponseEntity<OrderResponse.OrderCreate> orderCreate(@RequestBody OrderRequest.OrderCreate request){
+        return ResponseEntity.ok(dummyDataUtil.getOrderCreate());
     }
 
 }

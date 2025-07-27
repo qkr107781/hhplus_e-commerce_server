@@ -55,6 +55,9 @@ dependencies {
 
 	testCompileOnly("org.projectlombok:lombok:1.18.38")
 	testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
+
+	// LocalDateTime 직렬화를 위함
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2")
 }
 
 tasks.withType<Test> {

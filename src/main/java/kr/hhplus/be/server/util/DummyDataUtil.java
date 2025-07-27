@@ -1,10 +1,10 @@
 package kr.hhplus.be.server.util;
 
-import kr.hhplus.be.server.presentation.coupon.CouponResponse;
-import kr.hhplus.be.server.presentation.order.OrderResponse;
-import kr.hhplus.be.server.presentation.payment.PaymentResponse;
-import kr.hhplus.be.server.presentation.product.ProductResponse;
-import kr.hhplus.be.server.presentation.balance.BalanceResponse;
+import kr.hhplus.be.server.application.balance.dto.BalanceResponse;
+import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
+import kr.hhplus.be.server.application.order.dto.OrderResponse;
+import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
+import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -76,16 +76,16 @@ public class DummyDataUtil {
      * 주문 요청 더미 데이터
      * @return OrderResponse.Create
      */
-    public OrderResponse.Create getOrderCreate() {
+    public OrderResponse.OrderCreate getOrderCreate() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String orderDateStr = "2025-07-16 11:00:00";
         LocalDateTime orderDate = LocalDateTime.parse(orderDateStr,formatter);
 
-        List<OrderResponse.OrderProduct> orderProducts = new ArrayList<>();
-        orderProducts.add(new OrderResponse.OrderProduct(1L,1L,"반팔티",1L,"XL",2,12_000L));
-        orderProducts.add(new OrderResponse.OrderProduct(2L,1L,"반팔티",2L,"M",4,12_000L));
+        List<OrderResponse.OrderCreateProduct> orderProducts = new ArrayList<>();
+        orderProducts.add(new OrderResponse.OrderCreateProduct(1L,1L,"반팔티",1L,"XL",2,12_000L));
+        orderProducts.add(new OrderResponse.OrderCreateProduct(2L,1L,"반팔티",2L,"M",4,12_000L));
 
-        return new OrderResponse.Create(1L,2L,"신규 가입 쿠폰",1_000L,72_000L,"pending_payment",orderDate,orderProducts);
+        return new OrderResponse.OrderCreate(1L,2L,"신규 가입 쿠폰",1_000L,72_000L,"pending_payment",orderDate,orderProducts);
     }
 
     //결제 더미 데이터
@@ -94,11 +94,11 @@ public class DummyDataUtil {
         String orderDateStr = "2025-07-16 11:00:00";
         LocalDateTime orderDate = LocalDateTime.parse(orderDateStr,formatter);
 
-        List<OrderResponse.OrderProduct> orderProducts = new ArrayList<>();
-        orderProducts.add(new OrderResponse.OrderProduct(1L,1L,"반팔티",1L,"XL",2,12_000L));
-        orderProducts.add(new OrderResponse.OrderProduct(2L,1L,"반팔티",2L,"M",4,12_000L));
+        List<OrderResponse.OrderCreateProduct> orderProducts = new ArrayList<>();
+        orderProducts.add(new OrderResponse.OrderCreateProduct(1L,1L,"반팔티",1L,"XL",2,12_000L));
+        orderProducts.add(new OrderResponse.OrderCreateProduct(2L,1L,"반팔티",2L,"M",4,12_000L));
 
-        return new PaymentResponse.Create(1L,new OrderResponse.Create(1L,2L,"신규 가입 쿠폰",1_000L,72_000L,"pending_payment",orderDate,orderProducts));
+        return new PaymentResponse.Create(1L,24_000L,LocalDateTime.now(),new OrderResponse.OrderCreate(1L,2L,"신규 가입 쿠폰",1_000L,72_000L,"pending_payment",orderDate,orderProducts));
     }
 
 
@@ -141,11 +141,11 @@ public class DummyDataUtil {
     }
 
     //유저 더미 테이터
-    public BalanceResponse.Charge getUserBalanceCharge(){
-        return new BalanceResponse.Charge(1L,50_000L,60_000L);
+    public BalanceResponse getUserBalanceCharge(){
+        return new BalanceResponse(1L,50_000L,LocalDateTime.now());
     }
 
-    public BalanceResponse.SelectBalanceByUserId getUserSelectBalanceByUserId(){
-        return new BalanceResponse.SelectBalanceByUserId(1L,10_000L);
+    public BalanceResponse getUserSelectBalanceByUserId(){
+        return new BalanceResponse(1L,10_000L,LocalDateTime.now());
     }
 }

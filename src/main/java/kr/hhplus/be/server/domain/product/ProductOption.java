@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.product;
 
 import jakarta.persistence.*;
+import kr.hhplus.be.server.domain.order.Order;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,8 +20,9 @@ public class ProductOption {
     @Column(name = "product_option_id")
     private Long productOptionId;
 
-    @Column(name = "product_id", nullable = false)
-    private Long productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="product_id", nullable = false)
+    private Product product;
 
     @Column(name = "option_name", length = 50, nullable = false)
     private String optionName;
@@ -41,15 +43,26 @@ public class ProductOption {
     private LocalDateTime regDate;
 
     @Builder
-    public ProductOption(Long productOptionId, Long productId, String optionName, Long price, Long totalQuantity,
+    public ProductOption(Long productOptionId, Product product, String optionName, Long price, Long totalQuantity,
                          Long stockQuantity, String salesYn, LocalDateTime regDate) {
         this.productOptionId = productOptionId;
-        this.productId = productId;
+        this.product = product;
         this.optionName = optionName;
         this.price = price;
         this.totalQuantity = totalQuantity;
         this.stockQuantity = stockQuantity;
         this.salesYn = salesYn;
         this.regDate = regDate;
+    }
+
+    /**
+     * 재고 차감
+     * @throws Exception
+     */
+    public void decreaseProductQuantity() throws Exception {
+        if(stockQuantity == 0){
+            throw new Exception("stock empty");
+        }
+        this.stockQuantity = stockQuantity - 1;
     }
 }

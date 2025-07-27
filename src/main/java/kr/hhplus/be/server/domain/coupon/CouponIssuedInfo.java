@@ -43,4 +43,32 @@ public class CouponIssuedInfo {
         this.endDate = endDate;
         this.coupon = coupon;
     }
+
+    /**
+     * 쿠폰 사용 시 유효성 검증
+     * @param totalOrderPrice:주문금액
+     * @return boolean
+     */
+    public boolean validateCouponUsage(long totalOrderPrice) {
+        //최소 주문 금액 미달
+        if(coupon.getMinUsePrice() > totalOrderPrice){
+            return false;
+        }
+        //쿠폰 유효기간 확인
+        if(endDate.isBefore(LocalDateTime.now())){
+            return false;
+        }
+        //쿠폰 할인금액이 주문금액 초과하는지 확인
+        if(coupon.getDiscountPrice() > totalOrderPrice){
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 쿠폰 사용 처리
+     */
+    public void useCoupon(){
+        this.useYn = "Y";
+    }
 }

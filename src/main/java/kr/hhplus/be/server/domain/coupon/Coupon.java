@@ -65,17 +65,27 @@ public class Coupon {
         this.regDate = regDate;
     }
 
-    public boolean validateCouponIssuance(Coupon coupon){
-        if(coupon.getRemainingCouponAmount() == 0){
-            System.out.println("잔여 수량 부족");
-            return false;
+    /**
+     * 쿠폰 발급 유효성 검증
+     * @throws Exception
+     */
+    public void validateCouponIssuance() throws Exception {
+        if(this.remainingCouponAmount == 0){
+            throw new Exception("empty remaining coupon");
         }
         LocalDateTime now = LocalDateTime.now();
-        if(coupon.getIssuanceStartTime().isAfter(now) ||
-                coupon.getIssuanceEndTime().isBefore(now)){
-            System.out.println("발급 시간 아님");
-            return false;
+        if(this.issuanceStartTime.isAfter(now) || this.issuanceEndTime.isBefore(now)){
+            throw new Exception("not issuing time");
         }
-        return true;
+        if(!this.couponStatus.equals("issuing")){
+            throw new Exception("not issuing status");
+        }
+    }
+
+    /**
+     * 쿠폰 갯수 차감
+     */
+    public void decreaseCoupon(){
+        this.remainingCouponAmount = this.remainingCouponAmount - 1L;
     }
 }

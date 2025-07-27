@@ -1,8 +1,8 @@
 package kr.hhplus.be.server.swagger;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.hhplus.be.server.presentation.coupon.CouponRequest;
-import kr.hhplus.be.server.presentation.coupon.CouponResponse;
+import kr.hhplus.be.server.application.coupon.dto.CouponRequest;
+import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "쿠폰", description = "쿠폰 관련 API")
