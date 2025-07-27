@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "order_product")
 @Getter
@@ -17,8 +19,9 @@ public class OrderProduct {
     @Column(name = "order_product_id")
     private Long orderProductId;
 
-    @Column(name = "order_id", nullable = false)
-    private Long orderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="order_id", nullable = false)
+    private Order order;
 
     @Column(name = "product_id", nullable = false)
     private Long productId;
@@ -33,9 +36,9 @@ public class OrderProduct {
     private Long productPrice;
 
     @Builder
-    public OrderProduct(Long orderProductId, Long orderId, Long productId, Long productOptionId, Long productQuantity, Long productPrice) {
+    public OrderProduct(Long orderProductId, Order order, Long productId, Long productOptionId, Long productQuantity, Long productPrice) {
         this.orderProductId = orderProductId;
-        this.orderId = orderId;
+        this.order = order;
         this.productId = productId;
         this.productOptionId = productOptionId;
         this.productQuantity = productQuantity;
