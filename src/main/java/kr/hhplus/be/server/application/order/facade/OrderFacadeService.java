@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.application.order.facade;
 
 import kr.hhplus.be.server.application.coupon.service.CouponService;
+import kr.hhplus.be.server.application.order.dto.OrderBuilder;
 import kr.hhplus.be.server.application.order.dto.OrderRequest;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
 import kr.hhplus.be.server.application.order.service.OrderService;
@@ -44,9 +45,6 @@ public class OrderFacadeService implements OrderUseCase {
         //상품 잔여 갯수 확인 및 차감
         List<ProductOption> productOptionList = productService.decreaseStock(requestProductOptionIds);
         long totalOrderPrice = productService.calculateProductTotalPrice(productOptionList);
-        if(totalOrderPrice == 0L){
-            throw new Exception("empty total order price");
-        }
 
         //쿠폰 유효성 검증 및 사용
         CouponIssuedInfo couponIssuedInfo = couponService.useCoupon(requestCouponId,requestUserId,totalOrderPrice);
@@ -55,18 +53,17 @@ public class OrderFacadeService implements OrderUseCase {
             couponDiscountPrice = couponIssuedInfo.getCoupon().getDiscountPrice();
         }
 
-        //주문 도메인 생성
-        Order createOrder = Order.builder()
-                                .orderId(0L)
-                                .userId(requestUserId)
-                                .couponId(useCouponId)
-                                .couponDiscountPrice(couponDiscountPrice)
-                                .totalPrice(totalOrderPrice)
-                                .orderStatus("pending_payment")
-                                .orderDate(LocalDateTime.now())
-                                .build();
-
-        Order afterCreateOrder = orderService.createOrder(createOrder);
+        //주문 생성
+        OrderBuilder.Order createOrder = new OrderBuilder.Order(
+                0L,
+                requestUserId,
+                useCouponId,
+                couponDiscountPrice,
+                totalOrderPrice,
+                "pending_payment",
+                LocalDateTime.now()
+        );
+        Order afterCreateOrder = orderService.createOrder(OrderBuilder.Order.toDomain(createOrder));
 
 
         List<OrderResponse.OrderCreateProduct> orderCreateProductResponseList = new ArrayList<>();
@@ -76,8 +73,16 @@ public class OrderFacadeService implements OrderUseCase {
                     .count();
 
             //주문 상품 도메인 생성
-            OrderProduct createOrderProduct = new OrderProduct(0L,afterCreateOrder,productOption.getProduct().getProductId(),productOption.getProductOptionId(),orderQuantity,productOption.getPrice());
-            OrderProduct afterCreatrOrderProduct = orderService.createOrderProduct(createOrderProduct);
+            OrderBuilder.OrderProduct createOrderProduct = new OrderBuilder.OrderProduct(
+                    0L,
+                    afterCreateOrder,
+                    productOption.getProduct().getProductId(),
+                    productOption.getProductOptionId(),
+                    orderQuantity,
+                    productOption.getPrice()
+            );
+
+            OrderProduct afterCreatrOrderProduct = orderService.createOrderProduct(OrderBuilder.OrderProduct.toDomain(createOrderProduct));
 
             //주문 완료 상품 조회
             Product orderProduct = productService.selectProductByProductId(productOption.getProduct().getProductId());

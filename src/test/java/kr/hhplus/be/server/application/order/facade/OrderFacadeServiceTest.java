@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.application.order.facade;
 
 import kr.hhplus.be.server.application.coupon.service.CouponService;
+import kr.hhplus.be.server.application.order.dto.OrderBuilder;
 import kr.hhplus.be.server.application.order.dto.OrderRequest;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
 import kr.hhplus.be.server.application.order.service.OrderService;

@@ -67,13 +67,16 @@ public class ProductService implements ProductUseCase {
      * @param productOptionList: 상품 옵션 목록
      * @return totalOrderPrice
      */
-    public long calculateProductTotalPrice(List<ProductOption> productOptionList) {
+    public long calculateProductTotalPrice(List<ProductOption> productOptionList) throws Exception {
         long totalOrderPrice = 0L;
         if (!productOptionList.isEmpty()) {
             for (ProductOption productOption : productOptionList) {
                 //총 주문 금액 산정
                 totalOrderPrice += productOption.getPrice();
             }
+        }
+        if(totalOrderPrice == 0L){
+            throw new Exception("empty total order price");
         }
         return totalOrderPrice;
     }

@@ -140,7 +140,7 @@ class ProductServiceTest {
 
     @Test
     @DisplayName("[상품 주문]총 주문 금액 계산")
-    void calculateProductTotalPrice(){
+    void calculateProductTotalPrice() throws Exception {
         //Given
         long productId = 1L;
 
