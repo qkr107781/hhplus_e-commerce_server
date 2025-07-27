@@ -6,6 +6,7 @@ import kr.hhplus.be.server.application.balance.service.BalanceService;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
 import kr.hhplus.be.server.application.order.service.OrderService;
+import kr.hhplus.be.server.application.payment.dto.PaymentBuilder;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
 import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
@@ -77,15 +78,15 @@ public class PaymentFacadeService implements PaymentUseCase {
         orderService.updateOrderStatusToPayment(order);
 
         //결제 insert
-        Payment payment = Payment.builder()
-                .paymentId(0L)
-                .userId(userId)
-                .orderId(orderId)
-                .paymentPrice(paymentPrice)
-                .paymentDate(LocalDateTime.now())
-                .build();
+        PaymentBuilder.Payment payment = new PaymentBuilder.Payment(
+                0L,
+                userId,
+                orderId,
+                paymentPrice,
+                LocalDateTime.now()
+        );
+        Payment afterCreatePayment = paymentService.createPayment(PaymentBuilder.Payment.toDomain(payment));
 
-        Payment afterCreatePayment = paymentService.createPayment(payment);
 
         //Response 객체 생성
         //사용 쿠폰 조회
