@@ -29,7 +29,7 @@ public class CouponService implements CouponUseCase{
      * @return couponIssuedInfo
      */
     public CouponIssuedInfo useCoupon(long requestCouponId, long requestUserId, long totalOrderPrice) {
-        //쿠폰 사용 유효성 검증
+        //쿠폰 사용 유1효성 검증
         CouponIssuedInfo couponIssuedInfo = couponIssuedInfoRepository.findByCoupon_couponIdAndUserId(requestCouponId,requestUserId);
         if(couponIssuedInfo.validateCouponUsage(totalOrderPrice)){
             //쿠폰 사용
@@ -75,7 +75,7 @@ public class CouponService implements CouponUseCase{
                 .userId(userId)
                 .useYn("N")
                 .issuedAt(LocalDateTime.now())
-                .endDate(LocalDateTime.now().plusHours(coupon.getUseLimitTime()))
+                .endDate(LocalDateTime.now().plusHours(24L))
                 .coupon(coupon)
                 .build();
 

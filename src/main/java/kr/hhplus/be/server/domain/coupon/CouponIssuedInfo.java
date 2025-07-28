@@ -50,10 +50,6 @@ public class CouponIssuedInfo {
      * @return boolean
      */
     public boolean validateCouponUsage(long totalOrderPrice) {
-        //최소 주문 금액 미달
-        if(coupon.getMinUsePrice() > totalOrderPrice){
-            return false;
-        }
         //쿠폰 유효기간 확인
         if(endDate.isBefore(LocalDateTime.now())){
             return false;

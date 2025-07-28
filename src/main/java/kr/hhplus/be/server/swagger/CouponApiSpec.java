@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 public interface CouponApiSpec {
 
     @Operation(summary = "쿠폰 발급")
-    ResponseEntity<CouponResponse.Issue> issue(CouponRequest.Issue request);
+    ResponseEntity<CouponResponse.Issue> issue(CouponRequest.Issue request) throws Exception;
 
     @Operation(summary = "본인 쿠폰 조회")
     ResponseEntity<CouponResponse.SelectByUserId> selectByUserId(long user_id);

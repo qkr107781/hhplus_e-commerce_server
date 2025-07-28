@@ -30,17 +30,11 @@ public class Coupon {
     @Column(name = "remaining_coupon_amount", nullable = false)
     private Long remainingCouponAmount;
 
-    @Column(name = "min_use_price", nullable = false)
-    private Long minUsePrice;
-
     @Column(name = "issuance_start_time", nullable = false)
     private LocalDateTime issuanceStartTime;
 
     @Column(name = "issuance_end_time", nullable = false)
     private LocalDateTime issuanceEndTime;
-
-    @Column(name = "use_limit_time", nullable = false)
-    private Long useLimitTime;
 
     @Column(name = "coupon_status", length = 10, nullable = false)
     private String couponStatus;
@@ -50,17 +44,15 @@ public class Coupon {
 
     @Builder
     public Coupon(Long couponId, String couponName, Long discountPrice, Long totalCouponAmount,
-                  Long remainingCouponAmount, Long minUsePrice, LocalDateTime issuanceStartTime,
-                  LocalDateTime issuanceEndTime, Long useLimitTime, String couponStatus, LocalDateTime regDate) {
+                  Long remainingCouponAmount, LocalDateTime issuanceStartTime,
+                  LocalDateTime issuanceEndTime, String couponStatus, LocalDateTime regDate) {
         this.couponId = couponId;
         this.couponName = couponName;
         this.discountPrice = discountPrice;
         this.totalCouponAmount = totalCouponAmount;
         this.remainingCouponAmount = remainingCouponAmount;
-        this.minUsePrice = minUsePrice;
         this.issuanceStartTime = issuanceStartTime;
         this.issuanceEndTime = issuanceEndTime;
-        this.useLimitTime = useLimitTime;
         this.couponStatus = couponStatus;
         this.regDate = regDate;
     }
@@ -74,7 +66,7 @@ public class Coupon {
             throw new Exception("empty remaining coupon");
         }
         LocalDateTime now = LocalDateTime.now();
-        if(this.issuanceStartTime.isAfter(now) || this.issuanceEndTime.isBefore(now)){
+        if(this.issuanceStartTime.isBefore(now) || this.issuanceEndTime.isAfter(now)){
             throw new Exception("not issuing time");
         }
         if(!this.couponStatus.equals("issuing")){

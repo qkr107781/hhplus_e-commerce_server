@@ -27,7 +27,7 @@ public class DummyDataUtil {
         LocalDateTime issuedAt = LocalDateTime.parse(issuedAtStr,formatter);
         LocalDateTime endDate = LocalDateTime.parse(endDateStr,formatter);
 
-        return new CouponResponse.Issue(1L,2L,"신규 가입 쿠폰",1_000L,10_000L,issuedAt,endDate);
+        return new CouponResponse.Issue(1L,2L,"신규 가입 쿠폰",1_000L,issuedAt,endDate);
     }
     /**
      * 본인 쿠폰 조회 더미 데이터
@@ -41,7 +41,7 @@ public class DummyDataUtil {
         LocalDateTime issuedAt = LocalDateTime.parse(issuedAtStr,formatter);
         LocalDateTime endDate = LocalDateTime.parse(endDateStr,formatter);
 
-        return new CouponResponse.SelectByUserId(2L,"신규 가입 쿠폰",1_000L,10_000L,issuedAt,endDate,"N");
+        return new CouponResponse.SelectByUserId(2L,"신규 가입 쿠폰",1_000L,issuedAt,endDate,"N");
     }
 
     /**
@@ -60,13 +60,13 @@ public class DummyDataUtil {
         LocalDateTime issuanceEndTime = LocalDateTime.parse(issuanceEndTimeStr,formatter);
 
         if("pending".equals(status)){
-            return new CouponResponse.SelectByStatus(1L,"복귀 환영 쿠폰",3_000L,30L,20L,10_000L,issuanceStartTime,issuanceEndTime,24L,"pending",regDate);
+            return new CouponResponse.SelectByStatus(1L,"복귀 환영 쿠폰",3_000L,30L,20L,issuanceStartTime,issuanceEndTime,"pending",regDate);
         }else if("issuing".equals(status)){
-            return new CouponResponse.SelectByStatus(2L,"신규 가입 쿠폰",1_000L,30L,20L,10_000L,issuanceStartTime,issuanceEndTime,24L,"issuing",regDate);
+            return new CouponResponse.SelectByStatus(2L,"신규 가입 쿠폰",1_000L,30L,20L,issuanceStartTime,issuanceEndTime,"issuing",regDate);
         }else if("closed".equals(status)){
-            return new CouponResponse.SelectByStatus(3L,"여름 특가 쿠폰",4_000L,30L,20L,10_000L,issuanceStartTime,issuanceEndTime,24L,"closed",regDate);
+            return new CouponResponse.SelectByStatus(3L,"여름 특가 쿠폰",4_000L,30L,20L,issuanceStartTime,issuanceEndTime,"closed",regDate);
         }else{
-            return  new CouponResponse.SelectByStatus(0L,"",0L,0L,0L,0L,null,null,0L,"",null);
+            return  new CouponResponse.SelectByStatus(0L,"",0L,0L,0L,null,null,"",null);
         }
     }
 
