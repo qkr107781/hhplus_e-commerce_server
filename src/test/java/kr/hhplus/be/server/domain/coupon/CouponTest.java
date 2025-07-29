@@ -28,14 +28,22 @@ class CouponTest {
         long discountPrice = 1_000L;
         long totalCouponAmount = 30L;
         long remainingCouponAmount = 0L;
-        long minUsePrice = 10_000L;
         LocalDateTime issuanceStartTime = LocalDateTime.parse(issuanceStartTimeStr, formatter);
         LocalDateTime issuanceEndTime = LocalDateTime.parse(issuanceEndTimeStr, formatter);
-        long useLimitTime = 24L;
         String couponStatus = "issuing";
         LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
 
-        Coupon remainingCouponEmpty = new Coupon(couponId,couponName,discountPrice,totalCouponAmount,remainingCouponAmount,minUsePrice,issuanceStartTime,issuanceEndTime,useLimitTime,couponStatus,regDate);
+        Coupon remainingCouponEmpty = Coupon.builder()
+                .couponId(couponId)
+                .couponName(couponName)
+                .discountPrice(discountPrice)
+                .totalCouponAmount(totalCouponAmount)
+                .remainingCouponAmount(remainingCouponAmount)
+                .issuanceStartTime(issuanceStartTime)
+                .issuanceEndTime(issuanceEndTime)
+                .couponStatus(couponStatus)
+                .regDate(regDate)
+                .build();
 
         //When
         Exception thrown = assertThrows(Exception.class,
@@ -59,14 +67,22 @@ class CouponTest {
         long discountPrice = 1_000L;
         long totalCouponAmount = 30L;
         long remainingCouponAmount = 20L;
-        long minUsePrice = 10_000L;
         LocalDateTime issuanceStartTime = LocalDateTime.parse(issuanceStartTimeStr, formatter);
         LocalDateTime issuanceEndTime = LocalDateTime.parse(issuanceEndTimeStr, formatter);
-        long useLimitTime = 24L;
         String couponStatus = "issuing";
         LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
 
-        Coupon notIssuingTimeCoupon = new Coupon(couponId,couponName,discountPrice,totalCouponAmount,remainingCouponAmount,minUsePrice,issuanceStartTime,issuanceEndTime,useLimitTime,couponStatus,regDate);
+        Coupon notIssuingTimeCoupon = Coupon.builder()
+                .couponId(couponId)
+                .couponName(couponName)
+                .discountPrice(discountPrice)
+                .totalCouponAmount(totalCouponAmount)
+                .remainingCouponAmount(remainingCouponAmount)
+                .issuanceStartTime(issuanceStartTime)
+                .issuanceEndTime(issuanceEndTime)
+                .couponStatus(couponStatus)
+                .regDate(regDate)
+                .build();
 
         //When
         Exception thrown = assertThrows(Exception.class,
@@ -88,14 +104,22 @@ class CouponTest {
         long discountPrice = 1_000L;
         long totalCouponAmount = 30L;
         long remainingCouponAmount = 20L;
-        long minUsePrice = 10_000L;
         LocalDateTime issuanceStartTime = LocalDateTime.now().minusHours(1);
         LocalDateTime issuanceEndTime = LocalDateTime.now().plusHours(1);
-        long useLimitTime = 24L;
         String couponStatus = "closed";
         LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
 
-        Coupon  notIssuingStatusCoupon = new Coupon(couponId,couponName,discountPrice,totalCouponAmount,remainingCouponAmount,minUsePrice,issuanceStartTime,issuanceEndTime,useLimitTime,couponStatus,regDate);
+        Coupon notIssuingStatusCoupon = Coupon.builder()
+                .couponId(couponId)
+                .couponName(couponName)
+                .discountPrice(discountPrice)
+                .totalCouponAmount(totalCouponAmount)
+                .remainingCouponAmount(remainingCouponAmount)
+                .issuanceStartTime(issuanceStartTime)
+                .issuanceEndTime(issuanceEndTime)
+                .couponStatus(couponStatus)
+                .regDate(regDate)
+                .build();
 
         //When
         Exception thrown = assertThrows(Exception.class,
@@ -117,14 +141,22 @@ class CouponTest {
         long discountPrice = 1_000L;
         long totalCouponAmount = 30L;
         long remainingCouponAmount = 10L;
-        long minUsePrice = 10_000L;
         LocalDateTime issuanceStartTime = LocalDateTime.now().minusHours(1);
         LocalDateTime issuanceEndTime = LocalDateTime.now().plusHours(1);
-        long useLimitTime = 24L;
         String couponStatus = "issuing";
         LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
 
-        Coupon couponIssuing = new Coupon(couponId,couponName,discountPrice,totalCouponAmount,remainingCouponAmount,minUsePrice,issuanceStartTime,issuanceEndTime,useLimitTime,couponStatus,regDate);
+        Coupon couponIssuing = Coupon.builder()
+                .couponId(couponId)
+                .couponName(couponName)
+                .discountPrice(discountPrice)
+                .totalCouponAmount(totalCouponAmount)
+                .remainingCouponAmount(remainingCouponAmount)
+                .issuanceStartTime(issuanceStartTime)
+                .issuanceEndTime(issuanceEndTime)
+                .couponStatus(couponStatus)
+                .regDate(regDate)
+                .build();
 
         //When
         couponIssuing.validateCouponIssuance();

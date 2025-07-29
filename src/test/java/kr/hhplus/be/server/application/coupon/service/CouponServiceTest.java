@@ -30,7 +30,7 @@ class CouponServiceTest {
     CouponIssuedInfoRepository couponIssuedInfoRepository;
 
     @Test
-    @DisplayName("[쿠폰 발급]쿠폰 유효성 검증 후 사용 처리")
+    @DisplayName("[쿠폰 발급]쿠폰 유효성 검증 후 발급 처리")
     void issuingCoupon() throws Exception {
         //Given
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -42,10 +42,8 @@ class CouponServiceTest {
         long discountPrice = 1_000L;
         long totalCouponAmount = 30L;
         long remainingCouponAmount = 10L;
-        long minUsePrice = 10_000L;
         LocalDateTime issuanceStartTime = LocalDateTime.now().minusHours(1);
         LocalDateTime issuanceEndTime = LocalDateTime.now().plusHours(1);
-        long useLimitTime = 24L;
         String couponStatus = "issuing";
         LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
 
@@ -55,10 +53,8 @@ class CouponServiceTest {
                 .discountPrice(discountPrice)
                 .totalCouponAmount(totalCouponAmount)
                 .remainingCouponAmount(remainingCouponAmount)
-                .minUsePrice(minUsePrice)
                 .issuanceStartTime(issuanceStartTime)
                 .issuanceEndTime(issuanceEndTime)
-                .useLimitTime(useLimitTime)
                 .couponStatus(couponStatus)
                 .regDate(regDate)
                 .build();
@@ -122,10 +118,8 @@ class CouponServiceTest {
                                 .discountPrice(discountPrice)
                                 .totalCouponAmount(totalCouponAmount)
                                 .remainingCouponAmount(remainingCouponAmount)
-                                .minUsePrice(minUsePrice)
                                 .issuanceStartTime(issuanceStartTime)
                                 .issuanceEndTime(issuanceEndTime)
-                                .useLimitTime(useLimitTime)
                                 .couponStatus(couponStatus)
                                 .regDate(regDate)
                                 .build();

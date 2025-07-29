@@ -66,7 +66,7 @@ public class Coupon {
             throw new Exception("empty remaining coupon");
         }
         LocalDateTime now = LocalDateTime.now();
-        if(this.issuanceStartTime.isBefore(now) || this.issuanceEndTime.isAfter(now)){
+        if(this.issuanceStartTime.isAfter(now) || this.issuanceEndTime.isBefore(now)){
             throw new Exception("not issuing time");
         }
         if(!this.couponStatus.equals("issuing")){

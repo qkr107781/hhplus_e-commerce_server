@@ -14,45 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class CouponIssuedInfoTest {
 
     @Test
-    @DisplayName("[쿠폰 사용][최소 주문 금액 미달]쿠폰 사용 가능한 최소 주문 금액 미달")
-    void noCouponToIssue(){
-        //Given
-        long totalOrderPrice = 9_000L;
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        String regDateStr = "2025-07-15 11:00:00";
-
-        long couponId = 1L;
-        String couponName = "신규 가입 쿠폰";
-        long discountPrice = 1_000L;
-        long totalCouponAmount = 30L;
-        long remainingCouponAmount = 10L;
-        long minUsePrice = 10_000L;
-        LocalDateTime issuanceStartTime = LocalDateTime.now().minusHours(1);
-        LocalDateTime issuanceEndTime = LocalDateTime.now().plusHours(1);
-        long useLimitTime = 24L;
-        String couponStatus = "issuing";
-        LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
-
-        Coupon coupon = new Coupon(couponId,couponName,discountPrice,totalCouponAmount,remainingCouponAmount,minUsePrice,issuanceStartTime,issuanceEndTime,useLimitTime,couponStatus,regDate);
-
-        long couponIssuedId = 1L;
-        long userId = 1L;
-        String useYn = "N";
-        LocalDateTime issuedAt = LocalDateTime.now();
-        LocalDateTime endDAte = LocalDateTime.now().plusHours(24);
-
-        CouponIssuedInfo couponIssuedInfo = new CouponIssuedInfo(couponIssuedId,userId,useYn,issuedAt,endDAte, coupon);
-
-        //When
-        boolean result = couponIssuedInfo.validateCouponUsage(totalOrderPrice);
-
-        //Then
-        assertFalse(result);
-    }
-
-    @Test
     @DisplayName("[쿠폰 사용][유효기간 초과]쿠폰 사용 가능한 유효기간 초과")
     void notIssuingTime(){
         //Given
@@ -67,14 +28,22 @@ class CouponIssuedInfoTest {
         long discountPrice = 1_000L;
         long totalCouponAmount = 30L;
         long remainingCouponAmount = 10L;
-        long minUsePrice = 10_000L;
         LocalDateTime issuanceStartTime = LocalDateTime.now().minusHours(26);
         LocalDateTime issuanceEndTime = LocalDateTime.now().plusHours(24);
-        long useLimitTime = 24L;
         String couponStatus = "issuing";
         LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
 
-        Coupon coupon = new Coupon(couponId,couponName,discountPrice,totalCouponAmount,remainingCouponAmount,minUsePrice,issuanceStartTime,issuanceEndTime,useLimitTime,couponStatus,regDate);
+        Coupon coupon = Coupon.builder()
+                .couponId(couponId)
+                .couponName(couponName)
+                .discountPrice(discountPrice)
+                .totalCouponAmount(totalCouponAmount)
+                .remainingCouponAmount(remainingCouponAmount)
+                .issuanceStartTime(issuanceStartTime)
+                .issuanceEndTime(issuanceEndTime)
+                .couponStatus(couponStatus)
+                .regDate(regDate)
+                .build();
 
         long couponIssuedId = 1L;
         long userId = 1L;
@@ -107,14 +76,22 @@ class CouponIssuedInfoTest {
         long discountPrice = 20_000L;
         long totalCouponAmount = 30L;
         long remainingCouponAmount = 10L;
-        long minUsePrice = 10_000L;
         LocalDateTime issuanceStartTime = LocalDateTime.now().minusHours(1);
         LocalDateTime issuanceEndTime = LocalDateTime.now().plusHours(1);
-        long useLimitTime = 24L;
         String couponStatus = "issuing";
         LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
 
-        Coupon coupon = new Coupon(couponId,couponName,discountPrice,totalCouponAmount,remainingCouponAmount,minUsePrice,issuanceStartTime,issuanceEndTime,useLimitTime,couponStatus,regDate);
+        Coupon coupon = Coupon.builder()
+                .couponId(couponId)
+                .couponName(couponName)
+                .discountPrice(discountPrice)
+                .totalCouponAmount(totalCouponAmount)
+                .remainingCouponAmount(remainingCouponAmount)
+                .issuanceStartTime(issuanceStartTime)
+                .issuanceEndTime(issuanceEndTime)
+                .couponStatus(couponStatus)
+                .regDate(regDate)
+                .build();
 
         long couponIssuedId = 1L;
         long userId = 1L;
@@ -147,14 +124,22 @@ class CouponIssuedInfoTest {
         long discountPrice = 1_000L;
         long totalCouponAmount = 30L;
         long remainingCouponAmount = 10L;
-        long minUsePrice = 10_000L;
         LocalDateTime issuanceStartTime = LocalDateTime.now().minusHours(1);
         LocalDateTime issuanceEndTime = LocalDateTime.now().plusHours(1);
-        long useLimitTime = 24L;
         String couponStatus = "issuing";
         LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
 
-        Coupon coupon = new Coupon(couponId,couponName,discountPrice,totalCouponAmount,remainingCouponAmount,minUsePrice,issuanceStartTime,issuanceEndTime,useLimitTime,couponStatus,regDate);
+        Coupon coupon = Coupon.builder()
+                .couponId(couponId)
+                .couponName(couponName)
+                .discountPrice(discountPrice)
+                .totalCouponAmount(totalCouponAmount)
+                .remainingCouponAmount(remainingCouponAmount)
+                .issuanceStartTime(issuanceStartTime)
+                .issuanceEndTime(issuanceEndTime)
+                .couponStatus(couponStatus)
+                .regDate(regDate)
+                .build();
 
         long couponIssuedId = 1L;
         long userId = 1L;
