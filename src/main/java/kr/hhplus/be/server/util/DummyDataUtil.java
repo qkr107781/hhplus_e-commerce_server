@@ -109,16 +109,16 @@ public class DummyDataUtil {
         LocalDateTime regDate = LocalDateTime.parse(regDateStr,formatter);
 
         List<ProductResponse.Option> options1 = new ArrayList<>();
-        options1.add(new ProductResponse.Option(1L,"XL",12_000L,10L,5L,"Y",regDate));
-        options1.add(new ProductResponse.Option(2L,"M",12_000L,5L,2L,"Y",regDate));
+        options1.add(new ProductResponse.Option(1L,"XL",12_000L,"Y",regDate));
+        options1.add(new ProductResponse.Option(2L,"M",12_000L,"Y",regDate));
 
         List<ProductResponse.Option> options2 = new ArrayList<>();
-        options2.add(new ProductResponse.Option(3L,"240",32_000L,10L,5L,"Y",regDate));
-        options2.add(new ProductResponse.Option(4L,"270",32_000L,5L,2L,"Y",regDate));
+        options2.add(new ProductResponse.Option(3L,"240",32_000L,"Y",regDate));
+        options2.add(new ProductResponse.Option(4L,"270",32_000L,"Y",regDate));
 
         List<ProductResponse.Select> products = new ArrayList<>();
-        products.add(new ProductResponse.Select(1L,"반팔 티셔츠","반팔 티셔츠 설명", options1));
-        products.add(new ProductResponse.Select(2L,"신발","신발 설명", options2));
+        products.add(new ProductResponse.Select(1L,"반팔 티셔츠",options1));
+        products.add(new ProductResponse.Select(2L,"신발",options2));
 
         return products;
     }

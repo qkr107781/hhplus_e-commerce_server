@@ -44,7 +44,7 @@ public class ProductService implements ProductUseCase {
         List<ProductOption> productOptionListForDecreaseStock = new ArrayList<>();
         List<ProductOption> productOptionList = productRepository.findByProductOptionsIn(requestProductOptionIds);
         for (ProductOption productOption : productOptionList) {
-            if (productOption.getStockQuantity() == 0) {
+            if (productOption.getProductStock().getStockQuantity() == 0) {
                 throw new Exception("stock empty");
             } else {
                 //재고 차감을 위해 List에 할당
@@ -54,7 +54,7 @@ public class ProductService implements ProductUseCase {
 
         //재고 차감
         for (ProductOption productOption : productOptionListForDecreaseStock) {
-            productOption.decreaseProductQuantity();
+            productOption.getProductStock().decreaseProductQuantity();
             productRepository.save(productOption);
         }
 

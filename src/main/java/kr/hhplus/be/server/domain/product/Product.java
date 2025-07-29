@@ -1,7 +1,6 @@
 package kr.hhplus.be.server.domain.product;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.order.OrderProduct;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,17 +24,13 @@ public class Product {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    @Column(name = "description", length = 200, nullable = true)
-    private String description;
-
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductOption> productOptions;
 
     @Builder
-    public Product(Long productId, String name, String description, List<ProductOption> productOptions) {
+    public Product(Long productId, String name, List<ProductOption> productOptions) {
         this.productId = productId;
         this.name = name;
-        this.description = description;
         this.productOptions = Objects.requireNonNullElseGet(productOptions, ArrayList::new);
     }
 

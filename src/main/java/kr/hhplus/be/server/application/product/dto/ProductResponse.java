@@ -18,10 +18,6 @@ public class ProductResponse {
             String optionName,
             @Schema(description = "단가", requiredMode = Schema.RequiredMode.REQUIRED)
             long price,
-            @Schema(description = "총 수량", requiredMode = Schema.RequiredMode.REQUIRED)
-            long totalQuantity,
-            @Schema(description = "잔여 수량", requiredMode = Schema.RequiredMode.REQUIRED)
-            long stockQuantity,
             @Schema(description = "판매 여부", requiredMode = Schema.RequiredMode.REQUIRED)
             String salesYn,
             @Schema(description = "등록일", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -34,8 +30,6 @@ public class ProductResponse {
             long productId,
             @Schema(description = "상품명", requiredMode = Schema.RequiredMode.REQUIRED)
             String name,
-            @Schema(description = "설명", requiredMode = Schema.RequiredMode.REQUIRED)
-            String description,
             @Schema(description = "상품 옵션 목록", requiredMode = Schema.RequiredMode.REQUIRED)
             List<ProductResponse.Option> options
     ) {
@@ -43,14 +37,11 @@ public class ProductResponse {
             return products.stream()
                     .map(product -> new ProductResponse.Select(product.getProductId(),
                                                                         product.getName(),
-                                                                        product.getDescription(),
                                                                         product.getProductOptions().stream()
                                                                                                     .map(productOption -> new ProductResponse.Option(
                                                                                                                 productOption.getProductOptionId(),
                                                                                                                 productOption.getOptionName(),
                                                                                                                 productOption.getPrice(),
-                                                                                                                productOption.getTotalQuantity(),
-                                                                                                                productOption.getStockQuantity(),
                                                                                                                 productOption.getSalesYn(),
                                                                                                                 productOption.getRegDate())).collect(Collectors.toList())))
                     .collect(Collectors.toList());

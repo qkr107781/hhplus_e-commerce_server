@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "product_statistics")
@@ -22,39 +22,21 @@ public class ProductStatistics {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(name = "product_option_id", nullable = false)
-    private Long productOptionId;
-
     @Column(name = "product_name", length = 50, nullable = false)
     private String productName;
-
-    @Column(name = "product_option_name", length = 50, nullable = false)
-    private String productOptionName;
-
-    @Column(name = "price", nullable = false)
-    private Long price;
 
     @Column(name = "sales_quantity", nullable = false)
     private Long salesQuantity;
 
-    @Column(name = "ranking", nullable = false)
-    private Long ranking;
-
     @Column(name = "selection_date", nullable = false)
-    private LocalDateTime selectionDate;
+    private LocalDate selectionDate;
 
     @Builder
-    public ProductStatistics(Long statisticsId, Long productId, Long productOptionId, String productName,
-                             String productOptionName, Long price, Long salesQuantity,
-                             Long ranking, LocalDateTime selectionDate) {
+    public ProductStatistics(Long statisticsId, Long productId, String productName, Long salesQuantity, LocalDate selectionDate) {
         this.statisticsId = statisticsId;
         this.productId = productId;
-        this.productOptionId = productOptionId;
         this.productName = productName;
-        this.productOptionName = productOptionName;
-        this.price = price;
         this.salesQuantity = salesQuantity;
-        this.ranking = ranking;
         this.selectionDate = selectionDate;
     }
 }

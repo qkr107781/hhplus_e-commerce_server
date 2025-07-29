@@ -3,7 +3,7 @@ package kr.hhplus.be.server.domain.product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,26 +15,17 @@ class ProductStatisticsTest {
     @DisplayName("[상위 상품 조회]통계 테이블에서 기간별 많이 팔린 상품 상위 5개를 조회")
     void selectSalesTop5Product(){
         //Given
-        long productId = 1L;
-        String productName = "티셔츠";
+        long productId1 = 1L;
+        long productId2 = 2L;
+        long productId3 = 3L;
+        long productId4 = 4L;
+        long productId5 = 5L;
 
-        long productOptionId1 = 1L;
-        long productOptionId2 = 2L;
-        long productOptionId3 = 3L;
-        long productOptionId4 = 4L;
-        long productOptionId5 = 5L;
-
-        String productOptionName1 = "XXL";
-        String productOptionName2 = "XL";
-        String productOptionName3 = "L";
-        String productOptionName4 = "M";
-        String productOptionName5 = "S";
-
-        long price1 = 10_000L;
-        long price2 = 20_000L;
-        long price3 = 30_000L;
-        long price4 = 40_000L;
-        long price5 = 50_000L;
+        String productName1 = "반팔";
+        String productName2 = "긴팔";
+        String productName3 = "반바지";
+        String productName4 = "긴바지";
+        String productName5 = "모자";
 
         long salesQuantity1 = 5L;
         long salesQuantity2 = 4L;
@@ -42,20 +33,45 @@ class ProductStatisticsTest {
         long salesQuantity4 = 2L;
         long salesQuantity5 = 1L;
 
-        long ranking1 = 1L;
-        long ranking2 = 2L;
-        long ranking3 = 3L;
-        long ranking4 = 4L;
-        long ranking5 = 5L;
-
-        LocalDateTime selectionDate = LocalDateTime.now();
+        LocalDate selectionDate = LocalDate.now();
 
         //When
-        ProductStatistics productStatistics1 = new ProductStatistics(1L,productId,productOptionId1,productName,productOptionName1,price1,salesQuantity1,ranking1,selectionDate);
-        ProductStatistics productStatistics2 = new ProductStatistics(1L,productId,productOptionId2,productName,productOptionName2,price2,salesQuantity2,ranking2,selectionDate);
-        ProductStatistics productStatistics3 = new ProductStatistics(1L,productId,productOptionId3,productName,productOptionName3,price3,salesQuantity3,ranking3,selectionDate);
-        ProductStatistics productStatistics4 = new ProductStatistics(1L,productId,productOptionId4,productName,productOptionName4,price4,salesQuantity4,ranking4,selectionDate);
-        ProductStatistics productStatistics5 = new ProductStatistics(1L,productId,productOptionId5,productName,productOptionName5,price5,salesQuantity5,ranking5,selectionDate);
+        ProductStatistics productStatistics1 = ProductStatistics.builder()
+                .statisticsId(1L)
+                .productId(productId1)
+                .productName(productName1)
+                .salesQuantity(salesQuantity1)
+                .selectionDate(selectionDate)
+                .build();
+
+        ProductStatistics productStatistics2 = ProductStatistics.builder()
+                .statisticsId(2L)
+                .productId(productId2)
+                .productName(productName2)
+                .salesQuantity(salesQuantity2)
+                .selectionDate(selectionDate)
+                .build();
+        ProductStatistics productStatistics3 = ProductStatistics.builder()
+                .statisticsId(3L)
+                .productId(productId3)
+                .productName(productName3)
+                .salesQuantity(salesQuantity3)
+                .selectionDate(selectionDate)
+                .build();
+        ProductStatistics productStatistics4 = ProductStatistics.builder()
+                .statisticsId(4L)
+                .productId(productId4)
+                .productName(productName4)
+                .salesQuantity(salesQuantity4)
+                .selectionDate(selectionDate)
+                .build();
+        ProductStatistics productStatistics5 = ProductStatistics.builder()
+                .statisticsId(5L)
+                .productId(productId5)
+                .productName(productName5)
+                .salesQuantity(salesQuantity5)
+                .selectionDate(selectionDate)
+                .build();
 
         List<ProductStatistics> productStatisticsList = new ArrayList<>();
         productStatisticsList.add(productStatistics1);
@@ -65,35 +81,25 @@ class ProductStatisticsTest {
         productStatisticsList.add(productStatistics5);
 
         //Then
-        assertEquals(productOptionId1,productStatisticsList.get(0).getProductOptionId());
-        assertEquals(productOptionName1,productStatisticsList.get(0).getProductOptionName());
-        assertEquals(price1,productStatisticsList.get(0).getPrice());
+        assertEquals(productId1,productStatisticsList.get(0).getProductId());
+        assertEquals(productName1,productStatisticsList.get(0).getProductName());
         assertEquals(salesQuantity1,productStatisticsList.get(0).getSalesQuantity());
-        assertEquals(ranking1,productStatisticsList.get(0).getRanking());
 
-        assertEquals(productOptionId2,productStatisticsList.get(1).getProductOptionId());
-        assertEquals(productOptionName2,productStatisticsList.get(1).getProductOptionName());
-        assertEquals(price2,productStatisticsList.get(1).getPrice());
+        assertEquals(productId2,productStatisticsList.get(1).getProductId());
+        assertEquals(productName2,productStatisticsList.get(1).getProductName());
         assertEquals(salesQuantity2,productStatisticsList.get(1).getSalesQuantity());
-        assertEquals(ranking2,productStatisticsList.get(1).getRanking());
 
-        assertEquals(productOptionId3,productStatisticsList.get(2).getProductOptionId());
-        assertEquals(productOptionName3,productStatisticsList.get(2).getProductOptionName());
-        assertEquals(price3,productStatisticsList.get(2).getPrice());
+        assertEquals(productId3,productStatisticsList.get(2).getProductId());
+        assertEquals(productName3,productStatisticsList.get(2).getProductName());
         assertEquals(salesQuantity3,productStatisticsList.get(2).getSalesQuantity());
-        assertEquals(ranking3,productStatisticsList.get(2).getRanking());
 
-        assertEquals(productOptionId4,productStatisticsList.get(3).getProductOptionId());
-        assertEquals(productOptionName4,productStatisticsList.get(3).getProductOptionName());
-        assertEquals(price4,productStatisticsList.get(3).getPrice());
+        assertEquals(productId4,productStatisticsList.get(3).getProductId());
+        assertEquals(productName4,productStatisticsList.get(3).getProductName());
         assertEquals(salesQuantity4,productStatisticsList.get(3).getSalesQuantity());
-        assertEquals(ranking4,productStatisticsList.get(3).getRanking());
 
-        assertEquals(productOptionId5,productStatisticsList.get(4).getProductOptionId());
-        assertEquals(productOptionName5,productStatisticsList.get(4).getProductOptionName());
-        assertEquals(price5,productStatisticsList.get(4).getPrice());
+        assertEquals(productId5,productStatisticsList.get(4).getProductId());
+        assertEquals(productName5,productStatisticsList.get(4).getProductName());
         assertEquals(salesQuantity5,productStatisticsList.get(4).getSalesQuantity());
-        assertEquals(ranking5,productStatisticsList.get(4).getRanking());
 
         assertEquals(5,productStatisticsList.size());
     }

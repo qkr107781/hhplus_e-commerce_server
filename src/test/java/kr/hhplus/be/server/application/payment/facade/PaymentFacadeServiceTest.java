@@ -127,10 +127,8 @@ class PaymentFacadeServiceTest {
                 .discountPrice(1_000L)
                 .totalCouponAmount(30L)
                 .remainingCouponAmount(10L)
-                .minUsePrice(10_000L)
                 .issuanceStartTime(LocalDateTime.now().minusHours(2))
                 .issuanceEndTime(LocalDateTime.now().plusHours(1))
-                .useLimitTime(24L)
                 .couponStatus("issuing")
                 .regDate(LocalDateTime.now().minusHours(3))
                 .build();
@@ -149,7 +147,6 @@ class PaymentFacadeServiceTest {
         Product product = Product.builder()
                 .productId(1L)
                 .name("티셔츠")
-                .description("티셔츠 설명")
                 .build();
 
         ProductOption productOption1 = ProductOption.builder()
@@ -157,8 +154,6 @@ class PaymentFacadeServiceTest {
                 .product(product)
                 .optionName("L")
                 .price(10_000L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
                 .salesYn("Y")
                 .regDate(LocalDateTime.now().minusHours(1))
                 .build();
@@ -167,8 +162,6 @@ class PaymentFacadeServiceTest {
                 .product(product)
                 .optionName("M")
                 .price(10_000L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
                 .salesYn("Y")
                 .regDate(LocalDateTime.now().minusHours(1))
                 .build();
