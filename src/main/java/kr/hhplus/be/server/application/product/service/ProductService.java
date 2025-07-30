@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.application.product.service;
 
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
+import kr.hhplus.be.server.application.product.repository.ProductOptionRepository;
 import kr.hhplus.be.server.application.product.repository.ProductRepository;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
@@ -15,9 +16,11 @@ import java.util.List;
 public class ProductService implements ProductUseCase {
 
     private final ProductRepository productRepository;
+    private final ProductOptionRepository productOptionRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, ProductOptionRepository productOptionRepository) {
         this.productRepository = productRepository;
+        this.productOptionRepository = productOptionRepository;
     }
 
     /**
@@ -27,8 +30,14 @@ public class ProductService implements ProductUseCase {
      */
     @Override
     public List<ProductResponse.Select> selectSalesProductList() {
-        List<Product> salesProductList = productRepository.findByProductOptions_SalesYn("Y");
-        return ProductResponse.Select.from(salesProductList);
+        List<Product> salesProductList = productRepository.selectAllProduct();
+        List<ProductOption> salesProductOptionList = new ArrayList<>();
+        for(Product product : salesProductList){
+            List<ProductOption> selectProductOptionList = productOptionRepository.selectProductOptionByProductIdAndSalesYn(product.getProductId(),"Y");
+            salesProductOptionList.addAll(selectProductOptionList);
+        }
+
+        return ProductResponse.Select.from(salesProductList,salesProductOptionList);
     }
 
     /**
@@ -41,9 +50,9 @@ public class ProductService implements ProductUseCase {
     public List<ProductOption> decreaseStock(List<Long> requestProductOptionIds) throws Exception {
         //상품 잔여 갯수 확인
         List<ProductOption> productOptionListForDecreaseStock = new ArrayList<>();
-        List<ProductOption> productOptionList = productRepository.findByProductOptionsIn(requestProductOptionIds);
+        List<ProductOption> productOptionList = productOptionRepository.selectProductOptionListByProductOptionIds(requestProductOptionIds);
         for (ProductOption productOption : productOptionList) {
-            if (productOption.getProductStock().getStockQuantity() == 0) {
+            if (productOption.getStockQuantity() == 0) {
                 throw new Exception("stock empty");
             } else {
                 //재고 차감을 위해 List에 할당
@@ -53,8 +62,8 @@ public class ProductService implements ProductUseCase {
 
         //재고 차감
         for (ProductOption productOption : productOptionListForDecreaseStock) {
-            productOption.getProductStock().decreaseProductQuantity();
-            productRepository.save(productOption);
+            productOption.decreaseProductQuantity();
+            productOptionRepository.save(productOption);
         }
 
         return productOptionListForDecreaseStock;
@@ -87,7 +96,7 @@ public class ProductService implements ProductUseCase {
      * @return
      */
     public Product selectProductByProductId(long requestProductId) {
-        return productRepository.findByProductId(requestProductId);
+        return productRepository.selectProductByProductId(requestProductId);
     }
 
     /**
@@ -98,7 +107,7 @@ public class ProductService implements ProductUseCase {
      * @return ProductOption
      */
     public ProductOption selectProductOptionByProductIdAndProductOptionId(long productId, long productOptionId) {
-        return productRepository.findByProductIdAndProductOptions_ProductOptionId(productId, productOptionId);
+        return productOptionRepository.selectProductOptionByProductIdAndProductOptionId(productId, productOptionId);
     }
 
     /**

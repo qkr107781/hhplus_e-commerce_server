@@ -155,7 +155,7 @@ class PaymentFacadeServiceTest {
 
         ProductOption productOption1 = ProductOption.builder()
                 .productOptionId(1L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("L")
                 .price(10_000L)
                 .salesYn("Y")
@@ -163,18 +163,12 @@ class PaymentFacadeServiceTest {
                 .build();
         ProductOption productOption2 = ProductOption.builder()
                 .productOptionId(2L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("M")
                 .price(10_000L)
                 .salesYn("Y")
                 .regDate(LocalDateTime.now().minusHours(1))
                 .build();
-
-        List<ProductOption> productOptionList = new ArrayList<>();
-        productOptionList.add(productOption1);
-        productOptionList.add(productOption2);
-
-        product.addProductOptionList(productOptionList);
 
         when(productService.selectProductByProductId(1L)).thenReturn(product);
         when(productService.selectProductOptionByProductIdAndProductOptionId(1L,1L)).thenReturn(productOption1);

@@ -20,27 +20,18 @@ class ProductOptionTest {
         // 상품 옵션 세팅 (재고 차감 전의 초기 상태)
         ProductOption productOption = ProductOption.builder()
                 .productOptionId(1L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("XL")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(0L)
                 .regDate(LocalDateTime.now())
                 .build();
 
-        // 상품 재고
-        ProductStock productStock = ProductStock.builder()
-                .productStockId(1L)
-                .totalQuantity(30L)
-                .stockQuantity(0L)
-                .productOption(productOption)
-                .build();
-
-
-        productOption.addProductStock(productStock);
-
         //When
         Exception thrown = assertThrows(Exception.class,
-                productOption.getProductStock()::decreaseProductQuantity,"stock empty");
+                productOption::decreaseProductQuantity,"stock empty");
         //Then
         assertTrue(thrown.getMessage().contains("stock empty"));
     }
@@ -56,28 +47,19 @@ class ProductOptionTest {
         // 상품 옵션 세팅 (재고 차감 전의 초기 상태)
         ProductOption productOption = ProductOption.builder()
                 .productOptionId(1L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("XL")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
 
-        // 상품 재고
-        ProductStock productStock = ProductStock.builder()
-                .productStockId(1L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption)
-                .build();
-
-
-        productOption.addProductStock(productStock);
-
         //When
-        productOption.getProductStock().decreaseProductQuantity();
+        productOption.decreaseProductQuantity();
 
         //Then
-        assertEquals(19L,productOption.getProductStock().getStockQuantity());
+        assertEquals(19L,productOption.getStockQuantity());
     }
 }

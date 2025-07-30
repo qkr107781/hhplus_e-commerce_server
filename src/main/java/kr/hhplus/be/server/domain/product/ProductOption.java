@@ -19,12 +19,8 @@ public class ProductOption {
     @Column(name = "product_option_id")
     private Long productOptionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
-
-    @OneToOne(mappedBy = "productOption", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ProductStock productStock;
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
 
     @Column(name = "option_name", length = 50, nullable = false)
     private String optionName;
@@ -35,22 +31,35 @@ public class ProductOption {
     @Column(name = "sales_yn", length = 1, nullable = false)
     private String salesYn;
 
+    @Column(name = "total_quantity", nullable = false)
+    private Long totalQuantity;
+
+    @Column(name = "stock_quantity", nullable = false)
+    private Long stockQuantity;
+
     @Column(name = "reg_date", nullable = false)
     private LocalDateTime regDate;
 
     @Builder
-    public ProductOption(Long productOptionId, Product product, String optionName, Long price,
-                         String salesYn, LocalDateTime regDate, ProductStock productStock) {
+    public ProductOption(Long productOptionId, Long productId, String optionName, Long price, String salesYn, Long totalQuantity, Long stockQuantity, LocalDateTime regDate) {
         this.productOptionId = productOptionId;
-        this.product = product;
+        this.productId = productId;
         this.optionName = optionName;
         this.price = price;
         this.salesYn = salesYn;
+        this.totalQuantity = totalQuantity;
+        this.stockQuantity = stockQuantity;
         this.regDate = regDate;
-        this.productStock = productStock;
     }
 
-    public void addProductStock(ProductStock productStock){
-        this.productStock = productStock;
+    /**
+     * 재고 차감
+     * @throws Exception
+     */
+    public void decreaseProductQuantity() throws Exception {
+        if(stockQuantity == 0){
+            throw new Exception("stock empty");
+        }
+        this.stockQuantity = stockQuantity - 1;
     }
 }

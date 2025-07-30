@@ -1,11 +1,11 @@
 package kr.hhplus.be.server.application.product.service;
 
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
+import kr.hhplus.be.server.application.product.repository.ProductOptionRepository;
 import kr.hhplus.be.server.application.product.repository.ProductRepository;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import kr.hhplus.be.server.domain.product.ProductStatistics;
-import kr.hhplus.be.server.domain.product.ProductStock;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +30,9 @@ class ProductServiceTest {
     @Mock
     ProductRepository productRepository;
 
+    @Mock
+    ProductOptionRepository productOptionRepository;
+
     @Test
     @DisplayName("[상품] 판매중인 상품 조회")
     void selectSalesProductList(){
@@ -53,137 +56,103 @@ class ProductServiceTest {
         // 상품 옵션 세팅 (재고 차감 전의 초기 상태)
         ProductOption productOption1 = ProductOption.builder()
                 .productOptionId(1L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("XL")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption2 = ProductOption.builder()
                 .productOptionId(2L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("L")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption3 = ProductOption.builder()
                 .productOptionId(3L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("M")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
-
-        // 상품 재고
-        ProductStock productStock1 = ProductStock.builder()
-                .productStockId(1L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption1)
-                .build();
-
-        ProductStock productStock2 = ProductStock.builder()
-                .productStockId(2L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption2)
-                .build();
-
-        ProductStock productStock3 = ProductStock.builder()
-                .productStockId(3L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption3)
-                .build();
-
-        productOption1.addProductStock(productStock1);
-        productOption2.addProductStock(productStock2);
-        productOption3.addProductStock(productStock3);
         List<ProductOption> products = new ArrayList<>();
         products.add(productOption1);
         products.add(productOption2);
         products.add(productOption3);
 
-        product.addProductOptionList(products);
-
         // 상품 옵션 세팅 (재고 차감 전의 초기 상태)
         ProductOption productOption11 = ProductOption.builder()
                 .productOptionId(4L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("XL")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption22 = ProductOption.builder()
                 .productOptionId(5L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("L")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption33 = ProductOption.builder()
                 .productOptionId(6L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("M")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
-
-        // 상품 재고
-        ProductStock productStock11 = ProductStock.builder()
-                .productStockId(4L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption1)
-                .build();
-
-        ProductStock productStock22 = ProductStock.builder()
-                .productStockId(5L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption2)
-                .build();
-
-        ProductStock productStock33 = ProductStock.builder()
-                .productStockId(6L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption3)
-                .build();
-
-        productOption1.addProductStock(productStock1);
-        productOption2.addProductStock(productStock2);
-        productOption3.addProductStock(productStock3);
         List<ProductOption> products2 = new ArrayList<>();
         products2.add(productOption11);
         products2.add(productOption22);
         products2.add(productOption33);
 
-        product2.addProductOptionList(products2);
+        List<ProductOption> productExpect = new ArrayList<>();
+        productExpect.add(productOption1);
+        productExpect.add(productOption2);
+        productExpect.add(productOption3);
+        productExpect.add(productOption11);
+        productExpect.add(productOption22);
+        productExpect.add(productOption33);
 
         List<Product> productList = new ArrayList<>();
         productList.add(product);
         productList.add(product2);
 
-        when(productRepository.findByProductOptions_SalesYn("Y")).thenReturn(productList);
+        when(productRepository.selectAllProduct()).thenReturn(productList);
+        when(productOptionRepository.selectProductOptionByProductIdAndSalesYn(productList.get(0).getProductId(),"Y")).thenReturn(products);
+        when(productOptionRepository.selectProductOptionByProductIdAndSalesYn(productList.get(1).getProductId(),"Y")).thenReturn(products2);
 
         //When
-        ProductService productService = new ProductService(productRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository);
         List<ProductResponse.Select> resultProductList = productService.selectSalesProductList();
 
         //Then
         assertEquals(productId,resultProductList.get(0).productId());
         assertEquals(name,resultProductList.get(0).name());
-        assertEquals(ProductResponse.Select.from(productList).get(0).options(),resultProductList.get(0).options());
+        assertEquals(ProductResponse.Select.from(productList,productExpect).get(0).options(),resultProductList.get(0).options());
 
         assertEquals(productId2,resultProductList.get(1).productId());
         assertEquals(name2,resultProductList.get(1).name());
-        assertEquals(ProductResponse.Select.from(productList).get(1).options(),resultProductList.get(1).options());
+        assertEquals(ProductResponse.Select.from(productList,productExpect).get(1).options(),resultProductList.get(1).options());
     }
 
     @Test
@@ -201,54 +170,34 @@ class ProductServiceTest {
         // 상품 옵션 세팅 (재고 차감 전의 초기 상태)
         ProductOption productOption1 = ProductOption.builder()
                 .productOptionId(1L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("XL")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(15L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption2 = ProductOption.builder()
                 .productOptionId(2L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("L")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(5L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption3 = ProductOption.builder()
                 .productOptionId(3L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("M")
                 .price(20_000L)
                 .salesYn("Y")
-                .regDate(LocalDateTime.now())
-                .build();
-
-        // 상품 재고
-        ProductStock productStock1 = ProductStock.builder()
-                .productStockId(1L)
-                .totalQuantity(30L)
-                .stockQuantity(15L)
-                .productOption(productOption1)
-                .build();
-
-        ProductStock productStock2 = ProductStock.builder()
-                .productStockId(2L)
-                .totalQuantity(30L)
-                .stockQuantity(5L)
-                .productOption(productOption2)
-                .build();
-
-        ProductStock productStock3 = ProductStock.builder()
-                .productStockId(3L)
                 .totalQuantity(30L)
                 .stockQuantity(2L)
-                .productOption(productOption3)
+                .regDate(LocalDateTime.now())
                 .build();
-
-        productOption1.addProductStock(productStock1);
-        productOption2.addProductStock(productStock2);
-        productOption3.addProductStock(productStock3);
         List<ProductOption> products = new ArrayList<>();
         products.add(productOption1);
         products.add(productOption2);
@@ -256,21 +205,19 @@ class ProductServiceTest {
         products.add(productOption2);
         products.add(productOption3);
 
-        product.addProductOptionList(products);
-
-        when(productRepository.findByProductOptionsIn(productOptionIds)).thenReturn(products);
-        when(productRepository.save(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(productOptionRepository.selectProductOptionListByProductOptionIds(productOptionIds)).thenReturn(products);
+        when(productOptionRepository.save(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
         //When
-        ProductService productService = new ProductService(productRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository);
         productService.decreaseStock(productOptionIds);
 
         //Then
-        assertEquals(14L, productOption1.getProductStock().getStockQuantity()); // 15 - 1 = 14
-        assertEquals(2L, productOption2.getProductStock().getStockQuantity()); // 5 - 3 = 2
-        assertEquals(1L, productOption3.getProductStock().getStockQuantity()); // 2 - 1 = 1
+        assertEquals(14L, productOption1.getStockQuantity()); // 15 - 1 = 14
+        assertEquals(2L, productOption2.getStockQuantity()); // 5 - 3 = 2
+        assertEquals(1L, productOption3.getStockQuantity()); // 2 - 1 = 1
 
-        verify(productRepository, times(1)).findByProductOptionsIn(productOptionIds);
-        verify(productRepository, times(5)).save(any(ProductOption.class));
+        verify(productOptionRepository, times(1)).selectProductOptionListByProductOptionIds(productOptionIds);
+        verify(productOptionRepository, times(5)).save(any(ProductOption.class));
     }
 
     @Test
@@ -287,64 +234,42 @@ class ProductServiceTest {
         // 상품 옵션 세팅 (재고 차감 전의 초기 상태)
         ProductOption productOption1 = ProductOption.builder()
                 .productOptionId(1L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("XL")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption2 = ProductOption.builder()
                 .productOptionId(2L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("L")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption3 = ProductOption.builder()
                 .productOptionId(3L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("M")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
                 .regDate(LocalDateTime.now())
                 .build();
-
-        // 상품 재고
-        ProductStock productStock1 = ProductStock.builder()
-                .productStockId(1L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption1)
-                .build();
-
-        ProductStock productStock2 = ProductStock.builder()
-                .productStockId(2L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption2)
-                .build();
-
-        ProductStock productStock3 = ProductStock.builder()
-                .productStockId(3L)
-                .totalQuantity(30L)
-                .stockQuantity(20L)
-                .productOption(productOption3)
-                .build();
-
-        productOption1.addProductStock(productStock1);
-        productOption2.addProductStock(productStock2);
-        productOption3.addProductStock(productStock3);
 
         List<ProductOption> products = new ArrayList<>();
         products.add(productOption1);
         products.add(productOption2);
         products.add(productOption3);
 
-        product.addProductOptionList(products);
-
         //When
-        ProductService productService = new ProductService(productRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository);
         long totalOrderPrice = productService.calculateProductTotalPrice(products);
 
         //Then
@@ -410,7 +335,7 @@ class ProductServiceTest {
         when(productRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate,endDate)).thenReturn(productStatisticsList);
 
         //When
-        ProductService productService = new ProductService(productRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository);
         List<ProductResponse.Statistics> resultProductStatisticsList = productService.selectTop5SalesStatisticsSpecificRange();
 
         //Then

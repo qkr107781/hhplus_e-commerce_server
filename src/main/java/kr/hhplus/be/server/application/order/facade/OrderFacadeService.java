@@ -80,7 +80,7 @@ public class OrderFacadeService implements OrderUseCase {
             OrderBuilder.OrderProduct createOrderProduct = new OrderBuilder.OrderProduct(
                     0L,
                     afterCreateOrder.getOrderId(),
-                    productOption.getProduct().getProductId(),
+                    productOption.getProductId(),
                     productOption.getProductOptionId(),
                     orderQuantity,
                     productOption.getPrice()
@@ -89,7 +89,7 @@ public class OrderFacadeService implements OrderUseCase {
             OrderProduct afterCreatrOrderProduct = orderProductService.createOrderProduct(OrderBuilder.OrderProduct.toDomain(createOrderProduct));
 
             //주문 완료 상품 조회
-            Product orderProduct = productService.selectProductByProductId(productOption.getProduct().getProductId());
+            Product orderProduct = productService.selectProductByProductId(productOption.getProductId());
             //주문 상품 리턴 DTO 생성을 위함
             orderCreateProductResponseList.add(OrderResponse.OrderCreateProduct.from(afterCreatrOrderProduct,orderProduct,productOption));
         }

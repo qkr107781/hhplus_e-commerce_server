@@ -6,9 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "product")
@@ -24,17 +21,9 @@ public class Product {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductOption> productOptions;
-
     @Builder
-    public Product(Long productId, String name, List<ProductOption> productOptions) {
+    public Product(Long productId, String name) {
         this.productId = productId;
         this.name = name;
-        this.productOptions = Objects.requireNonNullElseGet(productOptions, ArrayList::new);
-    }
-
-    public void addProductOptionList(List<ProductOption> productOptionList) {
-        this.productOptions = productOptionList;
     }
 }

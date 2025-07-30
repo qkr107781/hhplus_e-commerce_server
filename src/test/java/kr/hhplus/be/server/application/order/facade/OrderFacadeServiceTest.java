@@ -12,7 +12,6 @@ import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.order.OrderProduct;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
-import kr.hhplus.be.server.domain.product.ProductStock;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,54 +67,34 @@ class OrderFacadeServiceTest {
         // 상품 옵션 세팅 (재고 차감 전의 초기 상태)
         ProductOption productOption1 = ProductOption.builder()
                 .productOptionId(1L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("XL")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(15L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption2 = ProductOption.builder()
                 .productOptionId(2L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("L")
                 .price(20_000L)
                 .salesYn("Y")
+                .totalQuantity(30L)
+                .stockQuantity(5L)
                 .regDate(LocalDateTime.now())
                 .build();
         ProductOption productOption3 = ProductOption.builder()
                 .productOptionId(3L)
-                .product(product)
+                .productId(product.getProductId())
                 .optionName("M")
                 .price(20_000L)
                 .salesYn("Y")
-                .regDate(LocalDateTime.now())
-                .build();
-
-        // 상품 재고
-        ProductStock productStock1 = ProductStock.builder()
-                .productStockId(1L)
-                .totalQuantity(30L)
-                .stockQuantity(15L)
-                .productOption(productOption1)
-                .build();
-
-        ProductStock productStock2 = ProductStock.builder()
-                .productStockId(2L)
-                .totalQuantity(30L)
-                .stockQuantity(5L)
-                .productOption(productOption2)
-                .build();
-
-        ProductStock productStock3 = ProductStock.builder()
-                .productStockId(3L)
                 .totalQuantity(30L)
                 .stockQuantity(2L)
-                .productOption(productOption3)
+                .regDate(LocalDateTime.now())
                 .build();
-
-        productOption1.addProductStock(productStock1);
-        productOption2.addProductStock(productStock2);
-        productOption3.addProductStock(productStock3);
 
         List<ProductOption> products = new ArrayList<>();
         products.add(productOption1);
@@ -126,7 +105,7 @@ class OrderFacadeServiceTest {
         when(productService.decreaseStock(requestProductOptionIds)).thenAnswer(invocation -> {
             products.forEach(option -> {
                 try {
-                    option.getProductStock().decreaseProductQuantity();
+                    option.decreaseProductQuantity();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -180,7 +159,7 @@ class OrderFacadeServiceTest {
         when(orderProductService.createOrderProduct(any(OrderProduct.class))).thenAnswer(invocation -> invocation.getArgument(0, OrderProduct.class));
 
         //주문 완료 상품 Mocking
-        Product afterOrderProduct = new Product(1L,"티셔츠", products);
+        Product afterOrderProduct = new Product(1L,"티셔츠");
         when(productService.selectProductByProductId(1L)).thenReturn(afterOrderProduct);
 
         //사용 쿠폰 Mocking
@@ -192,9 +171,9 @@ class OrderFacadeServiceTest {
 
         //Then
         // 재고 차감 검증 (thenAnswer가 실제 객체의 재고를 차감했으므로 검증 가능)
-        assertEquals(14L, productOption1.getProductStock().getStockQuantity());
-        assertEquals(4L, productOption2.getProductStock().getStockQuantity());
-        assertEquals(1L, productOption3.getProductStock().getStockQuantity());
+        assertEquals(14L, productOption1.getStockQuantity());
+        assertEquals(4L, productOption2.getStockQuantity());
+        assertEquals(1L, productOption3.getStockQuantity());
 
         // 쿠폰 사용 검증 (thenAnswer가 useYn을 Y로 바꿨으므로 검증 가능)
         assertEquals("Y", couponIssuedInfo.getUseYn());
