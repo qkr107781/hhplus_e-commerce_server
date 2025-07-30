@@ -13,6 +13,7 @@ import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.payment.service.PaymentUseCase;
 import kr.hhplus.be.server.application.product.service.ProductService;
 import kr.hhplus.be.server.domain.balance.Balance;
+import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.order.OrderProduct;
@@ -91,6 +92,8 @@ public class PaymentFacadeService implements PaymentUseCase {
         //Response 객체 생성
         //사용 쿠폰 조회
         CouponIssuedInfo couponIssuedInfo = couponService.selectCouponByCouponIdAndUserId(order.getCouponId(), userId);
+        Coupon coupon = couponService.selectCouponByCouponId(couponIssuedInfo.getCouponId());
+
         //주문 상품 목록 조회
         List<OrderProduct> productOptionList = order.getOrderProducts();
         List<OrderResponse.OrderCreateProduct> orderCreateProductList = new ArrayList<>();
@@ -104,7 +107,7 @@ public class PaymentFacadeService implements PaymentUseCase {
             orderCreateProductList.add(OrderResponse.OrderCreateProduct.from(orderProduct,product,productOption));
         }
         //Response 객체 생성 완료
-        PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,couponIssuedInfo.getCoupon(),orderCreateProductList);
+        PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,coupon,orderCreateProductList);
 
         //결제 내역 데이터 플랫폼 API 전송(비동기)
         AsyncDataPlatformSender sender = new AsyncDataPlatformSender("http://testestest.com");

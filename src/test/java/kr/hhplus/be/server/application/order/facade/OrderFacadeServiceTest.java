@@ -153,7 +153,7 @@ class OrderFacadeServiceTest {
                                                             .useYn("N")
                                                             .issuedAt(LocalDateTime.now())
                                                             .endDate(LocalDateTime.now().plusHours(24))
-                                                            .coupon(coupon)
+                                                            .couponId(coupon.getCouponId())
                                                             .build();
 
         // 3. 쿠폰 사용 Mocking 수정: thenAnswer로 useYn을 "Y"로 변경하는 동작 흉내

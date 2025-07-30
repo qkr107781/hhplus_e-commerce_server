@@ -51,10 +51,10 @@ class CouponIssuedInfoTest {
         LocalDateTime issuedAt = LocalDateTime.now().minusHours(25);
         LocalDateTime endDAte = LocalDateTime.now().minusHours(1);
 
-        CouponIssuedInfo couponIssuedInfo = new CouponIssuedInfo(couponIssuedId,userId,useYn,issuedAt,endDAte, coupon);
+        CouponIssuedInfo couponIssuedInfo = new CouponIssuedInfo(couponIssuedId,userId,useYn,issuedAt,endDAte, coupon.getCouponId());
 
         //When
-        boolean result = couponIssuedInfo.validateCouponUsage(totalOrderPrice);
+        boolean result = couponIssuedInfo.validateCouponUsage(totalOrderPrice, coupon.getDiscountPrice());
 
         //Then
         assertFalse(result);
@@ -99,10 +99,10 @@ class CouponIssuedInfoTest {
         LocalDateTime issuedAt = LocalDateTime.now();
         LocalDateTime endDAte = LocalDateTime.now().plusHours(24);
 
-        CouponIssuedInfo couponIssuedInfo = new CouponIssuedInfo(couponIssuedId,userId,useYn,issuedAt,endDAte, coupon);
+        CouponIssuedInfo couponIssuedInfo = new CouponIssuedInfo(couponIssuedId,userId,useYn,issuedAt,endDAte, coupon.getCouponId());
 
         //When
-        boolean result = couponIssuedInfo.validateCouponUsage(totalOrderPrice);
+        boolean result = couponIssuedInfo.validateCouponUsage(totalOrderPrice,coupon.getDiscountPrice());
 
         //Then
         assertFalse(result);
@@ -147,9 +147,9 @@ class CouponIssuedInfoTest {
         LocalDateTime issuedAt = LocalDateTime.now();
         LocalDateTime endDAte = LocalDateTime.now().plusHours(24);
 
-        CouponIssuedInfo couponIssuedInfo = new CouponIssuedInfo(couponIssuedId,userId,useYn,issuedAt,endDAte, coupon);
+        CouponIssuedInfo couponIssuedInfo = new CouponIssuedInfo(couponIssuedId,userId,useYn,issuedAt,endDAte, coupon.getCouponId());
         //When
-        boolean result = couponIssuedInfo.validateCouponUsage(totalOrderPrice);
+        boolean result = couponIssuedInfo.validateCouponUsage(totalOrderPrice,coupon.getDiscountPrice());
 
 
         //Then

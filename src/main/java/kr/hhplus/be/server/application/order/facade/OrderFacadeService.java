@@ -48,9 +48,10 @@ public class OrderFacadeService implements OrderUseCase {
 
         //쿠폰 유효성 검증 및 사용
         CouponIssuedInfo couponIssuedInfo = couponService.useCoupon(requestCouponId,requestUserId,totalOrderPrice);
+        Coupon coupon = couponService.selectCouponByCouponId(couponIssuedInfo.getCouponId());
         if("Y".equals(couponIssuedInfo.getUseYn())){
-            useCouponId = couponIssuedInfo.getCoupon().getCouponId();
-            couponDiscountPrice = couponIssuedInfo.getCoupon().getDiscountPrice();
+            useCouponId = couponIssuedInfo.getCouponId();
+            couponDiscountPrice = coupon.getDiscountPrice();
         }
 
         //주문 생성

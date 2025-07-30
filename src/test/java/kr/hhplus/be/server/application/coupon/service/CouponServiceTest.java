@@ -71,7 +71,7 @@ class CouponServiceTest {
                 .useYn(useYn)
                 .issuedAt(issuedAt)
                 .endDate(endDAte)
-                .coupon(coupon)
+                .couponId(coupon.getCouponId())
                 .build();
 
         when(couponRepository.findByCouponId(couponId)).thenReturn(coupon);
@@ -82,7 +82,7 @@ class CouponServiceTest {
         CouponResponse.Issue result = couponService.issuingCoupon(couponId,userId);
 
         //Then
-        assertEquals(9L,couponIssuedInfo.getCoupon().getRemainingCouponAmount());
+        assertEquals(9L,coupon.getRemainingCouponAmount());
 
         assertEquals("신규 가입 쿠폰", result.couponName());
 
@@ -136,10 +136,11 @@ class CouponServiceTest {
                                                             .useYn(useYn)
                                                             .issuedAt(issuedAt)
                                                             .endDate(endDAte)
-                                                            .coupon(coupon)
+                                                            .couponId(coupon.getCouponId())
                                                             .build();
 
-        when(couponIssuedInfoRepository.findByCoupon_couponIdAndUserId(couponId,userId)).thenReturn(couponIssuedInfo);
+        when((couponRepository.findByCouponId(couponId))).thenReturn(coupon);
+        when(couponIssuedInfoRepository.findByCouponIdAndUserId(couponId,userId)).thenReturn(couponIssuedInfo);
         when(couponIssuedInfoRepository.useCoupon(any(CouponIssuedInfo.class))).thenAnswer(invocation -> {
             CouponIssuedInfo info = invocation.getArgument(0);
             info.useCoupon();
@@ -153,7 +154,7 @@ class CouponServiceTest {
         //Then
         assertEquals("Y", result.getUseYn());
 
-        verify(couponIssuedInfoRepository, times(1)).findByCoupon_couponIdAndUserId(couponId,userId);
+        verify(couponIssuedInfoRepository, times(1)).findByCouponIdAndUserId(couponId,userId);
         verify(couponIssuedInfoRepository, times(1)).useCoupon(any(CouponIssuedInfo.class));
     }
 

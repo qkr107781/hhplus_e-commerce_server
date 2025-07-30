@@ -22,11 +22,11 @@ public class CouponResponse {
             @Schema(description = "만료일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime endDate
     ) {
-        public static Issue from(CouponIssuedInfo couponIssuedInfo) {
+        public static Issue from(CouponIssuedInfo couponIssuedInfo,Coupon coupon) {
             return new Issue(couponIssuedInfo.getCouponIssuedId(),
-                    couponIssuedInfo.getCoupon().getCouponId(),
-                    couponIssuedInfo.getCoupon().getCouponName(),
-                    couponIssuedInfo.getCoupon().getDiscountPrice(),
+                    coupon.getCouponId(),
+                    coupon.getCouponName(),
+                    coupon.getDiscountPrice(),
                     couponIssuedInfo.getIssuedAt(),
                     couponIssuedInfo.getEndDate());
         }
@@ -45,10 +45,10 @@ public class CouponResponse {
             @Schema(description = "사용여부", requiredMode = Schema.RequiredMode.REQUIRED)
             String useYn
     ){
-        public static SelectByUserId from(CouponIssuedInfo couponIssuedInfo){
-            return new SelectByUserId(couponIssuedInfo.getCoupon().getCouponId(),
-                    couponIssuedInfo.getCoupon().getCouponName(),
-                    couponIssuedInfo.getCoupon().getDiscountPrice(),
+        public static SelectByUserId from(CouponIssuedInfo couponIssuedInfo,Coupon coupon){
+            return new SelectByUserId(coupon.getCouponId(),
+                    coupon.getCouponName(),
+                    coupon.getDiscountPrice(),
                     couponIssuedInfo.getIssuedAt(),
                     couponIssuedInfo.getEndDate(),
                     couponIssuedInfo.getUseYn());

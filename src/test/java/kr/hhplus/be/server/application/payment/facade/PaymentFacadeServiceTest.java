@@ -139,9 +139,10 @@ class PaymentFacadeServiceTest {
                 .useYn("Y")
                 .issuedAt(LocalDateTime.now().minusHours(1))
                 .endDate(LocalDateTime.now().plusHours(23))
-                .coupon(coupon)
+                .couponId(coupon.getCouponId())
                 .build();
 
+        when(couponService.selectCouponByCouponId(1L)).thenReturn(coupon);
         when(couponService.selectCouponByCouponIdAndUserId(1L,1L)).thenReturn(couponIssuedInfo);
 
         Product product = Product.builder()
