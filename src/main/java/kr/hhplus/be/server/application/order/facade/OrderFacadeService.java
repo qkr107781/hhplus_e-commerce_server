@@ -4,6 +4,7 @@ import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.order.dto.OrderBuilder;
 import kr.hhplus.be.server.application.order.dto.OrderRequest;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
+import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.order.service.OrderUseCase;
 import kr.hhplus.be.server.application.product.service.ProductService;
@@ -24,11 +25,13 @@ import java.util.List;
 public class OrderFacadeService implements OrderUseCase {
 
     private final OrderService orderService;
+    private final OrderProductService orderProductService;
     private final ProductService productService;
     private final CouponService couponService;
 
-    public OrderFacadeService(OrderService orderService, ProductService productService, CouponService couponService) {
+    public OrderFacadeService(OrderService orderService, OrderProductService orderProductService, ProductService productService, CouponService couponService) {
         this.orderService = orderService;
+        this.orderProductService = orderProductService;
         this.productService = productService;
         this.couponService = couponService;
     }
@@ -76,14 +79,14 @@ public class OrderFacadeService implements OrderUseCase {
             //주문 상품 도메인 생성
             OrderBuilder.OrderProduct createOrderProduct = new OrderBuilder.OrderProduct(
                     0L,
-                    afterCreateOrder,
+                    afterCreateOrder.getOrderId(),
                     productOption.getProduct().getProductId(),
                     productOption.getProductOptionId(),
                     orderQuantity,
                     productOption.getPrice()
             );
 
-            OrderProduct afterCreatrOrderProduct = orderService.createOrderProduct(OrderBuilder.OrderProduct.toDomain(createOrderProduct));
+            OrderProduct afterCreatrOrderProduct = orderProductService.createOrderProduct(OrderBuilder.OrderProduct.toDomain(createOrderProduct));
 
             //주문 완료 상품 조회
             Product orderProduct = productService.selectProductByProductId(productOption.getProduct().getProductId());

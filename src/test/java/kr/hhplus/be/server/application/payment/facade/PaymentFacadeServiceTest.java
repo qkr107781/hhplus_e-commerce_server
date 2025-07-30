@@ -2,6 +2,7 @@ package kr.hhplus.be.server.application.payment.facade;
 
 import kr.hhplus.be.server.application.balance.service.BalanceService;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
+import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
 import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
@@ -46,6 +47,9 @@ class PaymentFacadeServiceTest {
     OrderService orderService;
 
     @Mock
+    OrderProductService orderProductService;
+
+    @Mock
     PaymentService paymentService;
 
     @Mock
@@ -68,7 +72,7 @@ class PaymentFacadeServiceTest {
 
         OrderProduct orderProduct1 = OrderProduct.builder()
                 .orderProductId(1L)
-                .order(order)
+                .orderId(order.getOrderId())
                 .productId(1L)
                 .productOptionId(1L)
                 .productQuantity(2L)
@@ -76,7 +80,7 @@ class PaymentFacadeServiceTest {
                 .build();
         OrderProduct orderProduct2 = OrderProduct.builder()
                 .orderProductId(2L)
-                .order(order)
+                .orderId(order.getOrderId())
                 .productId(1L)
                 .productOptionId(2L)
                 .productQuantity(3L)
@@ -86,9 +90,8 @@ class PaymentFacadeServiceTest {
         orderProductList.add(orderProduct1);
         orderProductList.add(orderProduct2);
 
-        order.addOrderProduct(orderProductList);
-
-        when(orderService.selectOrderByOrderIdWithOrderProducts(1L)).thenReturn(order);
+        when(orderService.selectOrderByOrderId(1L)).thenReturn(order);
+        when(orderProductService.selectOrderProductsByOrderId(1L)).thenReturn(orderProductList);
 
         Balance balance = Balance.builder()
                 .balanceId(1L)
@@ -179,7 +182,7 @@ class PaymentFacadeServiceTest {
 
         //When
         PaymentRequest.Create request = new PaymentRequest.Create(1L,1L);
-        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,couponService,productService);
+        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService);
         PaymentResponse.Create response = paymentFacadeService.createPayment(request);
 
 // Then
@@ -209,7 +212,7 @@ class PaymentFacadeServiceTest {
 // 3. 의존하는 서비스 메서드들이 올바르게 호출되었는지 검증 (verify)
 
 // 3-1. OrderService 메서드 호출 검증
-        verify(orderService, times(1)).selectOrderByOrderIdWithOrderProducts(1L);
+        verify(orderService, times(1)).selectOrderByOrderId(1L);
         verify(orderService, times(1)).updateOrderStatusToPayment(order);
 
 // 3-2. BalanceService 메서드 호출 검증

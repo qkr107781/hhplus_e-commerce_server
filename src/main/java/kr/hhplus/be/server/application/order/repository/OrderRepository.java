@@ -6,7 +6,6 @@ public interface OrderRepository {
 
     Order save(Order order);
 
-    // Order와 OrderProduct를 한 번의 쿼리로 함께 가져오는 쿼리 (N+1 문제 방지)
-    Order findByIdWithOrderProducts(long orderId);
+    Order findByOrderId(long orderId);
 
 }

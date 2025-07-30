@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import kr.hhplus.be.server.application.balance.service.BalanceService;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
+import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.payment.dto.PaymentBuilder;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
@@ -35,13 +36,15 @@ public class PaymentFacadeService implements PaymentUseCase {
     private final BalanceService balanceService;
     private final PaymentService paymentService;
     private final OrderService orderService;
+    private final OrderProductService orderProductService;
     private final CouponService couponService;
     private final ProductService productService;
 
-    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, CouponService couponService, ProductService productService) {
+    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, OrderProductService orderProductService, CouponService couponService, ProductService productService) {
         this.balanceService = balanceService;
         this.paymentService = paymentService;
         this.orderService = orderService;
+        this.orderProductService = orderProductService;
         this.couponService = couponService;
         this.productService = productService;
     }
@@ -60,7 +63,7 @@ public class PaymentFacadeService implements PaymentUseCase {
         long paymentPrice = 0L;
 
         //주문 조회
-        Order order = orderService.selectOrderByOrderIdWithOrderProducts(orderId);
+        Order order = orderService.selectOrderByOrderId(orderId);
         if(order == null){
             throw new Exception("order empty");
         }
@@ -95,7 +98,7 @@ public class PaymentFacadeService implements PaymentUseCase {
         Coupon coupon = couponService.selectCouponByCouponId(couponIssuedInfo.getCouponId());
 
         //주문 상품 목록 조회
-        List<OrderProduct> productOptionList = order.getOrderProducts();
+        List<OrderProduct> productOptionList = orderProductService.selectOrderProductsByOrderId(order.getOrderId());
         List<OrderResponse.OrderCreateProduct> orderCreateProductList = new ArrayList<>();
         for(OrderProduct orderProduct : productOptionList){
             long productId = orderProduct.getProductId();

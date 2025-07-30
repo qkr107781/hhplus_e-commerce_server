@@ -3,6 +3,7 @@ package kr.hhplus.be.server.application.order.facade;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.order.dto.OrderRequest;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
+import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.product.service.ProductService;
 import kr.hhplus.be.server.domain.coupon.Coupon;
@@ -41,6 +42,9 @@ class OrderFacadeServiceTest {
 
     @Mock
     OrderService orderService;
+
+    @Mock
+    OrderProductService orderProductService;
 
     @Test
     @DisplayName("[주문]Facade Service 주문 로직 테스트")
@@ -173,7 +177,7 @@ class OrderFacadeServiceTest {
                 .orderDate(LocalDateTime.now())
                 .build();
         when(orderService.createOrder(any(Order.class))).thenReturn(order);
-        when(orderService.createOrderProduct(any(OrderProduct.class))).thenAnswer(invocation -> invocation.getArgument(0, OrderProduct.class));
+        when(orderProductService.createOrderProduct(any(OrderProduct.class))).thenAnswer(invocation -> invocation.getArgument(0, OrderProduct.class));
 
         //주문 완료 상품 Mocking
         Product afterOrderProduct = new Product(1L,"티셔츠", products);
@@ -183,7 +187,7 @@ class OrderFacadeServiceTest {
         when(couponService.selectCouponByCouponId(couponId)).thenReturn(coupon);
 
         //When
-        OrderFacadeService orderFacadeService = new OrderFacadeService(orderService, productService, couponService);
+        OrderFacadeService orderFacadeService = new OrderFacadeService(orderService, orderProductService, productService, couponService);
         OrderResponse.OrderCreate result = orderFacadeService.createOrder(orderRequest);
 
         //Then
@@ -201,6 +205,6 @@ class OrderFacadeServiceTest {
         verify(productService, times(1)).decreaseStock(requestProductOptionIds);
         verify(couponService, times(1)).useCoupon(requestCouponId, requestUserId, totalOrderPrice);
         verify(orderService, times(1)).createOrder(any(Order.class));
-        verify(orderService, times(3)).createOrderProduct(any(OrderProduct.class));
+        verify(orderProductService, times(3)).createOrderProduct(any(OrderProduct.class));
     }
 }
