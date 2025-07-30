@@ -6,16 +6,18 @@ import kr.hhplus.be.server.domain.product.ProductOption;
 import kr.hhplus.be.server.domain.product.ProductStatistics;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
 public class ProductAdapter implements ProductRepository {
 
     private final ProductJpaRepository productJpaRepository;
+    private final ProductStatisticsJpaRepository productStatisticsJpaRepository;
 
-    public ProductAdapter(ProductJpaRepository productJpaRepository) {
+    public ProductAdapter(ProductJpaRepository productJpaRepository, ProductStatisticsJpaRepository productStatisticsJpaRepository) {
         this.productJpaRepository = productJpaRepository;
+        this.productStatisticsJpaRepository = productStatisticsJpaRepository;
     }
 
     @Override
@@ -44,7 +46,9 @@ public class ProductAdapter implements ProductRepository {
     }
 
     @Override
-    public List<ProductStatistics> findTop5BySelectionDateRangeOrderBySalesQuantityDesc(LocalDateTime startDate, LocalDateTime endDate) {
-        return productJpaRepository.findTop5BySelectionDateRangeOrderBySalesQuantityDesc(startDate,endDate);
+    public List<ProductStatistics> findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(LocalDate startDate, LocalDate endDate) {
+        return productStatisticsJpaRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate,endDate);
     }
+
+
 }

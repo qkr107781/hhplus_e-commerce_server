@@ -404,22 +404,21 @@ class ProductServiceTest {
 
         productStatisticsList.sort(Comparator.comparing(ProductStatistics::getSalesQuantity).reversed());
 
-        LocalDate today = LocalDate.now();
-        LocalDateTime startDate = today.minusDays(4).atStartOfDay();
-        LocalDateTime endDate = today.minusDays(1).atStartOfDay().plusDays(1).minusNanos(1);
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(4);
 
-        when(productRepository.findTop5BySelectionDateRangeOrderBySalesQuantityDesc(startDate,endDate)).thenReturn(productStatisticsList);
+        when(productRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate,endDate)).thenReturn(productStatisticsList);
 
         //When
         ProductService productService = new ProductService(productRepository);
-        List<ProductStatistics> resultProductStatisticsList = productService.selectTop5SalesStatisticsSpecificRange();
+        List<ProductResponse.Statistics> resultProductStatisticsList = productService.selectTop5SalesStatisticsSpecificRange();
 
         //Then
         //1 - 3 - 5 - 2 -4
-        assertEquals(1L,resultProductStatisticsList.get(0).getProductId());
-        assertEquals(3L,resultProductStatisticsList.get(1).getProductId());
-        assertEquals(5L,resultProductStatisticsList.get(2).getProductId());
-        assertEquals(2L,resultProductStatisticsList.get(3).getProductId());
-        assertEquals(4L,resultProductStatisticsList.get(4).getProductId());
+        assertEquals(1L,resultProductStatisticsList.get(0).productId());
+        assertEquals(3L,resultProductStatisticsList.get(1).productId());
+        assertEquals(5L,resultProductStatisticsList.get(2).productId());
+        assertEquals(2L,resultProductStatisticsList.get(3).productId());
+        assertEquals(4L,resultProductStatisticsList.get(4).productId());
     }
 }

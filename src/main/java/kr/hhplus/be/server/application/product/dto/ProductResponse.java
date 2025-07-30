@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductStatistics;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,21 +51,20 @@ public class ProductResponse {
     public record Statistics(
             @Schema(description = "상품 ID", requiredMode = Schema.RequiredMode.REQUIRED)
             long productId,
-            @Schema(description = "상품 옵션 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            long productOptionId,
             @Schema(description = "상품명", requiredMode = Schema.RequiredMode.REQUIRED)
             String productName,
-            @Schema(description = "상품 옵션명", requiredMode = Schema.RequiredMode.REQUIRED)
-            String productOptionName,
-            @Schema(description = "단가", requiredMode = Schema.RequiredMode.REQUIRED)
-            long price,
             @Schema(description = "판매 수량", requiredMode = Schema.RequiredMode.REQUIRED)
             long salesQuantity ,
-            @Schema(description = "인기 상품 순위", requiredMode = Schema.RequiredMode.REQUIRED)
-            long ranking,
             @Schema(description = "선정일", requiredMode = Schema.RequiredMode.REQUIRED)
-            LocalDateTime selectionDate
+            LocalDate selectionDate
     ){
-        public static List<ProductStatistics> from(List<ProductStatistics> statistics) {return new ArrayList<>(statistics);}
+        public static List<ProductResponse.Statistics> from(List<ProductStatistics> statistics) {
+            return statistics.stream().map(ps -> new ProductResponse.Statistics(
+                    ps.getProductId(),
+                    ps.getProductName(),
+                    ps.getSalesQuantity(),
+                    ps.getSelectionDate()
+            )).toList();
+        }
     }
 }
