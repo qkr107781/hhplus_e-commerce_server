@@ -14,13 +14,9 @@ spring:
       hibernate.format_sql: true
       hibernate.highlight_sql: true
 
-#sql:
-#    init:
-#      mode: always
-#      platform: mysql
 
 logging:
   level:
     org.hibernate.SQL: DEBUG # Hibernate가 생성하는 CREATE TABLE 등 DDL 쿼리를 볼 수 있습니다.
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE # SQL 바인딩 파라미터도 볼 수 있습니다.
-    org.springframework.jdbc.datasource.init: DEBUG # data.sql 실행 관련 로그를 더 자세히 볼 수 있습니다.
+    org.springframework.jdbc.datasource.init: TRACE # data.sql 실행 관련 로그를 더 자세히 볼 수 있습니다.
