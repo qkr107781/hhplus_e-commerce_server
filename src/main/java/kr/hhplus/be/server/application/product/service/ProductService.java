@@ -3,6 +3,7 @@ package kr.hhplus.be.server.application.product.service;
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.repository.ProductOptionRepository;
 import kr.hhplus.be.server.application.product.repository.ProductRepository;
+import kr.hhplus.be.server.application.product.repository.ProductStatisticsRepository;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import kr.hhplus.be.server.domain.product.ProductStatistics;
@@ -17,10 +18,12 @@ public class ProductService implements ProductUseCase {
 
     private final ProductRepository productRepository;
     private final ProductOptionRepository productOptionRepository;
+    private final ProductStatisticsRepository productStatisticsRepository;
 
-    public ProductService(ProductRepository productRepository, ProductOptionRepository productOptionRepository) {
+    public ProductService(ProductRepository productRepository, ProductOptionRepository productOptionRepository, ProductStatisticsRepository productStatisticsRepository) {
         this.productRepository = productRepository;
         this.productOptionRepository = productOptionRepository;
+        this.productStatisticsRepository = productStatisticsRepository;
     }
 
     /**
@@ -120,7 +123,7 @@ public class ProductService implements ProductUseCase {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(4);
 
-        List<ProductStatistics> resultList = productRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate, endDate);
+        List<ProductStatistics> resultList = productStatisticsRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate, endDate);
 
         return ProductResponse.Statistics.from(resultList);
     }

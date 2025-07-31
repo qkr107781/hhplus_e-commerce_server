@@ -3,6 +3,7 @@ package kr.hhplus.be.server.application.product.service;
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.repository.ProductOptionRepository;
 import kr.hhplus.be.server.application.product.repository.ProductRepository;
+import kr.hhplus.be.server.application.product.repository.ProductStatisticsRepository;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import kr.hhplus.be.server.domain.product.ProductStatistics;
@@ -32,6 +33,9 @@ class ProductServiceTest {
 
     @Mock
     ProductOptionRepository productOptionRepository;
+
+    @Mock
+    ProductStatisticsRepository productStatisticsRepository;
 
     @Test
     @DisplayName("[상품] 판매중인 상품 조회")
@@ -142,7 +146,7 @@ class ProductServiceTest {
         when(productOptionRepository.selectProductOptionByProductIdAndSalesYn(productList.get(1).getProductId(),"Y")).thenReturn(products2);
 
         //When
-        ProductService productService = new ProductService(productRepository,productOptionRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository,productStatisticsRepository);
         List<ProductResponse.Select> resultProductList = productService.selectSalesProductList();
 
         //Then
@@ -208,7 +212,7 @@ class ProductServiceTest {
         when(productOptionRepository.selectProductOptionListByProductOptionIds(productOptionIds)).thenReturn(products);
         when(productOptionRepository.save(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
         //When
-        ProductService productService = new ProductService(productRepository,productOptionRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository,productStatisticsRepository);
         productService.decreaseStock(productOptionIds);
 
         //Then
@@ -269,7 +273,7 @@ class ProductServiceTest {
         products.add(productOption3);
 
         //When
-        ProductService productService = new ProductService(productRepository,productOptionRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository,productStatisticsRepository);
         long totalOrderPrice = productService.calculateProductTotalPrice(products);
 
         //Then
@@ -332,10 +336,10 @@ class ProductServiceTest {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(4);
 
-        when(productRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate,endDate)).thenReturn(productStatisticsList);
+        when(productStatisticsRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate,endDate)).thenReturn(productStatisticsList);
 
         //When
-        ProductService productService = new ProductService(productRepository,productOptionRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository,productStatisticsRepository);
         List<ProductResponse.Statistics> resultProductStatisticsList = productService.selectTop5SalesStatisticsSpecificRange();
 
         //Then
