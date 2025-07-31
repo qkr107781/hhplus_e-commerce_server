@@ -52,7 +52,7 @@ class ProductFacadeServiceTest {
         try (MockedStatic<LocalDate> mockedLocalDate = mockStatic(LocalDate.class)) {
             mockedLocalDate.when(LocalDate::now).thenReturn(fixedDateForTest);
 
-            LocalDate startDateInService = fixedDateForTest.minusDays(4);
+            LocalDate startDateInService = fixedDateForTest.minusDays(3);
             LocalDate endDateInService = fixedDateForTest;
 
             List<Order> ordersForFacade = new ArrayList<>();
@@ -111,11 +111,11 @@ class ProductFacadeServiceTest {
             when(orderProductService.getTop5OrderProduct(anyList())).thenReturn(expectedTop5SummariesCalculatedByFacade);
 
             List<ProductResponse.Statistics> expectedResultList = new ArrayList<>();
-            expectedResultList.add(new ProductResponse.Statistics(5L, "반바지", 81L, fixedDateForTest));
-            expectedResultList.add(new ProductResponse.Statistics(9L, "반팔", 62L, fixedDateForTest));
-            expectedResultList.add(new ProductResponse.Statistics(4L, "나시", 60L, fixedDateForTest));
-            expectedResultList.add(new ProductResponse.Statistics(6L, "긴바지", 60L, fixedDateForTest));
-            expectedResultList.add(new ProductResponse.Statistics(8L, "긴팔", 42L, fixedDateForTest));
+            expectedResultList.add(new ProductResponse.Statistics( "반바지", 81L));
+            expectedResultList.add(new ProductResponse.Statistics( "반팔", 62L));
+            expectedResultList.add(new ProductResponse.Statistics( "나시", 60L));
+            expectedResultList.add(new ProductResponse.Statistics( "긴바지", 60L));
+            expectedResultList.add(new ProductResponse.Statistics( "긴팔", 42L));
 
             ArgumentCaptor<List> argumentCaptor = ArgumentCaptor.forClass(List.class);
             when(productStatisticsService.selectTop5SalesProductBySpecificRange(argumentCaptor.capture()))
@@ -132,19 +132,19 @@ class ProductFacadeServiceTest {
 
             assertEquals(5, actualResult.size());
 
-            assertEquals(5L, actualResult.get(0).productId());
+            assertEquals("반바지", actualResult.get(0).productName());
             assertEquals(81L, actualResult.get(0).salesQuantity());
 
-            assertEquals(9L, actualResult.get(1).productId());
+            assertEquals("반팔", actualResult.get(1).productName());
             assertEquals(62L, actualResult.get(1).salesQuantity());
 
-            assertEquals(4L, actualResult.get(2).productId());
+            assertEquals("나시", actualResult.get(2).productName());
             assertEquals(60L, actualResult.get(2).salesQuantity());
 
-            assertEquals(6L, actualResult.get(3).productId());
+            assertEquals("긴바지", actualResult.get(3).productName());
             assertEquals(60L, actualResult.get(3).salesQuantity());
 
-            assertEquals(8L, actualResult.get(4).productId());
+            assertEquals("긴팔", actualResult.get(4).productName());
             assertEquals(42L, actualResult.get(4).salesQuantity());
         }
     }

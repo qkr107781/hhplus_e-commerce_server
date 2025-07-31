@@ -1,9 +1,12 @@
 package kr.hhplus.be.server.application.product.dto;
 
+import com.querydsl.core.Tuple;
 import io.swagger.v3.oas.annotations.media.Schema;
+import kr.hhplus.be.server.domain.order.QOrderProduct;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import kr.hhplus.be.server.domain.product.ProductStatistics;
+import kr.hhplus.be.server.domain.product.QProductOption;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,21 +81,17 @@ public class ProductResponse {
     }
 
     public record Statistics(
-            @Schema(description = "상품 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            long productId,
             @Schema(description = "상품명", requiredMode = Schema.RequiredMode.REQUIRED)
             String productName,
             @Schema(description = "판매 수량", requiredMode = Schema.RequiredMode.REQUIRED)
-            long salesQuantity ,
-            @Schema(description = "선정일", requiredMode = Schema.RequiredMode.REQUIRED)
-            LocalDate selectionDate
+            long salesQuantity
     ){
-        public static List<ProductResponse.Statistics> from(List<ProductStatistics> statistics) {
+        public static List<ProductResponse.Statistics> from(List<Tuple> statistics) {
+            QOrderProduct orderProduct = QOrderProduct.orderProduct;
+            QProductOption productOption = QProductOption.productOption;
             return statistics.stream().map(ps -> new ProductResponse.Statistics(
-                    ps.getProductId(),
-                    ps.getProductName(),
-                    ps.getSalesQuantity(),
-                    ps.getSelectionDate()
+                    ps.get(productOption.optionName),
+                    ps.get(orderProduct.productQuantity)
             )).toList();
         }
     }

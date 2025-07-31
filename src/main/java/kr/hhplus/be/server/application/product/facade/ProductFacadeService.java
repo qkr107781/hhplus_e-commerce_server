@@ -8,11 +8,13 @@ import kr.hhplus.be.server.application.product.service.ProductStatisticsService;
 import kr.hhplus.be.server.application.product.service.ProductStatisticsUseCase;
 import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.order.OrderProduct;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class ProductFacadeService implements ProductStatisticsUseCase {
 
     private final OrderService orderService;
@@ -35,7 +37,7 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
         List<OrderProduct> orderProductListByBefore3Days = new ArrayList<>();
 
         LocalDate endDate = LocalDate.now();
-        LocalDate startDate = LocalDate.now().minusDays(4);
+        LocalDate startDate = LocalDate.now().minusDays(3);
 
         List<Order> orderList = orderService.selectOrderByOrderStatusAndOrderDateBetween("complete_payment", startDate, endDate);
 
