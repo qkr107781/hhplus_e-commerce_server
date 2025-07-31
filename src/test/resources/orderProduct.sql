@@ -1,0 +1,8 @@
+INSERT INTO order_product(order_id, product_id, product_option_id, product_price, product_quantity)
+VALUES(1, 1, 1, 20000, 2);
+
+INSERT INTO order_product(order_id, product_id, product_option_id, product_price, product_quantity)
+VALUES(1, 1, 2, 10000, 1);
+
+INSERT INTO order_product(order_id, product_id, product_option_id, product_price, product_quantity)
+VALUES(1, 2, 1, 5000, 3);
