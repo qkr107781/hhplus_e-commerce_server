@@ -83,7 +83,6 @@ public class PaymentFacadeService implements PaymentUseCase {
 
         //결제 insert
         PaymentBuilder.Payment payment = new PaymentBuilder.Payment(
-                0L,
                 userId,
                 orderId,
                 paymentPrice,

@@ -1,14 +1,11 @@
 package kr.hhplus.be.server.application.payment.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import kr.hhplus.be.server.domain.payment.Payment;
 
 import java.time.LocalDateTime;
 
 public class PaymentBuilder {
     public record Payment(
-            @Schema(description = "결제 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            long paymentId,
             @Schema(description = "사용자 ID", requiredMode = Schema.RequiredMode.REQUIRED)
             long userId,
             @Schema(description = "주문 ID", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -20,7 +17,6 @@ public class PaymentBuilder {
     ){
         public static kr.hhplus.be.server.domain.payment.Payment toDomain(PaymentBuilder.Payment requestPayment){
             return kr.hhplus.be.server.domain.payment.Payment.builder()
-                    .paymentId(requestPayment.paymentId())
                     .userId(requestPayment.userId())
                     .orderId(requestPayment.orderId())
                     .paymentPrice(requestPayment.paymentPrice())
