@@ -1,5 +1,5 @@
 INSERT INTO `order` (coupon_discount_price, coupon_id, order_date, total_price, user_id, order_status)
-VALUES(1000, 1, now(), 50000, 1, 'pending_payment');
+VALUES(1000, 3, now(), 50000, 1, 'pending_payment');
 
 
 INSERT INTO `order`( coupon_discount_price, coupon_id, order_date, order_status, total_price, user_id)

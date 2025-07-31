@@ -5,6 +5,7 @@ import kr.hhplus.be.server.application.order.repository.OrderProductRepository;
 import kr.hhplus.be.server.domain.order.OrderProduct;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,6 +42,10 @@ public class OrderProductService {
         // 집계된 Map을 ProductOptionSummary DTO 리스트로 변환
         return groupedQuantities.entrySet().stream()
                 .map(entry -> new OrderProductSummary(entry.getKey(), entry.getValue()))
+                // 1. totalQuantity (집계된 수량) 기준으로 내림차순 정렬
+                .sorted(Comparator.comparing(OrderProductSummary::totalOrderedQuantity, Comparator.reverseOrder()))
+                // 2. 상위 5개만 자르기
+                .limit(5)
                 .collect(Collectors.toList());
     }
 }
