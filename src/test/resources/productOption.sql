@@ -6,3 +6,6 @@ VALUES('N', 20000, 1, now(), '옵션2', 20, 50);
 
 INSERT INTO product_option(sales_yn, price, product_id, reg_date, option_name, stock_quantity, total_quantity)
 VALUES('N', 30000, 1, now(), '옵션3', 30, 50);
+
+INSERT INTO product_option(sales_yn, price, product_id, reg_date, option_name, stock_quantity, total_quantity)
+VALUES('N', 30000, 2, now(), '옵션4', 30, 50);

@@ -35,7 +35,7 @@ public class ProductStatisticsAdapter implements ProductStatisticsRepository {
         QProductOption productOption = QProductOption.productOption;
 
         return jpaQueryFactory
-                .select(orderProduct.productOptionId,productOption.optionName,orderProduct.productQuantity.sum())
+                .select(orderProduct.productOptionId,productOption.optionName,orderProduct.productQuantity.sum().castToNum(Long.class))
                 .from(orderProduct)
                 .join(productOption).on(orderProduct.productOptionId.eq(productOption.productOptionId))
                 .where(orderProduct.productOptionId.in(orderProductOptionIds))

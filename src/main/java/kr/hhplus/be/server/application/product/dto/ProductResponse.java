@@ -5,10 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import kr.hhplus.be.server.domain.order.QOrderProduct;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
-import kr.hhplus.be.server.domain.product.ProductStatistics;
 import kr.hhplus.be.server.domain.product.QProductOption;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -84,14 +82,14 @@ public class ProductResponse {
             @Schema(description = "상품명", requiredMode = Schema.RequiredMode.REQUIRED)
             String productName,
             @Schema(description = "판매 수량", requiredMode = Schema.RequiredMode.REQUIRED)
-            long salesQuantity
+            Long salesQuantity
     ){
         public static List<ProductResponse.Statistics> from(List<Tuple> statistics) {
             QOrderProduct orderProduct = QOrderProduct.orderProduct;
             QProductOption productOption = QProductOption.productOption;
             return statistics.stream().map(ps -> new ProductResponse.Statistics(
                     ps.get(productOption.optionName),
-                    ps.get(orderProduct.productQuantity)
+                    ps.get(orderProduct.productQuantity.sum())
             )).toList();
         }
     }
