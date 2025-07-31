@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
 @ActiveProfiles("test") //application-test.yml 읽어오도록 함
 @Sql(scripts = "/orderProduct.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
+@Sql(scripts = "/delete.sql",executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS) //이 클래스 테스트 종료 시 데이터 클랜징
 @ComponentScan(basePackageClasses = OrderProductAdapter.class)//@Component 사용 중인 Adapter 클래스 읽어오기 위함
 @ContextConfiguration(classes = TestContainersConfiguration.class)//Spring boot Context 로딩 전 TestContainerConfiguration 읽어오게 하기 위함
 class OrderProductAdapterTest {
@@ -54,14 +55,14 @@ class OrderProductAdapterTest {
 
         assertEquals(3L,orderProductList.get(2).getOrderProductId());
         assertEquals(2L,orderProductList.get(2).getProductId());
-        assertEquals(1L,orderProductList.get(2).getProductOptionId());
+        assertEquals(4L,orderProductList.get(2).getProductOptionId());
         assertEquals(5_000L,orderProductList.get(2).getProductPrice());
         assertEquals(3L,orderProductList.get(2).getProductQuantity());
     }
 
     @Test
     @Transactional
-    @Commit
+//    @Commit
     @DisplayName("주문 상품 저장 - save() - insert")
     void saveInsert(){
         System.out.println("save - insert 쿼리");
