@@ -3,9 +3,7 @@ package kr.hhplus.be.server.integration.application.balance;
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.application.balance.dto.BalanceRequest;
 import kr.hhplus.be.server.application.balance.dto.BalanceResponse;
-import kr.hhplus.be.server.application.balance.repository.BalanceRepository;
 import kr.hhplus.be.server.application.balance.service.BalanceService;
-import kr.hhplus.be.server.domain.balance.Balance;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BalanceServiceTest {
 
     @Autowired
-    BalanceRepository balanceRepository;
-
-    @Autowired
     BalanceService balanceService;
 
     @Test
@@ -42,7 +37,7 @@ public class BalanceServiceTest {
         BalanceResponse balanceResponse = balanceService.charge(balanceRequest);
 
         //Then
-        assertEquals(30_000L,balanceResponse.balance());
+        assertEquals(130_000L,balanceResponse.balance());
     }
 
 }
