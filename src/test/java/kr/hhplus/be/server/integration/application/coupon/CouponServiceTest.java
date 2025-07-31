@@ -2,8 +2,6 @@ package kr.hhplus.be.server.integration.application.coupon;
 
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
-import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoRepository;
-import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,12 +22,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @Sql(scripts = "/couponIssuedInfo.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
 @ContextConfiguration(classes = TestContainersConfiguration.class)//Spring boot Context 로딩 전 TestContainerConfiguration 읽어오게 하기 위함
 public class CouponServiceTest {
-
-    @Autowired
-    CouponRepository couponRepository;
-
-    @Autowired
-    CouponIssuedInfoRepository couponIssuedInfoRepository;
 
     @Autowired
     CouponService couponService;
