@@ -6,8 +6,6 @@ import java.time.LocalDateTime;
 
 public class OrderBuilder {
     public record Order(
-            @Schema(description = "주문 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            long orderId,
             @Schema(description = "사용자 ID", requiredMode = Schema.RequiredMode.REQUIRED)
             long userId,
             @Schema(description = "쿠폰 ID", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -23,7 +21,6 @@ public class OrderBuilder {
     ){
         public static kr.hhplus.be.server.domain.order.Order toDomain(OrderBuilder.Order requestOrder){
             return kr.hhplus.be.server.domain.order.Order.builder()
-                    .orderId(requestOrder.orderId())
                     .userId(requestOrder.userId())
                     .couponId(requestOrder.couponId())
                     .couponDiscountPrice(requestOrder.couponDiscountPrice())
@@ -34,8 +31,6 @@ public class OrderBuilder {
         }
     }
     public record OrderProduct(
-            @Schema(description = "주문 상품 ID", requiredMode = Schema.RequiredMode.REQUIRED)
-            long orderProductId,
             @Schema(description = "주문 ID", requiredMode = Schema.RequiredMode.REQUIRED)
             long orderId,
             @Schema(description = "상품 ID", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -49,7 +44,6 @@ public class OrderBuilder {
     ){
         public static kr.hhplus.be.server.domain.order.OrderProduct toDomain(OrderBuilder.OrderProduct requestOrderProduct){
             return kr.hhplus.be.server.domain.order.OrderProduct.builder()
-                    .orderProductId(requestOrderProduct.orderProductId())
                     .orderId(requestOrderProduct.orderId())
                     .productId(requestOrderProduct.productId())
                     .productOptionId(requestOrderProduct.productOptionId())

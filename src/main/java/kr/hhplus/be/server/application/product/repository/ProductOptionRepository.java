@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface ProductOptionRepository {
 
-    List<ProductOption> selectProductOptionListByProductOptionIds(List<Long> productOptionIds);
+    ProductOption selectProductOptionListByProductOptionId(Long productOptionIds);
 
     ProductOption save(ProductOption productOption);
 

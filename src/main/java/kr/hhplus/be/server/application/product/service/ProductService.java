@@ -48,8 +48,9 @@ public class ProductService implements ProductUseCase {
     public List<ProductOption> decreaseStock(List<Long> requestProductOptionIds) throws Exception {
         //상품 잔여 갯수 확인
         List<ProductOption> productOptionListForDecreaseStock = new ArrayList<>();
-        List<ProductOption> productOptionList = productOptionRepository.selectProductOptionListByProductOptionIds(requestProductOptionIds);
-        for (ProductOption productOption : productOptionList) {
+        for (Long productOptionId : requestProductOptionIds ){
+            ProductOption productOption = productOptionRepository.selectProductOptionListByProductOptionId(productOptionId);
+
             if (productOption.getStockQuantity() == 0) {
                 throw new Exception("stock empty");
             } else {

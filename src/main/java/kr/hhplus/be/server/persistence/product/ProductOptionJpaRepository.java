@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface ProductOptionJpaRepository extends JpaRepository<ProductOption,Long> {
 
-    List<ProductOption> findByProductOptionIdIn(List<Long> productOptionIds);
+    ProductOption findByProductOptionId(Long productOptionId);
 
     List<ProductOption> findByProductIdAndSalesYn(long productId,String salesYn);
 

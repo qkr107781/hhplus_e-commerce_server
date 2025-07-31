@@ -19,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class OrderFacadeService implements OrderUseCase {
@@ -59,7 +61,6 @@ public class OrderFacadeService implements OrderUseCase {
 
         //주문 생성
         OrderBuilder.Order createOrder = new OrderBuilder.Order(
-                0L,
                 requestUserId,
                 useCouponId,
                 couponDiscountPrice,
@@ -71,6 +72,7 @@ public class OrderFacadeService implements OrderUseCase {
 
 
         List<OrderResponse.OrderCreateProduct> orderCreateProductResponseList = new ArrayList<>();
+        Set<OrderBuilder.OrderProduct> seenOrderList = new HashSet<>();
         for(ProductOption productOption : productOptionList){
             long orderQuantity = productOptionList.stream()
                     .filter(productOptionId -> productOptionId.getProductOptionId().equals(productOption.getProductOptionId()))
@@ -78,7 +80,6 @@ public class OrderFacadeService implements OrderUseCase {
 
             //주문 상품 도메인 생성
             OrderBuilder.OrderProduct createOrderProduct = new OrderBuilder.OrderProduct(
-                    0L,
                     afterCreateOrder.getOrderId(),
                     productOption.getProductId(),
                     productOption.getProductOptionId(),
@@ -86,12 +87,15 @@ public class OrderFacadeService implements OrderUseCase {
                     productOption.getPrice()
             );
 
-            OrderProduct afterCreatrOrderProduct = orderProductService.createOrderProduct(OrderBuilder.OrderProduct.toDomain(createOrderProduct));
+            if(seenOrderList.add(createOrderProduct)){
+                OrderProduct afterCreatrOrderProduct = orderProductService.createOrderProduct(OrderBuilder.OrderProduct.toDomain(createOrderProduct));
 
-            //주문 완료 상품 조회
-            Product orderProduct = productService.selectProductByProductId(productOption.getProductId());
-            //주문 상품 리턴 DTO 생성을 위함
-            orderCreateProductResponseList.add(OrderResponse.OrderCreateProduct.from(afterCreatrOrderProduct,orderProduct,productOption));
+                //주문 완료 상품 조회
+                Product orderProduct = productService.selectProductByProductId(productOption.getProductId());
+                //주문 상품 리턴 DTO 생성을 위함
+                orderCreateProductResponseList.add(OrderResponse.OrderCreateProduct.from(afterCreatrOrderProduct,orderProduct,productOption));
+            }
+
         }
 
         //사용 쿠폰 정보 조회
