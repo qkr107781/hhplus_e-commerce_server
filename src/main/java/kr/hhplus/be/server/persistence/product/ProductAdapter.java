@@ -12,11 +12,9 @@ import java.util.List;
 public class ProductAdapter implements ProductRepository {
 
     private final ProductJpaRepository productJpaRepository;
-    private final ProductStatisticsJpaRepository productStatisticsJpaRepository;
 
-    public ProductAdapter(ProductJpaRepository productJpaRepository, ProductStatisticsJpaRepository productStatisticsJpaRepository) {
+    public ProductAdapter(ProductJpaRepository productJpaRepository) {
         this.productJpaRepository = productJpaRepository;
-        this.productStatisticsJpaRepository = productStatisticsJpaRepository;
     }
 
     @Override
@@ -28,11 +26,5 @@ public class ProductAdapter implements ProductRepository {
     public Product selectProductByProductId(long productId) {
         return productJpaRepository.findByProductId(productId);
     }
-
-    @Override
-    public List<ProductStatistics> findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(LocalDate startDate, LocalDate endDate) {
-        return productStatisticsJpaRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate,endDate);
-    }
-
 
 }
