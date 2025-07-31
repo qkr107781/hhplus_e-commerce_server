@@ -4,6 +4,9 @@ import kr.hhplus.be.server.application.order.repository.OrderRepository;
 import kr.hhplus.be.server.domain.order.Order;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
+
 
 @Service
 public class OrderService {
@@ -25,5 +28,7 @@ public class OrderService {
     public void updateOrderStatusToPayment(Order order){
         order.updateOrderStatusToPayment();
     }
+
+    public List<Order> selectOrderByOrderStatusAndOrderDateBetween(String orderStatus, LocalDate startDate, LocalDate endDate){return orderRepository.findByOrderStatusAndOrderDateBetween(orderStatus,startDate,endDate);}
 
 }

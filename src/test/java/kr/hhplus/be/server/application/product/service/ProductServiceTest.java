@@ -6,17 +6,14 @@ import kr.hhplus.be.server.application.product.repository.ProductRepository;
 import kr.hhplus.be.server.application.product.repository.ProductStatisticsRepository;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
-import kr.hhplus.be.server.domain.product.ProductStatistics;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,9 +30,6 @@ class ProductServiceTest {
 
     @Mock
     ProductOptionRepository productOptionRepository;
-
-    @Mock
-    ProductStatisticsRepository productStatisticsRepository;
 
     @Test
     @DisplayName("[상품] 판매중인 상품 조회")
@@ -146,7 +140,7 @@ class ProductServiceTest {
         when(productOptionRepository.selectProductOptionByProductIdAndSalesYn(productList.get(1).getProductId(),"Y")).thenReturn(products2);
 
         //When
-        ProductService productService = new ProductService(productRepository,productOptionRepository,productStatisticsRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository);
         List<ProductResponse.Select> resultProductList = productService.selectSalesProductList();
 
         //Then
@@ -163,7 +157,6 @@ class ProductServiceTest {
     @DisplayName("[상품 주문]재고 차감")
     void decreaseStock() throws Exception {
         //Given
-        long productId = 1L;
         List<Long> productOptionIds = List.of(1L,2L,2L,2L,3L);
 
         Product product = Product.builder()
@@ -212,7 +205,7 @@ class ProductServiceTest {
         when(productOptionRepository.selectProductOptionListByProductOptionIds(productOptionIds)).thenReturn(products);
         when(productOptionRepository.save(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
         //When
-        ProductService productService = new ProductService(productRepository,productOptionRepository,productStatisticsRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository);
         productService.decreaseStock(productOptionIds);
 
         //Then
@@ -228,8 +221,6 @@ class ProductServiceTest {
     @DisplayName("[상품 주문]총 주문 금액 계산")
     void calculateProductTotalPrice() throws Exception {
         //Given
-        long productId = 1L;
-
         Product product = Product.builder()
                 .productId(1L)
                 .name("티셔츠")
@@ -273,81 +264,11 @@ class ProductServiceTest {
         products.add(productOption3);
 
         //When
-        ProductService productService = new ProductService(productRepository,productOptionRepository,productStatisticsRepository);
+        ProductService productService = new ProductService(productRepository,productOptionRepository);
         long totalOrderPrice = productService.calculateProductTotalPrice(products);
 
         //Then
         assertEquals(60_000L,totalOrderPrice);
     }
 
-    @Test
-    @DisplayName("[상품 통계]지난 3일간 가장 많이 팔린 TOP5 상품 조회")
-    void productStatistics(){
-        //Given
-        ProductStatistics productStatistics1 = ProductStatistics.builder()
-                .statisticsId(1L)
-                .productId(1L)
-                .productName("티셔츠")
-                .salesQuantity(25L)
-                .selectionDate(LocalDate.now().minusDays(2))
-                .build();
-
-        ProductStatistics productStatistics2 = ProductStatistics.builder()
-                .statisticsId(2L)
-                .productId(2L)
-                .productName("티셔츠")
-                .salesQuantity(10L)
-                .selectionDate(LocalDate.now().minusDays(2))
-                .build();
-
-        ProductStatistics productStatistics3 = ProductStatistics.builder()
-                .statisticsId(3L)
-                .productId(3L)
-                .productName("티셔츠")
-                .salesQuantity(20L)
-                .selectionDate(LocalDate.now().minusDays(3))
-                .build();
-
-        ProductStatistics productStatistics4 = ProductStatistics.builder()
-                .statisticsId(4L)
-                .productId(4L)
-                .productName("티셔츠")
-                .salesQuantity(5L)
-                .selectionDate(LocalDate.now().minusDays(3))
-                .build();
-
-        ProductStatistics productStatistics5 = ProductStatistics.builder()
-                .statisticsId(5L)
-                .productId(5L)
-                .productName("티셔츠")
-                .salesQuantity(13L)
-                .selectionDate(LocalDate.now().minusDays(4))
-                .build();
-
-        List<ProductStatistics> productStatisticsList = new ArrayList<>();
-        productStatisticsList.add(productStatistics1);
-        productStatisticsList.add(productStatistics2);
-        productStatisticsList.add(productStatistics3);
-        productStatisticsList.add(productStatistics4);
-        productStatisticsList.add(productStatistics5);
-
-        productStatisticsList.sort(Comparator.comparing(ProductStatistics::getSalesQuantity).reversed());
-
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(4);
-
-        when(productStatisticsRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate,endDate)).thenReturn(productStatisticsList);
-
-        //When
-        ProductService productService = new ProductService(productRepository,productOptionRepository,productStatisticsRepository);
-        List<ProductResponse.Statistics> resultProductStatisticsList = productService.selectTop5SalesStatisticsSpecificRange();
-
-        //Then
-        //1 - 3 - 5 - 2 -4
-        assertEquals(1L,resultProductStatisticsList.get(0).productId());
-        assertEquals(3L,resultProductStatisticsList.get(1).productId());
-        assertEquals(5L,resultProductStatisticsList.get(2).productId());
-        assertEquals(2L,resultProductStatisticsList.get(3).productId());
-        assertEquals(4L,resultProductStatisticsList.get(4).productId());
-    }
 }

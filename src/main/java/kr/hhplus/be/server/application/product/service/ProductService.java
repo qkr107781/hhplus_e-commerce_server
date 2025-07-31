@@ -3,13 +3,10 @@ package kr.hhplus.be.server.application.product.service;
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.repository.ProductOptionRepository;
 import kr.hhplus.be.server.application.product.repository.ProductRepository;
-import kr.hhplus.be.server.application.product.repository.ProductStatisticsRepository;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
-import kr.hhplus.be.server.domain.product.ProductStatistics;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,12 +15,10 @@ public class ProductService implements ProductUseCase {
 
     private final ProductRepository productRepository;
     private final ProductOptionRepository productOptionRepository;
-    private final ProductStatisticsRepository productStatisticsRepository;
 
-    public ProductService(ProductRepository productRepository, ProductOptionRepository productOptionRepository, ProductStatisticsRepository productStatisticsRepository) {
+    public ProductService(ProductRepository productRepository, ProductOptionRepository productOptionRepository) {
         this.productRepository = productRepository;
         this.productOptionRepository = productOptionRepository;
-        this.productStatisticsRepository = productStatisticsRepository;
     }
 
     /**
@@ -113,18 +108,4 @@ public class ProductService implements ProductUseCase {
         return productOptionRepository.selectProductOptionByProductIdAndProductOptionId(productId, productOptionId);
     }
 
-    /**
-     * 오늘 기준 4일 전부터 1일 전까지의 데이터 중 salesQuantity 기준 상위 5개를 조회합니다.
-     * 예: 오늘이 7월 25일이면, 7월 21일 부터 7월 24일 까지의 데이터를 조회합니다.
-     * @return 상위 5개 통계 데이터 리스트
-     */
-    @Override
-    public List<ProductResponse.Statistics> selectTop5SalesStatisticsSpecificRange() {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(4);
-
-        List<ProductStatistics> resultList = productStatisticsRepository.findTop5BySelectionDateBetweenOrderBySalesQuantityDesc(startDate, endDate);
-
-        return ProductResponse.Statistics.from(resultList);
-    }
 }
