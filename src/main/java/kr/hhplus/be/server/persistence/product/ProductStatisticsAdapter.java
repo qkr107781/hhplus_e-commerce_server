@@ -1,12 +1,11 @@
 package kr.hhplus.be.server.persistence.product;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.hhplus.be.server.application.order.dto.OrderProductSummary;
 import kr.hhplus.be.server.application.product.repository.ProductStatisticsRepository;
 import kr.hhplus.be.server.domain.order.QOrderProduct;
-import kr.hhplus.be.server.domain.product.ProductStatistics;
 import kr.hhplus.be.server.domain.product.QProductOption;
-import kr.hhplus.be.server.domain.product.QProductStatistics;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,7 +21,7 @@ public class ProductStatisticsAdapter implements ProductStatisticsRepository {
     }
 
     @Override
-    public List<ProductStatistics> selectTop5SalseProductByLast3Days(List<OrderProductSummary> orderProductList) {
+    public List<Tuple> selectTop5SalseProductByLast3Days(List<OrderProductSummary> orderProductList) {
         if (orderProductList == null || orderProductList.isEmpty()) {
             return List.of();
         }
@@ -34,13 +33,14 @@ public class ProductStatisticsAdapter implements ProductStatisticsRepository {
 
         QOrderProduct orderProduct = QOrderProduct.orderProduct;
         QProductOption productOption = QProductOption.productOption;
-        QProductStatistics productStatistics = QProductStatistics.productStatistics;
 
         return jpaQueryFactory
-                .select(productStatistics) // 또는 new QProductOptionDto(...) 로 DTO 선택
-                .from(orderProduct) // OrderProduct에서 시작
-                .join(productOption).on(orderProduct.productOptionId.eq(productOption.productOptionId)) // productOptionId 기준으로 조인
+                .select(orderProduct.productOptionId,productOption.optionName,orderProduct.productQuantity.sum())
+                .from(orderProduct)
+                .join(productOption).on(orderProduct.productOptionId.eq(productOption.productOptionId))
                 .where(orderProduct.productOptionId.in(orderProductOptionIds))
+                .groupBy(orderProduct.productOptionId,productOption.optionName)
+                .orderBy(orderProduct.productQuantity.sum().desc())
                 .fetch();
     }
 }
