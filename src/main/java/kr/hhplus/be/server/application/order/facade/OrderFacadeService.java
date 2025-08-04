@@ -40,7 +40,7 @@ public class OrderFacadeService implements OrderUseCase {
 
     @Transactional
     @Override
-    public OrderResponse.OrderCreate createOrder(OrderRequest.OrderCreate orderRequest) throws Exception {
+    public OrderResponse.OrderDTO createOrder(OrderRequest.OrderCreate orderRequest) throws Exception {
         long useCouponId = 0L;
         long couponDiscountPrice = 0L;
         long requestUserId = orderRequest.userId();
@@ -71,7 +71,7 @@ public class OrderFacadeService implements OrderUseCase {
         Order afterCreateOrder = orderService.createOrder(OrderBuilder.Order.toDomain(createOrder));
 
 
-        List<OrderResponse.OrderCreateProduct> orderCreateProductResponseList = new ArrayList<>();
+        List<OrderResponse.OrderProductDTO> orderCreateProductResponseList = new ArrayList<>();
         Set<OrderBuilder.OrderProduct> seenOrderList = new HashSet<>();
         for(ProductOption productOption : productOptionList){
             long orderQuantity = productOptionList.stream()
@@ -93,7 +93,7 @@ public class OrderFacadeService implements OrderUseCase {
                 //주문 완료 상품 조회
                 Product orderProduct = productService.selectProductByProductId(productOption.getProductId());
                 //주문 상품 리턴 DTO 생성을 위함
-                orderCreateProductResponseList.add(OrderResponse.OrderCreateProduct.from(afterCreatrOrderProduct,orderProduct,productOption));
+                orderCreateProductResponseList.add(OrderResponse.OrderProductDTO.from(afterCreatrOrderProduct,orderProduct,productOption));
             }
 
         }
@@ -101,6 +101,39 @@ public class OrderFacadeService implements OrderUseCase {
         //사용 쿠폰 정보 조회
         Coupon useCoupon = couponService.selectCouponByCouponId(requestCouponId);
 
-        return OrderResponse.OrderCreate.from(afterCreateOrder,useCoupon,orderCreateProductResponseList);
+        return OrderResponse.OrderDTO.from(afterCreateOrder,useCoupon,orderCreateProductResponseList);
+    }
+
+    @Override
+    public OrderResponse.OrderDTO cancelOrder(OrderRequest.OrderCancel orderRequest) throws Exception {
+        long requestUserId = orderRequest.userId();
+        long requestOrderId = orderRequest.orderId();
+
+        //주문 취소 대상 주문 및 상품 조회
+        Order cancelOrder = orderService.selectOrderByOrderId(requestOrderId);
+        List<OrderProduct> cancelOrderProduct = orderProductService.selectOrderProductsByOrderId(requestOrderId);
+
+        //상품 잔여 갯수 복구
+        List<ProductOption> afterRestoreProductOption = productService.restoreStock(cancelOrderProduct);
+
+        //쿠폰 사용 여부 확인 및 있다면 복구
+        CouponIssuedInfo afterRestoreCouponIssuedInfo = couponService.restoreCoupon(requestUserId,cancelOrder.getCouponId());
+        Coupon coupon = couponService.selectCouponByCouponId(afterRestoreCouponIssuedInfo.getCouponId());
+
+        //주문 취소
+        cancelOrder = orderService.cancelOrder(requestOrderId);
+
+        //리턴 DTO 생성
+        List<OrderResponse.OrderProductDTO> orderCancelProductResponseList = new ArrayList<>();
+        for(ProductOption productOption : afterRestoreProductOption){
+
+            //주문 취소 상품 조회
+            Product product = productService.selectProductByProductId(productOption.getProductId());
+            OrderProduct orderProduct = orderProductService.selectOrderProductByProductOptionId(productOption.getProductOptionId());
+
+            orderCancelProductResponseList.add(OrderResponse.OrderProductDTO.from(orderProduct,product,productOption));
+        }
+
+        return OrderResponse.OrderDTO.from(cancelOrder,coupon,orderCancelProductResponseList);
     }
 }

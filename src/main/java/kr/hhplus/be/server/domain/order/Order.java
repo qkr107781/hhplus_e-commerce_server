@@ -51,4 +51,8 @@ public class Order {
     public void updateOrderStatusToPayment(){
         this.orderStatus = "payment_completed";
     }
+
+    public void cancelOrder(){
+        orderStatus = "cancel_order";
+    }
 }

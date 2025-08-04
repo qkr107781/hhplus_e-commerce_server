@@ -14,4 +14,12 @@ public class OrderRequest {
             long couponId
     ){
     }
+
+    public record OrderCancel(
+            @Schema(description = "사용자 ID", requiredMode = Schema.RequiredMode.REQUIRED)
+            long userId,
+            @Schema(description = "주문 ID", requiredMode = Schema.RequiredMode.REQUIRED)
+            long orderId
+    ){
+    }
 }

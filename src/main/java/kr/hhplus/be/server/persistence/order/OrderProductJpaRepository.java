@@ -11,4 +11,6 @@ public interface OrderProductJpaRepository extends JpaRepository<OrderProduct,Lo
 
     List<OrderProduct> findByOrderId(long orderId);
 
+    OrderProduct findByProductOptionId(long productOptionId);
+
 }

@@ -10,4 +10,6 @@ public interface OrderProductRepository {
 
     OrderProduct save(OrderProduct orderProduct);
 
+    OrderProduct findByProductOptionId(long productOptionId);
+
 }

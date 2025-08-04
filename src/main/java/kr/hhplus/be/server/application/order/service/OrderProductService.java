@@ -27,6 +27,10 @@ public class OrderProductService {
         return orderProductRepository.save(createOrderProduct);
     }
 
+    public OrderProduct selectOrderProductByProductOptionId(long productOptionId){
+        return orderProductRepository.findByProductOptionId(productOptionId);
+    }
+
     public List<OrderProductSummary> getTop5OrderProduct(List<OrderProduct> orderProductList){
         if (orderProductList == null || orderProductList.isEmpty()) {
             return List.of(); // 빈 리스트 또는 null이 들어오면 빈 결과 반환

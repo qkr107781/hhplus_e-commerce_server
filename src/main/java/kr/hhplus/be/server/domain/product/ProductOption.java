@@ -62,4 +62,16 @@ public class ProductOption {
         }
         this.stockQuantity = stockQuantity - 1;
     }
+
+    /**
+     * 재고 복구
+     * @param restoreQuantity: 복구 갯수
+     * @throws Exception
+     */
+    public void restoreProductQuantity(long restoreQuantity) throws Exception {
+        if(restoreQuantity == 0){
+            throw new Exception("restore stock empty");
+        }
+        this.stockQuantity = stockQuantity + restoreQuantity;
+    }
 }

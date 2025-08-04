@@ -10,5 +10,5 @@ import org.springframework.http.ResponseEntity;
 public interface OrderApiSpec {
 
     @Operation(summary = "주문")
-    ResponseEntity<OrderResponse.OrderCreate> orderCreate( OrderRequest.OrderCreate request);
+    ResponseEntity<OrderResponse.OrderDTO> orderCreate( OrderRequest.OrderCreate request);
 }

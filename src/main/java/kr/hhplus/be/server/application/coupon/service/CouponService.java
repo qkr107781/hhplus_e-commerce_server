@@ -29,7 +29,7 @@ public class CouponService implements CouponUseCase{
      * @return couponIssuedInfo
      */
     public CouponIssuedInfo useCoupon(long requestCouponId, long requestUserId, long totalOrderPrice) {
-        //쿠폰 사용 유1효성 검증
+        //쿠폰 사용 유효성 검증
         CouponIssuedInfo couponIssuedInfo = couponIssuedInfoRepository.findByCouponIdAndUserId(requestCouponId,requestUserId);
         Coupon coupon = couponRepository.findByCouponId(requestCouponId);
 
@@ -42,6 +42,18 @@ public class CouponService implements CouponUseCase{
         }
 
         return couponIssuedInfo;
+    }
+
+    /**
+     * 쿠폰 미사용 처리
+     * @param requestCouponId:쿠폰 ID
+     * @param requestUserId:유저 ID
+     * @return couponIssuedInfo
+     */
+    public CouponIssuedInfo restoreCoupon(long requestUserId, long requestCouponId){
+        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoRepository.findByCouponIdAndUserId(requestCouponId,requestUserId);
+        couponIssuedInfo.unuseCoupon();
+        return couponIssuedInfoRepository.unuseCoupon(couponIssuedInfo);
     }
 
     /**

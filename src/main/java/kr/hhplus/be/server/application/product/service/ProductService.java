@@ -3,6 +3,7 @@ package kr.hhplus.be.server.application.product.service;
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.repository.ProductOptionRepository;
 import kr.hhplus.be.server.application.product.repository.ProductRepository;
+import kr.hhplus.be.server.domain.order.OrderProduct;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class ProductService implements ProductUseCase {
         //상품 잔여 갯수 확인
         List<ProductOption> productOptionListForDecreaseStock = new ArrayList<>();
         for (Long productOptionId : requestProductOptionIds ){
-            ProductOption productOption = productOptionRepository.selectProductOptionListByProductOptionId(productOptionId);
+            ProductOption productOption = productOptionRepository.selectProductOptionByProductOptionId(productOptionId);
 
             if (productOption.getStockQuantity() == 0) {
                 throw new Exception("stock empty");
@@ -107,6 +108,20 @@ public class ProductService implements ProductUseCase {
      */
     public ProductOption selectProductOptionByProductIdAndProductOptionId(long productId, long productOptionId) {
         return productOptionRepository.selectProductOptionByProductIdAndProductOptionId(productId, productOptionId);
+    }
+
+    public List<ProductOption> restoreStock(List<OrderProduct> cancelOrderProduct) throws Exception {
+        List<ProductOption> productOptionListForRestoreStock = new ArrayList<>();
+
+        //상품 잔여 갯수 복구
+        for(OrderProduct orderProduct : cancelOrderProduct){
+            ProductOption productOption = productOptionRepository.selectProductOptionByProductOptionId(orderProduct.getProductOptionId());
+            productOption.restoreProductQuantity(orderProduct.getProductQuantity());
+            productOptionRepository.save(productOption);
+            productOptionListForRestoreStock.add(productOption);
+        }
+
+        return productOptionListForRestoreStock;
     }
 
 }

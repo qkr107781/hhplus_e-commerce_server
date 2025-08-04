@@ -98,7 +98,7 @@ public class PaymentFacadeService implements PaymentUseCase {
 
         //주문 상품 목록 조회
         List<OrderProduct> productOptionList = orderProductService.selectOrderProductsByOrderId(order.getOrderId());
-        List<OrderResponse.OrderCreateProduct> orderCreateProductList = new ArrayList<>();
+        List<OrderResponse.OrderProductDTO> orderCreateProductList = new ArrayList<>();
         for(OrderProduct orderProduct : productOptionList){
             long productId = orderProduct.getProductId();
             long productOptionId = orderProduct.getProductOptionId();
@@ -106,7 +106,7 @@ public class PaymentFacadeService implements PaymentUseCase {
             Product product = productService.selectProductByProductId(productId);
             ProductOption productOption = productService.selectProductOptionByProductIdAndProductOptionId(productId,productOptionId);
 
-            orderCreateProductList.add(OrderResponse.OrderCreateProduct.from(orderProduct,product,productOption));
+            orderCreateProductList.add(OrderResponse.OrderProductDTO.from(orderProduct,product,productOption));
         }
         //Response 객체 생성 완료
         PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,coupon,orderCreateProductList);

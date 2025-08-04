@@ -25,6 +25,12 @@ public class OrderService {
         return orderRepository.save(createOrder);
     }
 
+    public Order cancelOrder(long orderId){
+        Order order = orderRepository.findByOrderId(orderId);
+        order.cancelOrder();
+        return orderRepository.save(order);
+    }
+
     public void updateOrderStatusToPayment(Order order){
         order.updateOrderStatusToPayment();
     }

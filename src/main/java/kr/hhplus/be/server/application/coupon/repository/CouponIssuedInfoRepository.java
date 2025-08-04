@@ -8,6 +8,8 @@ public interface CouponIssuedInfoRepository {
 
     CouponIssuedInfo useCoupon(CouponIssuedInfo couponIssuedInfo);
 
+    CouponIssuedInfo unuseCoupon(CouponIssuedInfo couponIssuedInfo);
+
     CouponIssuedInfo issuingCoupon(CouponIssuedInfo couponIssuedInfo);
 
     CouponIssuedInfo findByUserId(long userId);

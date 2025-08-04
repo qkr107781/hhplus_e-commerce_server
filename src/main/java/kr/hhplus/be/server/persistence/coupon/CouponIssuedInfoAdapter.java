@@ -23,6 +23,11 @@ public class CouponIssuedInfoAdapter implements CouponIssuedInfoRepository {
     }
 
     @Override
+    public CouponIssuedInfo unuseCoupon(CouponIssuedInfo couponIssuedInfo) {
+        return couponIssuedInfoJpaRepository.save(couponIssuedInfo);
+    }
+
+    @Override
     public CouponIssuedInfo issuingCoupon(CouponIssuedInfo couponIssuedInfo) {
         return couponIssuedInfoJpaRepository.save(couponIssuedInfo);
     }

@@ -19,7 +19,7 @@ public class OrderController implements OrderApiSpec {
 
     @PostMapping("/order")
     @Override
-    public ResponseEntity<OrderResponse.OrderCreate> orderCreate(@RequestBody OrderRequest.OrderCreate request){
+    public ResponseEntity<OrderResponse.OrderDTO> orderCreate(@RequestBody OrderRequest.OrderCreate request){
         return ResponseEntity.ok(dummyDataUtil.getOrderCreate());
     }
 

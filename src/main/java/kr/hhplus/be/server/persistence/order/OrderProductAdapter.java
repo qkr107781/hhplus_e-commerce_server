@@ -24,4 +24,9 @@ public class OrderProductAdapter implements OrderProductRepository {
     public OrderProduct save(OrderProduct orderProduct) {
         return orderProductJpaRepository.save(orderProduct);
     }
+
+    @Override
+    public OrderProduct findByProductOptionId(long productOptionId) {
+        return orderProductJpaRepository.findByProductOptionId(productOptionId);
+    }
 }

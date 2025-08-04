@@ -66,4 +66,11 @@ public class CouponIssuedInfo {
     public void useCoupon(){
         this.useYn = "Y";
     }
+
+    /**
+     * 쿠폰 미사용 처리
+     */
+    public void unuseCoupon(){
+        this.useYn = "N";
+    }
 }

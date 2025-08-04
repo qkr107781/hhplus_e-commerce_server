@@ -3,7 +3,6 @@ package kr.hhplus.be.server.unit.application.product.service;
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.repository.ProductOptionRepository;
 import kr.hhplus.be.server.application.product.repository.ProductRepository;
-import kr.hhplus.be.server.application.product.repository.ProductStatisticsRepository;
 import kr.hhplus.be.server.application.product.service.ProductService;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
@@ -203,11 +202,11 @@ class ProductServiceTest {
         products.add(productOption2);
         products.add(productOption3);
 
-        when(productOptionRepository.selectProductOptionListByProductOptionId(productOptionIds.get(0))).thenReturn(productOption1);
-        when(productOptionRepository.selectProductOptionListByProductOptionId(productOptionIds.get(1))).thenReturn(productOption2);
-        when(productOptionRepository.selectProductOptionListByProductOptionId(productOptionIds.get(2))).thenReturn(productOption2);
-        when(productOptionRepository.selectProductOptionListByProductOptionId(productOptionIds.get(3))).thenReturn(productOption2);
-        when(productOptionRepository.selectProductOptionListByProductOptionId(productOptionIds.get(4))).thenReturn(productOption3);
+        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(0))).thenReturn(productOption1);
+        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(1))).thenReturn(productOption2);
+        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(2))).thenReturn(productOption2);
+        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(3))).thenReturn(productOption2);
+        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(4))).thenReturn(productOption3);
 
         when(productOptionRepository.save(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
         //When
@@ -219,7 +218,7 @@ class ProductServiceTest {
         assertEquals(2L, productOption2.getStockQuantity()); // 5 - 3 = 2
         assertEquals(1L, productOption3.getStockQuantity()); // 2 - 1 = 1
 
-        verify(productOptionRepository, times(5)).selectProductOptionListByProductOptionId(any(Long.class));
+        verify(productOptionRepository, times(5)).selectProductOptionByProductOptionId(any(Long.class));
         verify(productOptionRepository, times(5)).save(any(ProductOption.class));
     }
 

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -43,7 +42,7 @@ public class OrderFacadeServiceTest {
         OrderRequest.OrderCreate orderCreate = new OrderRequest.OrderCreate(1L, List.of(1L,1L,2L,3L,3L,3L),3L);
 
         //When
-        OrderResponse.OrderCreate createResponse = orderFacadeService.createOrder(orderCreate);
+        OrderResponse.OrderDTO createResponse = orderFacadeService.createOrder(orderCreate);
 
         //Then
         //사용 쿠폰 확인
