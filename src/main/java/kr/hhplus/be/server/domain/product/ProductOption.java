@@ -28,28 +28,38 @@ public class ProductOption {
     @Column(name = "price", nullable = false)
     private Long price;
 
+    @Column(name = "sales_yn", length = 1, nullable = false)
+    private String salesYn;
+
     @Column(name = "total_quantity", nullable = false)
     private Long totalQuantity;
 
     @Column(name = "stock_quantity", nullable = false)
     private Long stockQuantity;
 
-    @Column(name = "sales_yn", length = 1, nullable = false)
-    private String salesYn;
-
     @Column(name = "reg_date", nullable = false)
     private LocalDateTime regDate;
 
     @Builder
-    public ProductOption(Long productOptionId, Long productId, String optionName, Long price, Long totalQuantity,
-                         Long stockQuantity, String salesYn, LocalDateTime regDate) {
+    public ProductOption(Long productOptionId, Long productId, String optionName, Long price, String salesYn, Long totalQuantity, Long stockQuantity, LocalDateTime regDate) {
         this.productOptionId = productOptionId;
         this.productId = productId;
         this.optionName = optionName;
         this.price = price;
+        this.salesYn = salesYn;
         this.totalQuantity = totalQuantity;
         this.stockQuantity = stockQuantity;
-        this.salesYn = salesYn;
         this.regDate = regDate;
+    }
+
+    /**
+     * 재고 차감
+     * @throws Exception
+     */
+    public void decreaseProductQuantity() throws Exception {
+        if(stockQuantity == 0){
+            throw new Exception("stock empty");
+        }
+        this.stockQuantity = stockQuantity - 1;
     }
 }

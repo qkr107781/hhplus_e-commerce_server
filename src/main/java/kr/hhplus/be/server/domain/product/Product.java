@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 @Entity
 @Table(name = "product")
 @Getter
@@ -20,13 +21,9 @@ public class Product {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    @Column(name = "description", length = 200)
-    private String description;
-
     @Builder
-    public Product(Long productId, String name, String description) {
+    public Product(Long productId, String name) {
         this.productId = productId;
         this.name = name;
-        this.description = description;
     }
 }
