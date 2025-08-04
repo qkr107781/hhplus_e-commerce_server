@@ -67,6 +67,24 @@ class CouponIssuedInfoJpaRepositoryTest {
     @Test
     @Transactional
 //    @Commit
+    @DisplayName("쿠폰 미사용 처리 - save() - update")
+    void unuseCoupon(){
+        System.out.println("save update 쿼리");
+        //Given
+        //사전 실행된 couponIssuedInfo.sql에서 데이터 입력했음
+        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoAdapter.findByCouponIdAndUserId(4L,1L);
+        //When
+        couponIssuedInfo.unuseCoupon();
+        couponIssuedInfo = couponIssuedInfoAdapter.unuseCoupon(couponIssuedInfo);
+        //Then
+        assertEquals(4L,couponIssuedInfo.getCouponId());
+        assertEquals(2L,couponIssuedInfo.getCouponIssuedId());
+        assertEquals("N",couponIssuedInfo.getUseYn());
+    }
+
+    @Test
+    @Transactional
+//    @Commit
     @DisplayName("쿠폰 발급 - save() - insert")
     void issuingCoupon(){
         System.out.println("save insert 쿼리");

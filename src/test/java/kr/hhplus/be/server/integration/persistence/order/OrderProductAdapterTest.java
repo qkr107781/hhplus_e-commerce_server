@@ -121,4 +121,21 @@ class OrderProductAdapterTest {
 
     }
 
+    @Test
+    @Transactional
+    @DisplayName("주문 상품 조회 - findByProductOptionId()")
+    void findByProductOptionId(){
+        System.out.println("findByProductOptionId 쿼리");
+        //Given
+        //사전 실행된 orderProduct.sql에서 데이터 입력했음
+        //When
+        OrderProduct orderProduct = orderProductAdapter.findByProductOptionId(1L);
+        //Then
+        assertEquals(1L,orderProduct.getOrderProductId());
+        assertEquals(1L,orderProduct.getProductId());
+        assertEquals(1L,orderProduct.getProductOptionId());
+        assertEquals(20_000L,orderProduct.getProductPrice());
+        assertEquals(2L,orderProduct.getProductQuantity());
+    }
+
 }
