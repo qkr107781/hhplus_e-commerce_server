@@ -19,13 +19,13 @@ public class Balance {
     @Column(name = "balance_id")
     private Long balanceId;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
-    @Column(name = "balance", nullable = false)
+    @Column(name = "balance", nullable = true)
     private Long balance;
 
-    @Column(name = "last_charge_date", nullable = false)
+    @Column(name = "last_charge_date", nullable = true)
     private LocalDateTime lastChargeDate;
 
     @Builder
@@ -36,23 +36,19 @@ public class Balance {
         this.lastChargeDate = lastChargeDate;
     }
 
-    private final long MIN_CHARGE_AMOUNT = 1L;
-    private final long NAX_CHARGE_AMOUNT_PER = 100_000L;
-    private final long OVER_BALANCE = 1_000_000L;
-
     /**
      * 충전 금액 유효성 검증
      * @param chargeAmount:충전 금액
      * @param balance: 현재 잔액
      */
     public void validateChargeAmount(long chargeAmount, long balance){
-        if(MIN_CHARGE_AMOUNT > chargeAmount){
+        if(BalanceChargePolicy.MIN_CHARGE_AMOUNT > chargeAmount){
             throw new IllegalArgumentException("min charge illegal");
         }
-        if(NAX_CHARGE_AMOUNT_PER < chargeAmount){
+        if(BalanceChargePolicy.MAX_CHARGE_AMOUNT_PER < chargeAmount){
             throw new IllegalArgumentException("max charge illegal");
         }
-        if(OVER_BALANCE < (chargeAmount + balance)) {
+        if(BalanceChargePolicy.OVER_BALANCE < (chargeAmount + balance)) {
             throw new IllegalArgumentException("over charge illegal");
         }
     }

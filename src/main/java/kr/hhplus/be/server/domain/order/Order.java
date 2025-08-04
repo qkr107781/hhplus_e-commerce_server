@@ -7,12 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 @Entity
-@Table(name = "order_table")
+@Table(name = "`order`")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order {
@@ -40,11 +37,8 @@ public class Order {
     @Column(name = "order_date", nullable = false)
     private LocalDateTime orderDate;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderProduct> orderProducts;
-
     @Builder
-    public Order(Long orderId, Long userId, Long couponId, Long couponDiscountPrice, Long totalPrice, String orderStatus, LocalDateTime orderDate, List<OrderProduct> orderProducts) {
+    public Order(Long orderId, Long userId, Long couponId, Long couponDiscountPrice, Long totalPrice, String orderStatus, LocalDateTime orderDate) {
         this.orderId = orderId;
         this.userId = userId;
         this.couponId = couponId;
@@ -52,11 +46,6 @@ public class Order {
         this.totalPrice = totalPrice;
         this.orderStatus = orderStatus;
         this.orderDate = orderDate;
-        this.orderProducts = Objects.requireNonNullElseGet(orderProducts, ArrayList::new);
-    }
-
-    public void addOrderProduct(List<OrderProduct> orderProductList) {
-        this.orderProducts = orderProductList;
     }
 
     public void updateOrderStatusToPayment(){

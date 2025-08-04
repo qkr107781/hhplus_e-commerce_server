@@ -17,19 +17,16 @@ public class CouponResponse {
             String couponName,
             @Schema(description = "할인금액", requiredMode = Schema.RequiredMode.REQUIRED)
             long discountPrice,
-            @Schema(description = "사용 최소 금액 제한", requiredMode = Schema.RequiredMode.REQUIRED)
-            long minUsePrice,
             @Schema(description = "발급일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime issuedAt,
             @Schema(description = "만료일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime endDate
     ) {
-        public static Issue from(CouponIssuedInfo couponIssuedInfo) {
+        public static Issue from(CouponIssuedInfo couponIssuedInfo,Coupon coupon) {
             return new Issue(couponIssuedInfo.getCouponIssuedId(),
-                    couponIssuedInfo.getCoupon().getCouponId(),
-                    couponIssuedInfo.getCoupon().getCouponName(),
-                    couponIssuedInfo.getCoupon().getDiscountPrice(),
-                    couponIssuedInfo.getCoupon().getMinUsePrice(),
+                    coupon.getCouponId(),
+                    coupon.getCouponName(),
+                    coupon.getDiscountPrice(),
                     couponIssuedInfo.getIssuedAt(),
                     couponIssuedInfo.getEndDate());
         }
@@ -41,8 +38,6 @@ public class CouponResponse {
             String couponName,
             @Schema(description = "할인금액", requiredMode = Schema.RequiredMode.REQUIRED)
             long discountPrice,
-            @Schema(description = "사용 최소 금액 제한", requiredMode = Schema.RequiredMode.REQUIRED)
-            long minUsePrice,
             @Schema(description = "발급일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime issuedAt,
             @Schema(description = "만료일", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -50,11 +45,10 @@ public class CouponResponse {
             @Schema(description = "사용여부", requiredMode = Schema.RequiredMode.REQUIRED)
             String useYn
     ){
-        public static SelectByUserId from(CouponIssuedInfo couponIssuedInfo){
-            return new SelectByUserId(couponIssuedInfo.getCoupon().getCouponId(),
-                    couponIssuedInfo.getCoupon().getCouponName(),
-                    couponIssuedInfo.getCoupon().getDiscountPrice(),
-                    couponIssuedInfo.getCoupon().getMinUsePrice(),
+        public static SelectByUserId from(CouponIssuedInfo couponIssuedInfo,Coupon coupon){
+            return new SelectByUserId(coupon.getCouponId(),
+                    coupon.getCouponName(),
+                    coupon.getDiscountPrice(),
                     couponIssuedInfo.getIssuedAt(),
                     couponIssuedInfo.getEndDate(),
                     couponIssuedInfo.getUseYn());
@@ -71,14 +65,10 @@ public class CouponResponse {
             long totalCouponAmount,
             @Schema(description = "잔여 갯수", requiredMode = Schema.RequiredMode.REQUIRED)
             long remainingCouponAmount,
-            @Schema(description = "사용 최소 금액 제한", requiredMode = Schema.RequiredMode.REQUIRED)
-            long minUsePrice,
             @Schema(description = "발급 시작 시간", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime issuanceStartTime,
             @Schema(description = "발급 종료 시간", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime issuanceEndTime,
-            @Schema(description = "발급 후 사용 제한 시간", requiredMode = Schema.RequiredMode.REQUIRED)
-            long useLimitTime,
             @Schema(description = "쿠폰 발급 진행 상태", requiredMode = Schema.RequiredMode.REQUIRED)
             String couponStatus,
             @Schema(description = "등록일", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -90,10 +80,8 @@ public class CouponResponse {
                     coupon.getDiscountPrice(),
                     coupon.getTotalCouponAmount(),
                     coupon.getRemainingCouponAmount(),
-                    coupon.getMinUsePrice(),
                     coupon.getIssuanceStartTime(),
                     coupon.getIssuanceEndTime(),
-                    coupon.getUseLimitTime(),
                     coupon.getCouponStatus(),
                     coupon.getRegDate());
         }

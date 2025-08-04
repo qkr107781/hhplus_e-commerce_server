@@ -27,7 +27,7 @@ public class DummyDataUtil {
         LocalDateTime issuedAt = LocalDateTime.parse(issuedAtStr,formatter);
         LocalDateTime endDate = LocalDateTime.parse(endDateStr,formatter);
 
-        return new CouponResponse.Issue(1L,2L,"신규 가입 쿠폰",1_000L,10_000L,issuedAt,endDate);
+        return new CouponResponse.Issue(1L,2L,"신규 가입 쿠폰",1_000L,issuedAt,endDate);
     }
     /**
      * 본인 쿠폰 조회 더미 데이터
@@ -41,7 +41,7 @@ public class DummyDataUtil {
         LocalDateTime issuedAt = LocalDateTime.parse(issuedAtStr,formatter);
         LocalDateTime endDate = LocalDateTime.parse(endDateStr,formatter);
 
-        return new CouponResponse.SelectByUserId(2L,"신규 가입 쿠폰",1_000L,10_000L,issuedAt,endDate,"N");
+        return new CouponResponse.SelectByUserId(2L,"신규 가입 쿠폰",1_000L,issuedAt,endDate,"N");
     }
 
     /**
@@ -60,13 +60,13 @@ public class DummyDataUtil {
         LocalDateTime issuanceEndTime = LocalDateTime.parse(issuanceEndTimeStr,formatter);
 
         if("pending".equals(status)){
-            return new CouponResponse.SelectByStatus(1L,"복귀 환영 쿠폰",3_000L,30L,20L,10_000L,issuanceStartTime,issuanceEndTime,24L,"pending",regDate);
+            return new CouponResponse.SelectByStatus(1L,"복귀 환영 쿠폰",3_000L,30L,20L,issuanceStartTime,issuanceEndTime,"pending",regDate);
         }else if("issuing".equals(status)){
-            return new CouponResponse.SelectByStatus(2L,"신규 가입 쿠폰",1_000L,30L,20L,10_000L,issuanceStartTime,issuanceEndTime,24L,"issuing",regDate);
+            return new CouponResponse.SelectByStatus(2L,"신규 가입 쿠폰",1_000L,30L,20L,issuanceStartTime,issuanceEndTime,"issuing",regDate);
         }else if("closed".equals(status)){
-            return new CouponResponse.SelectByStatus(3L,"여름 특가 쿠폰",4_000L,30L,20L,10_000L,issuanceStartTime,issuanceEndTime,24L,"closed",regDate);
+            return new CouponResponse.SelectByStatus(3L,"여름 특가 쿠폰",4_000L,30L,20L,issuanceStartTime,issuanceEndTime,"closed",regDate);
         }else{
-            return  new CouponResponse.SelectByStatus(0L,"",0L,0L,0L,0L,null,null,0L,"",null);
+            return  new CouponResponse.SelectByStatus(0L,"",0L,0L,0L,null,null,"",null);
         }
     }
 
@@ -109,16 +109,16 @@ public class DummyDataUtil {
         LocalDateTime regDate = LocalDateTime.parse(regDateStr,formatter);
 
         List<ProductResponse.Option> options1 = new ArrayList<>();
-        options1.add(new ProductResponse.Option(1L,"XL",12_000L,10L,5L,"Y",regDate));
-        options1.add(new ProductResponse.Option(2L,"M",12_000L,5L,2L,"Y",regDate));
+        options1.add(new ProductResponse.Option(1L,"XL",12_000L,"Y",regDate));
+        options1.add(new ProductResponse.Option(2L,"M",12_000L,"Y",regDate));
 
         List<ProductResponse.Option> options2 = new ArrayList<>();
-        options2.add(new ProductResponse.Option(3L,"240",32_000L,10L,5L,"Y",regDate));
-        options2.add(new ProductResponse.Option(4L,"270",32_000L,5L,2L,"Y",regDate));
+        options2.add(new ProductResponse.Option(3L,"240",32_000L,"Y",regDate));
+        options2.add(new ProductResponse.Option(4L,"270",32_000L,"Y",regDate));
 
         List<ProductResponse.Select> products = new ArrayList<>();
-        products.add(new ProductResponse.Select(1L,"반팔 티셔츠","반팔 티셔츠 설명", options1));
-        products.add(new ProductResponse.Select(2L,"신발","신발 설명", options2));
+        products.add(new ProductResponse.Select(1L,"반팔 티셔츠",options1));
+        products.add(new ProductResponse.Select(2L,"신발",options2));
 
         return products;
     }

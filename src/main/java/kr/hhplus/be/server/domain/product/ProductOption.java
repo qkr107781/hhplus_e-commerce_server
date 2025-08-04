@@ -1,7 +1,6 @@
 package kr.hhplus.be.server.domain.product;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.order.Order;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,9 +19,8 @@ public class ProductOption {
     @Column(name = "product_option_id")
     private Long productOptionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="product_id", nullable = false)
-    private Product product;
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
 
     @Column(name = "option_name", length = 50, nullable = false)
     private String optionName;
@@ -30,28 +28,27 @@ public class ProductOption {
     @Column(name = "price", nullable = false)
     private Long price;
 
+    @Column(name = "sales_yn", length = 1, nullable = false)
+    private String salesYn;
+
     @Column(name = "total_quantity", nullable = false)
     private Long totalQuantity;
 
     @Column(name = "stock_quantity", nullable = false)
     private Long stockQuantity;
 
-    @Column(name = "sales_yn", length = 1, nullable = false)
-    private String salesYn;
-
     @Column(name = "reg_date", nullable = false)
     private LocalDateTime regDate;
 
     @Builder
-    public ProductOption(Long productOptionId, Product product, String optionName, Long price, Long totalQuantity,
-                         Long stockQuantity, String salesYn, LocalDateTime regDate) {
+    public ProductOption(Long productOptionId, Long productId, String optionName, Long price, String salesYn, Long totalQuantity, Long stockQuantity, LocalDateTime regDate) {
         this.productOptionId = productOptionId;
-        this.product = product;
+        this.productId = productId;
         this.optionName = optionName;
         this.price = price;
+        this.salesYn = salesYn;
         this.totalQuantity = totalQuantity;
         this.stockQuantity = stockQuantity;
-        this.salesYn = salesYn;
         this.regDate = regDate;
     }
 

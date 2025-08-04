@@ -29,11 +29,15 @@ public class CouponService implements CouponUseCase{
      * @return couponIssuedInfo
      */
     public CouponIssuedInfo useCoupon(long requestCouponId, long requestUserId, long totalOrderPrice) {
-        //쿠폰 사용 유효성 검증
-        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoRepository.findByCoupon_couponIdAndUserId(requestCouponId,requestUserId);
-        if(couponIssuedInfo.validateCouponUsage(totalOrderPrice)){
+        //쿠폰 사용 유1효성 검증
+        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoRepository.findByCouponIdAndUserId(requestCouponId,requestUserId);
+        Coupon coupon = couponRepository.findByCouponId(requestCouponId);
+
+        if(couponIssuedInfo.validateCouponUsage(totalOrderPrice,coupon.getDiscountPrice())){
             //쿠폰 사용
             couponIssuedInfo.useCoupon();
+
+
             couponIssuedInfo = couponIssuedInfoRepository.useCoupon(couponIssuedInfo);
         }
 
@@ -56,7 +60,7 @@ public class CouponService implements CouponUseCase{
      * @return CouponIssuedInfo
      */
     public CouponIssuedInfo selectCouponByCouponIdAndUserId(long couponId, long userId){
-        return couponIssuedInfoRepository.findByCoupon_couponIdAndUserId(couponId,userId);
+        return couponIssuedInfoRepository.findByCouponIdAndUserId(couponId,userId);
     }
 
     /**
@@ -75,22 +79,24 @@ public class CouponService implements CouponUseCase{
                 .userId(userId)
                 .useYn("N")
                 .issuedAt(LocalDateTime.now())
-                .endDate(LocalDateTime.now().plusHours(coupon.getUseLimitTime()))
-                .coupon(coupon)
+                .endDate(LocalDateTime.now().plusHours(24L))
+                .couponId(coupon.getCouponId())
                 .build();
 
         //쿠폰 발급 유효성 검증
-        issuingCoupon.getCoupon().validateCouponIssuance();
+        coupon.validateCouponIssuance();
 
         //쿠폰 잔여 갯수 차감
-        issuingCoupon.getCoupon().decreaseCoupon();
+        coupon.decreaseCoupon();
 
-        return CouponResponse.Issue.from(couponIssuedInfoRepository.issuingCoupon(issuingCoupon));
+        return CouponResponse.Issue.from(couponIssuedInfoRepository.issuingCoupon(issuingCoupon),coupon);
     }
 
     @Override
     public CouponResponse.SelectByUserId selectCouponByUserId(long userId) {
-        return CouponResponse.SelectByUserId.from(couponIssuedInfoRepository.findByUserId(userId));
+        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoRepository.findByUserId(userId);
+        Coupon coupon = couponRepository.findByCouponId(couponIssuedInfo.getCouponId());
+        return CouponResponse.SelectByUserId.from(couponIssuedInfo,coupon);
     }
 
     @Override

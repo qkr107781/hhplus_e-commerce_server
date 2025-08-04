@@ -5,13 +5,16 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import kr.hhplus.be.server.application.balance.service.BalanceService;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
+import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
+import kr.hhplus.be.server.application.payment.dto.PaymentBuilder;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
 import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.payment.service.PaymentUseCase;
 import kr.hhplus.be.server.application.product.service.ProductService;
 import kr.hhplus.be.server.domain.balance.Balance;
+import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.order.OrderProduct;
@@ -33,13 +36,15 @@ public class PaymentFacadeService implements PaymentUseCase {
     private final BalanceService balanceService;
     private final PaymentService paymentService;
     private final OrderService orderService;
+    private final OrderProductService orderProductService;
     private final CouponService couponService;
     private final ProductService productService;
 
-    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, CouponService couponService, ProductService productService) {
+    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, OrderProductService orderProductService, CouponService couponService, ProductService productService) {
         this.balanceService = balanceService;
         this.paymentService = paymentService;
         this.orderService = orderService;
+        this.orderProductService = orderProductService;
         this.couponService = couponService;
         this.productService = productService;
     }
@@ -58,7 +63,7 @@ public class PaymentFacadeService implements PaymentUseCase {
         long paymentPrice = 0L;
 
         //주문 조회
-        Order order = orderService.selectOrderByOrderIdWithOrderProducts(orderId);
+        Order order = orderService.selectOrderByOrderId(orderId);
         if(order == null){
             throw new Exception("order empty");
         }
@@ -77,21 +82,22 @@ public class PaymentFacadeService implements PaymentUseCase {
         orderService.updateOrderStatusToPayment(order);
 
         //결제 insert
-        Payment payment = Payment.builder()
-                .paymentId(0L)
-                .userId(userId)
-                .orderId(orderId)
-                .paymentPrice(paymentPrice)
-                .paymentDate(LocalDateTime.now())
-                .build();
+        PaymentBuilder.Payment payment = new PaymentBuilder.Payment(
+                userId,
+                orderId,
+                paymentPrice,
+                LocalDateTime.now()
+        );
+        Payment afterCreatePayment = paymentService.createPayment(PaymentBuilder.Payment.toDomain(payment));
 
-        Payment afterCreatePayment = paymentService.createPayment(payment);
 
         //Response 객체 생성
         //사용 쿠폰 조회
         CouponIssuedInfo couponIssuedInfo = couponService.selectCouponByCouponIdAndUserId(order.getCouponId(), userId);
+        Coupon coupon = couponService.selectCouponByCouponId(couponIssuedInfo.getCouponId());
+
         //주문 상품 목록 조회
-        List<OrderProduct> productOptionList = order.getOrderProducts();
+        List<OrderProduct> productOptionList = orderProductService.selectOrderProductsByOrderId(order.getOrderId());
         List<OrderResponse.OrderCreateProduct> orderCreateProductList = new ArrayList<>();
         for(OrderProduct orderProduct : productOptionList){
             long productId = orderProduct.getProductId();
@@ -103,7 +109,7 @@ public class PaymentFacadeService implements PaymentUseCase {
             orderCreateProductList.add(OrderResponse.OrderCreateProduct.from(orderProduct,product,productOption));
         }
         //Response 객체 생성 완료
-        PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,couponIssuedInfo.getCoupon(),orderCreateProductList);
+        PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,coupon,orderCreateProductList);
 
         //결제 내역 데이터 플랫폼 API 전송(비동기)
         AsyncDataPlatformSender sender = new AsyncDataPlatformSender("http://testestest.com");

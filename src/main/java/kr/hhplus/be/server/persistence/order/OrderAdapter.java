@@ -4,6 +4,9 @@ import kr.hhplus.be.server.application.order.repository.OrderRepository;
 import kr.hhplus.be.server.domain.order.Order;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Component
 public class OrderAdapter implements OrderRepository {
 
@@ -19,7 +22,13 @@ public class OrderAdapter implements OrderRepository {
     }
 
     @Override
-    public Order findByIdWithOrderProducts(long orderId) {
-        return orderJpaRepository.findByIdWithOrderProducts(orderId);
+    public Order findByOrderId(long orderId) {
+        return orderJpaRepository.findByOrderId(orderId);
     }
+
+    @Override
+    public List<Order> findByOrderStatusAndOrderDateBetween(String orderStatus, LocalDate startDate, LocalDate endDate) {
+        return orderJpaRepository.findByOrderStatusAndOrderDateBetween(orderStatus,startDate.atStartOfDay(),endDate.atStartOfDay());
+    }
+
 }

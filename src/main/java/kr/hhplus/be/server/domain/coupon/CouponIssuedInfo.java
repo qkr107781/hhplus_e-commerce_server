@@ -30,18 +30,17 @@ public class CouponIssuedInfo {
     @Column(name = "end_date", nullable = false)
     private LocalDateTime endDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="coupon_id", nullable = false)
-    private Coupon coupon;
+    @Column(name = "coupon_id", nullable = false)
+    private Long couponId;
 
     @Builder
-    public CouponIssuedInfo(Long couponIssuedId, Long userId, String useYn, LocalDateTime issuedAt, LocalDateTime endDate, Coupon coupon) {
+    public CouponIssuedInfo(Long couponIssuedId, Long userId, String useYn, LocalDateTime issuedAt, LocalDateTime endDate, Long couponId) {
         this.couponIssuedId = couponIssuedId;
         this.userId = userId;
         this.useYn = useYn;
         this.issuedAt = issuedAt;
         this.endDate = endDate;
-        this.coupon = coupon;
+        this.couponId = couponId;
     }
 
     /**
@@ -49,17 +48,13 @@ public class CouponIssuedInfo {
      * @param totalOrderPrice:주문금액
      * @return boolean
      */
-    public boolean validateCouponUsage(long totalOrderPrice) {
-        //최소 주문 금액 미달
-        if(coupon.getMinUsePrice() > totalOrderPrice){
-            return false;
-        }
+    public boolean validateCouponUsage(long totalOrderPrice,long discountPrice) {
         //쿠폰 유효기간 확인
         if(endDate.isBefore(LocalDateTime.now())){
             return false;
         }
         //쿠폰 할인금액이 주문금액 초과하는지 확인
-        if(coupon.getDiscountPrice() > totalOrderPrice){
+        if(discountPrice > totalOrderPrice){
             return false;
         }
         return true;

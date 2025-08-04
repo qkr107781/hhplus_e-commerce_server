@@ -4,12 +4,20 @@ import kr.hhplus.be.server.application.order.repository.OrderProductRepository;
 import kr.hhplus.be.server.domain.order.OrderProduct;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class OrderProductAdapter implements OrderProductRepository {
     private final OrderProductJpaRepository orderProductJpaRepository;
 
     public OrderProductAdapter(OrderProductJpaRepository orderProductJpaRepository) {
         this.orderProductJpaRepository = orderProductJpaRepository;
+    }
+
+
+    @Override
+    public List<OrderProduct> findByOrderId(long orderId) {
+        return orderProductJpaRepository.findByOrderId(orderId);
     }
 
     @Override
