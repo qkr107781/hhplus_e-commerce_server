@@ -129,7 +129,7 @@ public class OrderFacadeService implements OrderUseCase {
 
             //주문 취소 상품 조회
             Product product = productService.selectProductByProductId(productOption.getProductId());
-            OrderProduct orderProduct = orderProductService.selectOrderProductByProductOptionId(productOption.getProductOptionId());
+            OrderProduct orderProduct = orderProductService.selectOrderProductByOrderIdAndProductOptionId(requestOrderId,productOption.getProductOptionId());
 
             orderCancelProductResponseList.add(OrderResponse.OrderProductDTO.from(orderProduct,product,productOption));
         }

@@ -31,6 +31,10 @@ public class OrderProductService {
         return orderProductRepository.findByProductOptionId(productOptionId);
     }
 
+    public OrderProduct selectOrderProductByOrderIdAndProductOptionId(long requestOrderId, long productOptionId){
+        return orderProductRepository.findByOrderIdAndProductOptionId(requestOrderId,productOptionId);
+    }
+
     public List<OrderProductSummary> getTop5OrderProduct(List<OrderProduct> orderProductList){
         if (orderProductList == null || orderProductList.isEmpty()) {
             return List.of(); // 빈 리스트 또는 null이 들어오면 빈 결과 반환

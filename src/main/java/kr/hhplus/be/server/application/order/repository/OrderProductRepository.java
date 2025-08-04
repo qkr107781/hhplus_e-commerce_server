@@ -12,4 +12,6 @@ public interface OrderProductRepository {
 
     OrderProduct findByProductOptionId(long productOptionId);
 
+    OrderProduct findByOrderIdAndProductOptionId(long requestOrderId, long productOptionId);
+
 }
