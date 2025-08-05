@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class CouponService implements CouponUseCase{
@@ -105,14 +107,17 @@ public class CouponService implements CouponUseCase{
     }
 
     @Override
-    public CouponResponse.SelectByUserId selectCouponByUserId(long userId) {
-        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoRepository.findByUserId(userId);
-        Coupon coupon = couponRepository.findByCouponId(couponIssuedInfo.getCouponId());
-        return CouponResponse.SelectByUserId.from(couponIssuedInfo,coupon);
+    public List<CouponResponse.SelectByUserId> selectCouponByUserId(long userId) {
+        List<CouponIssuedInfo> couponIssuedInfoList = couponIssuedInfoRepository.findByUserId(userId);
+        List<Coupon> couponList = new ArrayList<>();
+        for (CouponIssuedInfo couponIssuedInfo : couponIssuedInfoList){
+            couponList.add(couponRepository.findByCouponId(couponIssuedInfo.getCouponId()));
+        }
+        return CouponResponse.SelectByUserId.from(couponIssuedInfoList,couponList);
     }
 
     @Override
-    public CouponResponse.SelectByStatus selectCouponByStatus(String couponStatus) {
+    public List<CouponResponse.SelectByStatus> selectCouponByStatus(String couponStatus) {
         return CouponResponse.SelectByStatus.from(couponRepository.findByCouponStatus(couponStatus));
     }
 }

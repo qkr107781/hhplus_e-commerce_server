@@ -27,10 +27,6 @@ public class OrderProductService {
         return orderProductRepository.save(createOrderProduct);
     }
 
-    public OrderProduct selectOrderProductByProductOptionId(long productOptionId){
-        return orderProductRepository.findByProductOptionId(productOptionId);
-    }
-
     public OrderProduct selectOrderProductByOrderIdAndProductOptionId(long requestOrderId, long productOptionId){
         return orderProductRepository.findByOrderIdAndProductOptionId(requestOrderId,productOptionId);
     }

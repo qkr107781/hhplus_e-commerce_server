@@ -4,6 +4,8 @@ import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoReposit
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class CouponIssuedInfoAdapter implements CouponIssuedInfoRepository {
     private final CouponIssuedInfoJpaRepository couponIssuedInfoJpaRepository;
@@ -33,7 +35,7 @@ public class CouponIssuedInfoAdapter implements CouponIssuedInfoRepository {
     }
 
     @Override
-    public CouponIssuedInfo findByUserId(long userId) {
+    public List<CouponIssuedInfo> findByUserId(long userId) {
         return couponIssuedInfoJpaRepository.findByUserId(userId);
     }
 

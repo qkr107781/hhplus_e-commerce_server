@@ -4,6 +4,8 @@ import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class CouponAdapter implements CouponRepository {
     private final CouponJpaRepository couponJpaRepository;
@@ -18,7 +20,7 @@ public class CouponAdapter implements CouponRepository {
     }
 
     @Override
-    public Coupon findByCouponStatus(String status) {
+    public List<Coupon> findByCouponStatus(String status) {
         return couponJpaRepository.findByCouponStatus(status);
     }
 }

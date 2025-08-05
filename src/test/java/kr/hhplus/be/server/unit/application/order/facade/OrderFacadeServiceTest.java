@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -158,7 +159,21 @@ class OrderFacadeServiceTest {
                 .orderDate(LocalDateTime.now())
                 .build();
         when(orderService.createOrder(any(Order.class))).thenReturn(order);
-        when(orderProductService.createOrderProduct(any(OrderProduct.class))).thenAnswer(invocation -> invocation.getArgument(0, OrderProduct.class));
+        // `AtomicLong`을 사용해 호출될 때마다 ID를 1씩 증가시킴
+        AtomicLong orderProductIdCounter = new AtomicLong(1);
+
+        when(orderProductService.createOrderProduct(any(OrderProduct.class))).thenAnswer(invocation -> {
+            OrderProduct originalOrderProduct = invocation.getArgument(0, OrderProduct.class);
+            // 새로운 ID를 할당하여 반환
+            return OrderProduct.builder()
+                    .orderProductId(orderProductIdCounter.getAndIncrement())
+                    .orderId(originalOrderProduct.getOrderId())
+                    .productId(originalOrderProduct.getProductId())
+                    .productOptionId(originalOrderProduct.getProductOptionId())
+                    .productQuantity(originalOrderProduct.getProductQuantity())
+                    .productPrice(originalOrderProduct.getProductPrice())
+                    .build();
+        });
 
         //주문 완료 상품 Mocking
         Product afterOrderProduct = new Product(1L,"티셔츠");
@@ -316,9 +331,9 @@ class OrderFacadeServiceTest {
 
         when(productService.selectProductByProductId(any(Long.class))).thenReturn(product);
 
-        when(orderProductService.selectOrderProductByProductOptionId(1L)).thenReturn(orderProduct_1);
-        when(orderProductService.selectOrderProductByProductOptionId(2L)).thenReturn(orderProduct_2);
-        when(orderProductService.selectOrderProductByProductOptionId(3L)).thenReturn(orderProduct_3);
+        when(orderProductService.selectOrderProductByOrderIdAndProductOptionId(cancelOrderId,1L)).thenReturn(orderProduct_1);
+        when(orderProductService.selectOrderProductByOrderIdAndProductOptionId(cancelOrderId,2L)).thenReturn(orderProduct_2);
+        when(orderProductService.selectOrderProductByOrderIdAndProductOptionId(cancelOrderId,3L)).thenReturn(orderProduct_3);
         //When
         OrderRequest.OrderCancel orderRequest = new OrderRequest.OrderCancel(1L,1L);
 
@@ -344,6 +359,6 @@ class OrderFacadeServiceTest {
         verify(couponService, times(1)).selectCouponByCouponId(cancelCouponId);
         verify(orderService, times(1)).cancelOrder(cancelOrderId);
         verify(productService, times(3)).selectProductByProductId(any(Long.class));
-        verify(orderProductService, times(3)).selectOrderProductByProductOptionId(any(Long.class));
+        verify(orderProductService, times(3)).selectOrderProductByOrderIdAndProductOptionId(any(Long.class),any(Long.class));
     }
 }
