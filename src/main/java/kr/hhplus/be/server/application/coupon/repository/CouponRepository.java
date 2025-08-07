@@ -8,5 +8,7 @@ public interface CouponRepository{
 
     Coupon findByCouponId(long couponId);
 
+    Coupon findByCouponIdWithLock(long couponId);
+
     List<Coupon> findByCouponStatus(String status);
 }

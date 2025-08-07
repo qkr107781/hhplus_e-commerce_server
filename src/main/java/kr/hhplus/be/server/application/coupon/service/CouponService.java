@@ -82,13 +82,13 @@ public class CouponService implements CouponUseCase{
      * @param couponId: 쿠폰 ID
      * @param userId: 사용자 ID
      * @return CouponIssuedInfo
-     * @throws Exception
+     * @throws Exception: 유효성 검사 예외
      */
     @Transactional
     @Override
     public CouponResponse.Issue issuingCoupon(long couponId,long userId) throws Exception {
         //발급 준비
-        Coupon coupon = couponRepository.findByCouponId(couponId);
+        Coupon coupon = couponRepository.findByCouponIdWithLock(couponId);
         CouponIssuedInfo issuingCoupon = CouponIssuedInfo.builder()
                 .userId(userId)
                 .useYn("N")

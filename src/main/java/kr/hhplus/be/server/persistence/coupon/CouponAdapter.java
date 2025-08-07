@@ -20,6 +20,11 @@ public class CouponAdapter implements CouponRepository {
     }
 
     @Override
+    public Coupon findByCouponIdWithLock(long couponId) {
+        return couponJpaRepository.findById(couponId);
+    }
+
+    @Override
     public List<Coupon> findByCouponStatus(String status) {
         return couponJpaRepository.findByCouponStatus(status);
     }
