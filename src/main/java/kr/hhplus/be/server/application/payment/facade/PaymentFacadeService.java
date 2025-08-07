@@ -62,17 +62,17 @@ public class PaymentFacadeService implements PaymentUseCase {
         long paymentPrice = 0L;
 
         //주문 조회
-        Order order = orderService.selectOrderByOrderId(orderId);
+        Order order = orderService.selectOrderByOrderIdWithLock(orderId);
         if(order == null){
             throw new Exception("order empty");
         }
         paymentPrice = order.getTotalPrice() - order.getCouponDiscountPrice();
 
-        //잔액 차감
-        balanceService.useBalance(userId, paymentPrice);
-
         //주문 상태 변경
         orderService.updateOrderStatusToPayment(order);
+
+        //잔액 차감
+        balanceService.useBalance(userId, paymentPrice);
 
         //결제 insert
         PaymentBuilder.Payment payment = new PaymentBuilder.Payment(
