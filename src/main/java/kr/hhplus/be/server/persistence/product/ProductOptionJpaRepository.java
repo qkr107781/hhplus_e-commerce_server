@@ -14,7 +14,7 @@ public interface ProductOptionJpaRepository extends JpaRepository<ProductOption,
     ProductOption findByProductOptionId(Long productOptionId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    ProductOption findById(long productOptionId);
+    List<ProductOption> findByProductOptionIdIn(List<Long> productOptionIds);
 
     List<ProductOption> findByProductIdAndSalesYn(long productId,String salesYn);
 

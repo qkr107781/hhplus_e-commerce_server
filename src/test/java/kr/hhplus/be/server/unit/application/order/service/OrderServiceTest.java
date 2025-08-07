@@ -37,7 +37,7 @@ public class OrderServiceTest {
                 .orderStatus("cancel_order")
                 .build();
 
-        when(orderRepository.findByOrderId(1L)).thenReturn(order);
+        when(orderRepository.findById(1L)).thenReturn(order);
         when(orderRepository.save(order)).thenReturn(afterCancelOrder);
 
         //When

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,19 +44,28 @@ public class OrderFacadeService implements OrderUseCase {
         long couponDiscountPrice = 0L;
         long requestUserId = orderRequest.userId();
         long requestCouponId = orderRequest.couponId();
-        //product_option_id 오름차순으로 정렬
-        List<Long> requestProductOptionIds = orderRequest.productOptionIds().stream().sorted().collect(Collectors.toList());
+        long totalOrderPrice = 0L;
 
         //상품 잔여 갯수 확인 및 차감
-        List<ProductOption> productOptionList = new ArrayList<>();
-        Collections.sort(requestProductOptionIds);
-        for(Long productOptionId : requestProductOptionIds){
-            ProductOption productOption = productService.decreaseStock(productOptionId);
-            if(productOption != null){
-                productOptionList.add(productOption);
-            }
+        // 0. product_option_id 오름차순으로 정렬
+        List<Long> requestProductOptionIds = orderRequest.productOptionIds().stream().sorted().toList();
+
+        // 1. 옵션 ID 별로 등장 횟수 세기(세면서 정렬)
+        Map<Long, Long> optionIdCountMap = requestProductOptionIds.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        // 2. 중복 제거한 ID로 product_option 목록 조회
+        List<Long> uniqueOptionIds = new ArrayList<>(optionIdCountMap.keySet());
+        List<ProductOption> productOptionList = productService.selectProductOptionByProductOptionIdInWithLock(uniqueOptionIds);
+
+        // 3. 각 옵션의 등장 횟수만큼 재고 차감 및 결제 금액 산정을 위한 리스트 추가
+
+        for (ProductOption productOption : productOptionList) {
+            long optionId = productOption.getProductOptionId();
+            long quantityToDecrease = optionIdCountMap.get(optionId);
+            productService.decreaseStock(productOption, quantityToDecrease);
+            totalOrderPrice += productService.calculateProductTotalPrice(productOption, quantityToDecrease);
         }
-        long totalOrderPrice = productService.calculateProductTotalPrice(productOptionList);
 
         //쿠폰 유효성 검증 및 사용
         CouponIssuedInfo couponIssuedInfo = couponService.useCoupon(requestCouponId,requestUserId,totalOrderPrice);
@@ -80,9 +90,8 @@ public class OrderFacadeService implements OrderUseCase {
         List<OrderResponse.OrderProductDTO> orderCreateProductResponseList = new ArrayList<>();
         Set<OrderBuilder.OrderProduct> seenOrderList = new HashSet<>();
         for(ProductOption productOption : productOptionList){
-            long orderQuantity = productOptionList.stream()
-                    .filter(productOptionId -> productOptionId.getProductOptionId().equals(productOption.getProductOptionId()))
-                    .count();
+            long optionId = productOption.getProductOptionId();
+            long orderQuantity = optionIdCountMap.get(optionId);
 
             //주문 상품 도메인 생성
             OrderBuilder.OrderProduct createOrderProduct = new OrderBuilder.OrderProduct(
@@ -120,8 +129,31 @@ public class OrderFacadeService implements OrderUseCase {
         Order cancelOrder = orderService.selectOrderByOrderId(requestOrderId);
         List<OrderProduct> cancelOrderProduct = orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(requestOrderId);
 
-        //상품 잔여 갯수 복구
-        List<ProductOption> afterRestoreProductOption = productService.restoreStock(cancelOrderProduct);
+        //상품 잔여 갯수 확인 및 복구
+        // 0. 상품 ID, 주문 수량 셋팅
+        Map<Long, Long> optionIdToQuantityMap = new HashMap<>();
+
+        for (OrderProduct orderProduct : cancelOrderProduct) {
+            Long optionId = orderProduct.getProductOptionId();
+            Long quantity = orderProduct.getProductQuantity();
+
+            optionIdToQuantityMap.merge(optionId, quantity, Long::sum);
+        }
+
+        // 1. product_option_id 오름차순으로 정렬
+        List<Long> uniqueOptionIds = new ArrayList<>(optionIdToQuantityMap.keySet()).stream().sorted().toList();
+
+        // 2. 중복 제거한 ID로 product_option 목록 조회
+        List<ProductOption> productOptionList = productService.selectProductOptionByProductOptionIdInWithLock(uniqueOptionIds);
+
+        // 3. 각 옵션의 등장 횟수만큼 재고 차감
+        List<ProductOption> afterRestoreProductOption = new ArrayList<>();
+        for (ProductOption productOption : productOptionList) {
+            long optionId = productOption.getProductOptionId();
+            long quantityToRestore = optionIdToQuantityMap.get(optionId);
+
+            afterRestoreProductOption.add(productService.restoreStock(productOption,quantityToRestore));
+        }
 
         //쿠폰 사용 여부 확인 및 있다면 복구
         CouponIssuedInfo afterRestoreCouponIssuedInfo = couponService.restoreCoupon(requestUserId,cancelOrder.getCouponId());

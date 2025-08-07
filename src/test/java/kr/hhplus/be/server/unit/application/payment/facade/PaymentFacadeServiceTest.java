@@ -91,7 +91,7 @@ class PaymentFacadeServiceTest {
         orderProductList.add(orderProduct1);
         orderProductList.add(orderProduct2);
 
-        when(orderService.selectOrderByOrderId(1L)).thenReturn(order);
+        when(orderService.selectOrderByOrderIdWithLock(1L)).thenReturn(order);
         when(orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(1L)).thenReturn(orderProductList);
 
         Balance balance = Balance.builder()
@@ -204,7 +204,7 @@ class PaymentFacadeServiceTest {
 // 3. 의존하는 서비스 메서드들이 올바르게 호출되었는지 검증 (verify)
 
 // 3-1. OrderService 메서드 호출 검증
-        verify(orderService, times(1)).selectOrderByOrderId(1L);
+        verify(orderService, times(1)).selectOrderByOrderIdWithLock(1L);
         verify(orderService, times(1)).updateOrderStatusToPayment(order);
 
 // 3-2. BalanceService 메서드 호출 검증

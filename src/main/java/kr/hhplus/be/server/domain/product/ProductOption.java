@@ -56,11 +56,12 @@ public class ProductOption {
      * 재고 차감
      * @throws Exception
      */
-    public void decreaseProductQuantity() throws Exception {
-        if(stockQuantity == 0){
+    public void decreaseProductQuantity(long decreaseQuantity) throws Exception {
+        if(stockQuantity == 0 || stockQuantity - decreaseQuantity < 0){
             throw new Exception("stock empty");
+        } else{
+            this.stockQuantity = stockQuantity - decreaseQuantity;
         }
-        this.stockQuantity = stockQuantity - 1;
     }
 
     /**
@@ -71,6 +72,9 @@ public class ProductOption {
     public void restoreProductQuantity(long restoreQuantity) throws Exception {
         if(restoreQuantity == 0){
             throw new Exception("restore stock empty");
+        }
+        if(this.totalQuantity < this.stockQuantity + restoreQuantity){
+            throw new Exception("restore stock over");
         }
         this.stockQuantity = stockQuantity + restoreQuantity;
     }

@@ -21,8 +21,8 @@ public class ProductOptionAdapter implements ProductOptionRepository {
     }
 
     @Override
-    public ProductOption selectProductOptionByProductOptionIdWithLock(long productOptionId) {
-        return productOptionJpaRepository.findById(productOptionId);
+    public List<ProductOption> selectProductOptionByProductOptionIdInWithLock(List<Long> productOptionIds) {
+        return productOptionJpaRepository.findByProductOptionIdIn(productOptionIds);
     }
 
     @Override

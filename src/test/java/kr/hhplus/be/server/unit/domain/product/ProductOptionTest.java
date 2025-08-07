@@ -33,7 +33,7 @@ class ProductOptionTest {
 
         //When
         Exception thrown = assertThrows(Exception.class,
-                productOption::decreaseProductQuantity,"stock empty");
+                () -> productOption.decreaseProductQuantity(1L));
         //Then
         assertTrue(thrown.getMessage().contains("stock empty"));
     }
@@ -59,7 +59,7 @@ class ProductOptionTest {
                 .build();
 
         //When
-        productOption.decreaseProductQuantity();
+        productOption.decreaseProductQuantity(1L);
 
         //Then
         assertEquals(19L,productOption.getStockQuantity());
@@ -86,11 +86,7 @@ class ProductOptionTest {
                 .build();
 
         //When
-        productOption.decreaseProductQuantity();
-        productOption.decreaseProductQuantity();
-        productOption.decreaseProductQuantity();
-        productOption.decreaseProductQuantity();
-        productOption.decreaseProductQuantity();
+        productOption.decreaseProductQuantity(5L);
 
         //Then
         assertEquals(15L,productOption.getStockQuantity());

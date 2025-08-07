@@ -15,8 +15,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
@@ -202,17 +205,22 @@ class ProductServiceTest {
         products.add(productOption2);
         products.add(productOption3);
 
-        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(0))).thenReturn(productOption1);
-        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(1))).thenReturn(productOption2);
-        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(2))).thenReturn(productOption2);
-        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(3))).thenReturn(productOption2);
-        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(4))).thenReturn(productOption3);
+        when(productOptionRepository.selectProductOptionByProductOptionIdInWithLock(anyList())).thenReturn(List.of(productOption1, productOption2, productOption3));
 
         when(productOptionRepository.save(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
         //When
         ProductService productService = new ProductService(productRepository,productOptionRepository);
-        for (Long productOptionId : productOptionIds){
-            productService.decreaseStock(productOptionId);
+        // ID별 등장 횟수 계산
+        Map<Long, Long> quantityMap = productOptionIds.stream().collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+
+        // 상품 옵션 조회
+        List<ProductOption> lockedOptions = productOptionRepository.selectProductOptionByProductOptionIdInWithLock(new ArrayList<>(quantityMap.keySet()));
+
+        // 차감 호출
+        for (ProductOption option : lockedOptions) {
+            Long quantityToDecrease = quantityMap.get(option.getProductOptionId());
+            productService.decreaseStock(option, quantityToDecrease);
         }
 
         //Then
@@ -220,8 +228,8 @@ class ProductServiceTest {
         assertEquals(2L, productOption2.getStockQuantity()); // 5 - 3 = 2
         assertEquals(1L, productOption3.getStockQuantity()); // 2 - 1 = 1
 
-        verify(productOptionRepository, times(5)).selectProductOptionByProductOptionIdWithLock(any(Long.class));
-        verify(productOptionRepository, times(5)).save(any(ProductOption.class));
+        verify(productOptionRepository, times(1)).selectProductOptionByProductOptionIdInWithLock(any(List.class));
+        verify(productOptionRepository, times(3)).save(any(ProductOption.class));
     }
 
     @Test
@@ -272,7 +280,10 @@ class ProductServiceTest {
 
         //When
         ProductService productService = new ProductService(productRepository,productOptionRepository);
-        long totalOrderPrice = productService.calculateProductTotalPrice(products);
+        long totalOrderPrice = 0L;
+        for (ProductOption productOption : products){
+            totalOrderPrice += productService.calculateProductTotalPrice(productOption,1L);
+        }
 
         //Then
         assertEquals(60_000L,totalOrderPrice);
