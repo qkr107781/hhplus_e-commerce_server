@@ -35,7 +35,7 @@ public class BalanceService implements BalanceUseCase{
     @Transactional
     @Override
     public BalanceResponse charge(BalanceRequest balanceRequest) {
-        Balance userBalance = balanceRepository.findByUserId(balanceRequest.userId());
+        Balance userBalance = balanceRepository.findByUserIdWithLock(balanceRequest.userId());
         
         //충전 금액 유효성 검증
         userBalance.validateChargeAmount(balanceRequest.chargeAmount(), userBalance.getBalance());
@@ -48,22 +48,16 @@ public class BalanceService implements BalanceUseCase{
     }
 
     /**
-     * FacadeService에서 잔액 조회
-     * @param userId: 사용자 ID
-     * @return
-     */
-    public Balance selectBalanceByUserIdUseInFacade(long userId){
-        return balanceRepository.findByUserId(userId);
-    }
-
-    /**
      * 잔액 차감
-     * @param balance: Balance Domain
-     * @param useAmount: 차감 금액
+     * @param userId: 사용자 ID
+     * @param paymentPrice: 차감 금액
      * @throws Exception
      */
-    public void useBalance(Balance balance, long useAmount) throws Exception {
-        balance.useBalance(useAmount);
+    public void useBalance(long userId, long paymentPrice) throws Exception {
+        //잔액 조회
+        Balance balance = balanceRepository.findByUserIdWithLock(userId);
+        //잔액 차감
+        balance.useBalance(paymentPrice);
     }
 
 }

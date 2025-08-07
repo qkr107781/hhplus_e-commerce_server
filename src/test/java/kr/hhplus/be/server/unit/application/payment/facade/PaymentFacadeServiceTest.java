@@ -101,13 +101,10 @@ class PaymentFacadeServiceTest {
                 .lastChargeDate(LocalDateTime.now())
                 .build();
 
-        when(balanceService.selectBalanceByUserIdUseInFacade(1L)).thenReturn(balance);
-
         doAnswer(invocation -> {
-            Balance targetBalance = invocation.getArgument(0);
-            targetBalance.useBalance(49_000L);
+            balance.useBalance(49_000L);
             return null;
-        }).when(balanceService).useBalance(any(Balance.class), eq(49_000L));
+        }).when(balanceService).useBalance(1L, 49_000L);
 
         doAnswer(invocation -> {
             Order targetOrder = invocation.getArgument(0);
@@ -211,8 +208,7 @@ class PaymentFacadeServiceTest {
         verify(orderService, times(1)).updateOrderStatusToPayment(order);
 
 // 3-2. BalanceService 메서드 호출 검증
-        verify(balanceService, times(1)).selectBalanceByUserIdUseInFacade(1L);
-        verify(balanceService, times(1)).useBalance(balance, 49_000L);
+        verify(balanceService, times(1)).useBalance(1L, 49_000L);
 
 // 3-3. PaymentService 메서드 호출 검증
 // createPayment 메서드가 Payment 객체를 인자로 받아 호출되었는지 확인

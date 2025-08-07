@@ -13,7 +13,6 @@ import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.payment.service.PaymentUseCase;
 import kr.hhplus.be.server.application.product.service.ProductService;
-import kr.hhplus.be.server.domain.balance.Balance;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import kr.hhplus.be.server.domain.order.Order;
@@ -69,14 +68,8 @@ public class PaymentFacadeService implements PaymentUseCase {
         }
         paymentPrice = order.getTotalPrice() - order.getCouponDiscountPrice();
 
-        //잔액 조회
-        Balance balance = balanceService.selectBalanceByUserIdUseInFacade(userId);
-        if(balance.getBalance() == 0 || balance.getBalance() < paymentPrice){
-            throw new Exception("not enough balance");
-        }
-
         //잔액 차감
-        balanceService.useBalance(balance, paymentPrice);
+        balanceService.useBalance(userId, paymentPrice);
 
         //주문 상태 변경
         orderService.updateOrderStatusToPayment(order);
