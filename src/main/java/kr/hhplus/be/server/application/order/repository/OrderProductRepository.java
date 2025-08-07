@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface OrderProductRepository {
 
-    List<OrderProduct> findByOrderId(long orderId);
+    List<OrderProduct> findByOrderIdOrderByProductOptionIdAsc(long orderId);
 
     OrderProduct save(OrderProduct orderProduct);
 

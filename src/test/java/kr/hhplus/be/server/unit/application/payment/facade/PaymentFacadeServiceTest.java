@@ -92,7 +92,7 @@ class PaymentFacadeServiceTest {
         orderProductList.add(orderProduct2);
 
         when(orderService.selectOrderByOrderId(1L)).thenReturn(order);
-        when(orderProductService.selectOrderProductsByOrderId(1L)).thenReturn(orderProductList);
+        when(orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(1L)).thenReturn(orderProductList);
 
         Balance balance = Balance.builder()
                 .balanceId(1L)

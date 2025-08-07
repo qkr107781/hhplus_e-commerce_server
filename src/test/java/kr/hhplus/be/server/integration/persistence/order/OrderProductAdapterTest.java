@@ -39,7 +39,7 @@ class OrderProductAdapterTest {
         //Given
         //사전 실행된 orderProduct.sql에서 데이터 입력했음
         //When
-        List<OrderProduct> orderProductList = orderProductAdapter.findByOrderId(1L);
+        List<OrderProduct> orderProductList = orderProductAdapter.findByOrderIdOrderByProductOptionIdAsc(1L);
         //Then
         assertEquals(1L,orderProductList.get(0).getOrderProductId());
         assertEquals(1L,orderProductList.get(0).getProductId());

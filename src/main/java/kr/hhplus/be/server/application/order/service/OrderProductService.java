@@ -19,8 +19,8 @@ public class OrderProductService {
         this.orderProductRepository = orderProductRepository;
     }
 
-    public List<OrderProduct> selectOrderProductsByOrderId(long orderId){
-        return orderProductRepository.findByOrderId(orderId);
+    public List<OrderProduct> selectOrderProductsByOrderIdOrderByProductOptionIdAsc(long orderId){
+        return orderProductRepository.findByOrderIdOrderByProductOptionIdAsc(orderId);
     }
 
     public OrderProduct createOrderProduct(OrderProduct createOrderProduct){

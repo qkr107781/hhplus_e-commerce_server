@@ -18,10 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderFacadeService implements OrderUseCase {
@@ -45,10 +43,18 @@ public class OrderFacadeService implements OrderUseCase {
         long couponDiscountPrice = 0L;
         long requestUserId = orderRequest.userId();
         long requestCouponId = orderRequest.couponId();
-        List<Long> requestProductOptionIds = orderRequest.productOptionIds();
+        //product_option_id 오름차순으로 정렬
+        List<Long> requestProductOptionIds = orderRequest.productOptionIds().stream().sorted().collect(Collectors.toList());
 
         //상품 잔여 갯수 확인 및 차감
-        List<ProductOption> productOptionList = productService.decreaseStock(requestProductOptionIds);
+        List<ProductOption> productOptionList = new ArrayList<>();
+        Collections.sort(requestProductOptionIds);
+        for(Long productOptionId : requestProductOptionIds){
+            ProductOption productOption = productService.decreaseStock(productOptionId);
+            if(productOption != null){
+                productOptionList.add(productOption);
+            }
+        }
         long totalOrderPrice = productService.calculateProductTotalPrice(productOptionList);
 
         //쿠폰 유효성 검증 및 사용
@@ -104,6 +110,7 @@ public class OrderFacadeService implements OrderUseCase {
         return OrderResponse.OrderDTO.from(afterCreateOrder,useCoupon,orderCreateProductResponseList);
     }
 
+    @Transactional
     @Override
     public OrderResponse.OrderDTO cancelOrder(OrderRequest.OrderCancel orderRequest) throws Exception {
         long requestUserId = orderRequest.userId();
@@ -111,7 +118,7 @@ public class OrderFacadeService implements OrderUseCase {
 
         //주문 취소 대상 주문 및 상품 조회
         Order cancelOrder = orderService.selectOrderByOrderId(requestOrderId);
-        List<OrderProduct> cancelOrderProduct = orderProductService.selectOrderProductsByOrderId(requestOrderId);
+        List<OrderProduct> cancelOrderProduct = orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(requestOrderId);
 
         //상품 잔여 갯수 복구
         List<ProductOption> afterRestoreProductOption = productService.restoreStock(cancelOrderProduct);

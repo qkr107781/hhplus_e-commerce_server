@@ -42,31 +42,34 @@ public class ProductService implements ProductUseCase {
     /**
      * 재고 차감
      *
-     * @param requestProductOptionIds: 상품 옵션 ID 목록
-     * @return List<ProductOption>
-     * @throws Exception
+     * @param requestProductOptionId: 상품 옵션 ID
+     * @return ProductOption
+     * @throws Exception: 재고 0으로 차감 실패
      */
-    public List<ProductOption> decreaseStock(List<Long> requestProductOptionIds) throws Exception {
-        //상품 잔여 갯수 확인
-        List<ProductOption> productOptionListForDecreaseStock = new ArrayList<>();
-        for (Long productOptionId : requestProductOptionIds ){
-            ProductOption productOption = productOptionRepository.selectProductOptionByProductOptionId(productOptionId);
-
-            if (productOption.getStockQuantity() == 0) {
-                throw new Exception("stock empty");
-            } else {
-                //재고 차감을 위해 List에 할당
-                productOptionListForDecreaseStock.add(productOption);
-            }
-        }
-
+    public ProductOption decreaseStock(long requestProductOptionId) throws Exception {
+        ProductOption productOption = productOptionRepository.selectProductOptionByProductOptionIdWithLock(requestProductOptionId);
+        System.out.println(productOption.getProductOptionId()+" 재고 차감 전: "+productOption.getStockQuantity());
         //재고 차감
-        for (ProductOption productOption : productOptionListForDecreaseStock) {
-            productOption.decreaseProductQuantity();
+        productOption.decreaseProductQuantity();
+
+        System.out.println(productOption.getProductOptionId()+" 재고 차감 후: "+productOption.getStockQuantity());
+        return productOptionRepository.save(productOption);
+    }
+
+    public List<ProductOption> restoreStock(List<OrderProduct> cancelOrderProduct) throws Exception {
+        List<ProductOption> productOptionListForRestoreStock = new ArrayList<>();
+
+        //상품 잔여 갯수 복구
+        for(OrderProduct orderProduct : cancelOrderProduct){
+            ProductOption productOption = productOptionRepository.selectProductOptionByProductOptionIdWithLock(orderProduct.getProductOptionId());
+            System.out.println(productOption.getProductOptionId()+" 재고 복구 전: "+productOption.getStockQuantity());
+            productOption.restoreProductQuantity(orderProduct.getProductQuantity());
             productOptionRepository.save(productOption);
+            System.out.println(productOption.getProductOptionId()+" 재고 복구 후: "+productOption.getStockQuantity());
+            productOptionListForRestoreStock.add(productOption);
         }
 
-        return productOptionListForDecreaseStock;
+        return productOptionListForRestoreStock;
     }
 
     /**
@@ -93,7 +96,7 @@ public class ProductService implements ProductUseCase {
      * 상품 조회
      *
      * @param requestProductId: 상품 ID
-     * @return
+     * @return Product
      */
     public Product selectProductByProductId(long requestProductId) {
         return productRepository.selectProductByProductId(requestProductId);
@@ -108,20 +111,6 @@ public class ProductService implements ProductUseCase {
      */
     public ProductOption selectProductOptionByProductIdAndProductOptionId(long productId, long productOptionId) {
         return productOptionRepository.selectProductOptionByProductIdAndProductOptionId(productId, productOptionId);
-    }
-
-    public List<ProductOption> restoreStock(List<OrderProduct> cancelOrderProduct) throws Exception {
-        List<ProductOption> productOptionListForRestoreStock = new ArrayList<>();
-
-        //상품 잔여 갯수 복구
-        for(OrderProduct orderProduct : cancelOrderProduct){
-            ProductOption productOption = productOptionRepository.selectProductOptionByProductOptionId(orderProduct.getProductOptionId());
-            productOption.restoreProductQuantity(orderProduct.getProductQuantity());
-            productOptionRepository.save(productOption);
-            productOptionListForRestoreStock.add(productOption);
-        }
-
-        return productOptionListForRestoreStock;
     }
 
 }

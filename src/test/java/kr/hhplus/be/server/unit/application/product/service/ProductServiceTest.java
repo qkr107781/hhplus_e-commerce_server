@@ -202,23 +202,25 @@ class ProductServiceTest {
         products.add(productOption2);
         products.add(productOption3);
 
-        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(0))).thenReturn(productOption1);
-        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(1))).thenReturn(productOption2);
-        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(2))).thenReturn(productOption2);
-        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(3))).thenReturn(productOption2);
-        when(productOptionRepository.selectProductOptionByProductOptionId(productOptionIds.get(4))).thenReturn(productOption3);
+        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(0))).thenReturn(productOption1);
+        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(1))).thenReturn(productOption2);
+        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(2))).thenReturn(productOption2);
+        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(3))).thenReturn(productOption2);
+        when(productOptionRepository.selectProductOptionByProductOptionIdWithLock(productOptionIds.get(4))).thenReturn(productOption3);
 
         when(productOptionRepository.save(any(ProductOption.class))).thenAnswer(invocation -> invocation.getArgument(0));
         //When
         ProductService productService = new ProductService(productRepository,productOptionRepository);
-        productService.decreaseStock(productOptionIds);
+        for (Long productOptionId : productOptionIds){
+            productService.decreaseStock(productOptionId);
+        }
 
         //Then
         assertEquals(14L, productOption1.getStockQuantity()); // 15 - 1 = 14
         assertEquals(2L, productOption2.getStockQuantity()); // 5 - 3 = 2
         assertEquals(1L, productOption3.getStockQuantity()); // 2 - 1 = 1
 
-        verify(productOptionRepository, times(5)).selectProductOptionByProductOptionId(any(Long.class));
+        verify(productOptionRepository, times(5)).selectProductOptionByProductOptionIdWithLock(any(Long.class));
         verify(productOptionRepository, times(5)).save(any(ProductOption.class));
     }
 

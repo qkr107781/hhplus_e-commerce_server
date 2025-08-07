@@ -105,15 +105,19 @@ class OrderFacadeServiceTest {
         products.add(productOption3);
 
         // 1. 재고 차감 Mocking 수정: thenAnswer로 실제 재고를 차감하는 동작 흉내
-        when(productService.decreaseStock(requestProductOptionIds)).thenAnswer(invocation -> {
-            products.forEach(option -> {
-                try {
-                    option.decreaseProductQuantity();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }); // 각 옵션의 재고를 1씩 차감하는 로직
-            return products;
+        when(productService.decreaseStock(anyLong())).thenAnswer(invocation -> {
+            Long id = invocation.getArgument(0);
+
+            // ID에 해당하는 ProductOption 찾기
+            ProductOption option = products.stream()
+                    .filter(p -> p.getProductOptionId().equals(id))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid productOptionId: " + id));
+
+            // 재고 차감
+            option.decreaseProductQuantity();
+
+            return option;
         });
 
         // 2. 총 주문 금액 계산
@@ -198,7 +202,7 @@ class OrderFacadeServiceTest {
         // 주문 검증
         assertEquals(totalOrderPrice, result.totalPrice());
 
-        verify(productService, times(1)).decreaseStock(requestProductOptionIds);
+        verify(productService, times(3)).decreaseStock(anyLong());
         verify(couponService, times(1)).useCoupon(requestCouponId, requestUserId, totalOrderPrice);
         verify(orderService, times(1)).createOrder(any(Order.class));
         verify(orderProductService, times(3)).createOrderProduct(any(OrderProduct.class));
@@ -255,7 +259,7 @@ class OrderFacadeServiceTest {
         orderProductList.add(orderProduct_2);
         orderProductList.add(orderProduct_3);
 
-        when(orderProductService.selectOrderProductsByOrderId(cancelOrderId)).thenReturn(orderProductList);
+        when(orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(cancelOrderId)).thenReturn(orderProductList);
 
         ProductOption productOption_1 = ProductOption.builder()
                 .productOptionId(1L)
@@ -353,7 +357,7 @@ class OrderFacadeServiceTest {
         assertEquals("cancel_order", result.orderStatus());
 
         verify(orderService, times(1)).selectOrderByOrderId(cancelOrderId);
-        verify(orderProductService, times(1)).selectOrderProductsByOrderId(cancelOrderId);
+        verify(orderProductService, times(1)).selectOrderProductsByOrderIdOrderByProductOptionIdAsc(cancelOrderId);
         verify(productService, times(1)).restoreStock(orderProductList);
         verify(couponService, times(1)).restoreCoupon(1L,cancelCouponId);
         verify(couponService, times(1)).selectCouponByCouponId(cancelCouponId);

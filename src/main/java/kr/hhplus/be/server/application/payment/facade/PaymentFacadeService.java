@@ -97,7 +97,7 @@ public class PaymentFacadeService implements PaymentUseCase {
         Coupon coupon = couponService.selectCouponByCouponId(couponIssuedInfo.getCouponId());
 
         //주문 상품 목록 조회
-        List<OrderProduct> productOptionList = orderProductService.selectOrderProductsByOrderId(order.getOrderId());
+        List<OrderProduct> productOptionList = orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(order.getOrderId());
         List<OrderResponse.OrderProductDTO> orderCreateProductList = new ArrayList<>();
         for(OrderProduct orderProduct : productOptionList){
             long productId = orderProduct.getProductId();

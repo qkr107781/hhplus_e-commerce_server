@@ -75,7 +75,7 @@ class CouponServiceTest {
                 .couponId(coupon.getCouponId())
                 .build();
 
-        when(couponRepository.findByCouponId(couponId)).thenReturn(coupon);
+        when(couponRepository.findByCouponIdWithLock(couponId)).thenReturn(coupon);
         when(couponIssuedInfoRepository.issuingCoupon(any(CouponIssuedInfo.class))).thenReturn(couponIssuedInfo);
 
         //When
@@ -87,7 +87,7 @@ class CouponServiceTest {
 
         assertEquals("신규 가입 쿠폰", result.couponName());
 
-        verify(couponRepository, times(1)).findByCouponId(couponId);
+        verify(couponRepository, times(1)).findByCouponIdWithLock(couponId);
         verify(couponIssuedInfoRepository, times(1)).issuingCoupon(any(CouponIssuedInfo.class));
     }
 
