@@ -9,7 +9,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "product_option")
+@Table(
+        name = "product_option",
+        indexes = {
+                @Index(name = "idx_unique_product_option_product_id_product_option_id", columnList = "product_id, product_option_id"),
+                @Index(name = "idx_product_option_product_id_sales_yn", columnList = "product_id, sales_yn")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductOption {

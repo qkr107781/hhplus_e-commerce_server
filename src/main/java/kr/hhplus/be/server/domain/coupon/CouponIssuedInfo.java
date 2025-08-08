@@ -8,7 +8,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "coupon_issued_info")
+@Table(
+        name = "coupon_issued_info",
+        indexes = {
+                @Index(name = "idx_unique_coupon_issued_info_coupon_id_user_id", columnList = "coupon_id, user_id"),
+                @Index(name = "idx_coupon_issued_info_user_id", columnList = "user_id")
+        }
+)
 @Getter
 @NoArgsConstructor
 public class CouponIssuedInfo {
