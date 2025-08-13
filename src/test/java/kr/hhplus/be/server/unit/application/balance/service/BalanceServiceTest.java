@@ -47,8 +47,8 @@ class BalanceServiceTest {
                                             .lastChargeDate(LocalDateTime.now())
                                             .build();
 
-        when(balanceRepository.findByUserId(userId)).thenReturn(balance);
         when(balanceRepository.save(any(Balance.class))).thenReturn(afterChargeBalance);
+        when(balanceRepository.findByUserIdWithLock(1L)).thenReturn(balance);
 
         //When
         BalanceRequest request = new BalanceRequest(userId,chargeAmount);
@@ -67,9 +67,11 @@ class BalanceServiceTest {
         long ownBalance = 990_000L;
         Balance balance = new Balance(1L,1L,ownBalance,LocalDateTime.now());
 
+        when(balanceRepository.findByUserIdWithLock(1L)).thenReturn(balance);
+
         //When
         BalanceService balanceService = new BalanceService(balanceRepository);
-        balanceService.useBalance(balance,useAmount);
+        balanceService.useBalance(1L,useAmount);
 
         //Then
         assertEquals(ownBalance-useAmount,balance.getBalance());
@@ -83,10 +85,12 @@ class BalanceServiceTest {
         long ownBalance = 990_000L;
         Balance balance = new Balance(1L,1L,ownBalance,LocalDateTime.now());
 
+        when(balanceRepository.findByUserIdWithLock(1L)).thenReturn(balance);
+
         //When
         BalanceService balanceService = new BalanceService(balanceRepository);
         Exception thrown = assertThrows(Exception.class,
-                () -> balanceService.useBalance(balance,useAmount),"not enough balance");
+                () -> balanceService.useBalance(1L,useAmount),"not enough balance");
 
         //Then
         assertTrue(thrown.getMessage().contains("not enough balance"));

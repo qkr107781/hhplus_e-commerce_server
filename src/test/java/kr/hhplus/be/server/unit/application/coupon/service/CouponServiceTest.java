@@ -75,7 +75,7 @@ class CouponServiceTest {
                 .couponId(coupon.getCouponId())
                 .build();
 
-        when(couponRepository.findByCouponId(couponId)).thenReturn(coupon);
+        when(couponRepository.findByCouponIdWithLock(couponId)).thenReturn(coupon);
         when(couponIssuedInfoRepository.issuingCoupon(any(CouponIssuedInfo.class))).thenReturn(couponIssuedInfo);
 
         //When
@@ -87,7 +87,7 @@ class CouponServiceTest {
 
         assertEquals("신규 가입 쿠폰", result.couponName());
 
-        verify(couponRepository, times(1)).findByCouponId(couponId);
+        verify(couponRepository, times(1)).findByCouponIdWithLock(couponId);
         verify(couponIssuedInfoRepository, times(1)).issuingCoupon(any(CouponIssuedInfo.class));
     }
 
@@ -157,6 +157,71 @@ class CouponServiceTest {
 
         verify(couponIssuedInfoRepository, times(1)).findByCouponIdAndUserId(couponId,userId);
         verify(couponIssuedInfoRepository, times(1)).useCoupon(any(CouponIssuedInfo.class));
+    }
+
+    @Test
+    @DisplayName("[쿠폰 복구]쿠폰 복구 처리")
+    void unuseCoupon() {
+        //Given
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        String regDateStr = "2025-07-15 11:00:00";
+
+        long couponId = 1L;
+        String couponName = "신규 가입 쿠폰";
+        long discountPrice = 1_000L;
+        long totalCouponAmount = 30L;
+        long remainingCouponAmount = 10L;
+        long minUsePrice = 10_000L;
+        LocalDateTime issuanceStartTime = LocalDateTime.now().minusHours(1);
+        LocalDateTime issuanceEndTime = LocalDateTime.now().plusHours(1);
+        long useLimitTime = 24L;
+        String couponStatus = "issuing";
+        LocalDateTime regDate = LocalDateTime.parse(regDateStr, formatter);
+
+        Coupon coupon = Coupon.builder()
+                .couponId(couponId)
+                .couponName(couponName)
+                .discountPrice(discountPrice)
+                .totalCouponAmount(totalCouponAmount)
+                .remainingCouponAmount(remainingCouponAmount)
+                .issuanceStartTime(issuanceStartTime)
+                .issuanceEndTime(issuanceEndTime)
+                .couponStatus(couponStatus)
+                .regDate(regDate)
+                .build();
+
+        long couponIssuedId = 1L;
+        long userId = 1L;
+        String useYn = "Y";
+        LocalDateTime issuedAt = LocalDateTime.now();
+        LocalDateTime endDAte = LocalDateTime.now().plusHours(24);
+
+        CouponIssuedInfo couponIssuedInfo = CouponIssuedInfo.builder()
+                .couponIssuedId(couponIssuedId)
+                .userId(userId)
+                .useYn(useYn)
+                .issuedAt(issuedAt)
+                .endDate(endDAte)
+                .couponId(coupon.getCouponId())
+                .build();
+
+        when(couponIssuedInfoRepository.findByCouponIdAndUserId(couponId,userId)).thenReturn(couponIssuedInfo);
+        when(couponIssuedInfoRepository.unuseCoupon(any(CouponIssuedInfo.class))).thenAnswer(invocation -> {
+            CouponIssuedInfo info = invocation.getArgument(0);
+            info.unuseCoupon();
+            return info;
+        });
+
+        //When
+        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository);
+        CouponIssuedInfo result = couponService.restoreCoupon(couponId,userId);
+
+        //Then
+        assertEquals("N", result.getUseYn());
+
+        verify(couponIssuedInfoRepository, times(1)).findByCouponIdAndUserId(couponId,userId);
+        verify(couponIssuedInfoRepository, times(1)).unuseCoupon(any(CouponIssuedInfo.class));
     }
 
 }

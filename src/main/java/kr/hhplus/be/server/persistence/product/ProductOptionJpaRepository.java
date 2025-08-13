@@ -1,7 +1,9 @@
 package kr.hhplus.be.server.persistence.product;
 
+import jakarta.persistence.LockModeType;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -10,6 +12,9 @@ import java.util.List;
 public interface ProductOptionJpaRepository extends JpaRepository<ProductOption,Long> {
 
     ProductOption findByProductOptionId(Long productOptionId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<ProductOption> findByProductOptionIdIn(List<Long> productOptionIds);
 
     List<ProductOption> findByProductIdAndSalesYn(long productId,String salesYn);
 

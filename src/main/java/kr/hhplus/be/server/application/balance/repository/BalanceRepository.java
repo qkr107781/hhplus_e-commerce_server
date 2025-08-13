@@ -6,6 +6,8 @@ public interface BalanceRepository {
 
     Balance findByUserId(long userId);
 
+    Balance findByUserIdWithLock(long userId);
+
     Balance save(Balance balance);
 
 }

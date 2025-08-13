@@ -68,31 +68,31 @@ class ProductFacadeServiceTest {
                     eq("complete_payment"), eq(startDateInService), eq(endDateInService)))
                     .thenReturn(ordersForFacade);
 
-            when(orderProductService.selectOrderProductsByOrderId(3L)).thenReturn(List.of(
+            when(orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(3L)).thenReturn(List.of(
                     OrderProduct.builder().orderId(3L).productOptionId(7L).productQuantity(12L).build(),
                     OrderProduct.builder().orderId(3L).productOptionId(4L).productQuantity(40L).build(),
                     OrderProduct.builder().orderId(3L).productOptionId(5L).productQuantity(41L).build()
             ));
 
-            when(orderProductService.selectOrderProductsByOrderId(4L)).thenReturn(List.of(
+            when(orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(4L)).thenReturn(List.of(
                     OrderProduct.builder().orderId(4L).productOptionId(7L).productQuantity(11L).build(),
                     OrderProduct.builder().orderId(4L).productOptionId(8L).productQuantity(21L).build(),
                     OrderProduct.builder().orderId(4L).productOptionId(9L).productQuantity(31L).build()
             ));
 
-            when(orderProductService.selectOrderProductsByOrderId(5L)).thenReturn(List.of(
+            when(orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(5L)).thenReturn(List.of(
                     OrderProduct.builder().orderId(5L).productOptionId(7L).productQuantity(11L).build(),
                     OrderProduct.builder().orderId(5L).productOptionId(8L).productQuantity(21L).build(),
                     OrderProduct.builder().orderId(5L).productOptionId(9L).productQuantity(31L).build()
             ));
 
-            when(orderProductService.selectOrderProductsByOrderId(6L)).thenReturn(List.of(
+            when(orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(6L)).thenReturn(List.of(
                     OrderProduct.builder().orderId(6L).productOptionId(4L).productQuantity(10L).build(),
                     OrderProduct.builder().orderId(6L).productOptionId(5L).productQuantity(20L).build(),
                     OrderProduct.builder().orderId(6L).productOptionId(6L).productQuantity(30L).build()
             ));
 
-            when(orderProductService.selectOrderProductsByOrderId(7L)).thenReturn(List.of(
+            when(orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(7L)).thenReturn(List.of(
                     OrderProduct.builder().orderId(7L).productOptionId(4L).productQuantity(10L).build(),
                     OrderProduct.builder().orderId(7L).productOptionId(5L).productQuantity(20L).build(),
                     OrderProduct.builder().orderId(7L).productOptionId(6L).productQuantity(30L).build()

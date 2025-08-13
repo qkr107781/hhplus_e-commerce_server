@@ -18,10 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderFacadeService implements OrderUseCase {
@@ -40,16 +39,33 @@ public class OrderFacadeService implements OrderUseCase {
 
     @Transactional
     @Override
-    public OrderResponse.OrderCreate createOrder(OrderRequest.OrderCreate orderRequest) throws Exception {
+    public OrderResponse.OrderDTO createOrder(OrderRequest.OrderCreate orderRequest) throws Exception {
         long useCouponId = 0L;
         long couponDiscountPrice = 0L;
         long requestUserId = orderRequest.userId();
         long requestCouponId = orderRequest.couponId();
-        List<Long> requestProductOptionIds = orderRequest.productOptionIds();
+        long totalOrderPrice = 0L;
 
         //상품 잔여 갯수 확인 및 차감
-        List<ProductOption> productOptionList = productService.decreaseStock(requestProductOptionIds);
-        long totalOrderPrice = productService.calculateProductTotalPrice(productOptionList);
+        // 0. product_option_id 오름차순으로 정렬
+        List<Long> requestProductOptionIds = orderRequest.productOptionIds().stream().sorted().toList();
+
+        // 1. 옵션 ID 별로 등장 횟수 세기(세면서 정렬)
+        Map<Long, Long> optionIdCountMap = requestProductOptionIds.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        // 2. 중복 제거한 ID로 product_option 목록 조회
+        List<Long> uniqueOptionIds = new ArrayList<>(optionIdCountMap.keySet());
+        List<ProductOption> productOptionList = productService.selectProductOptionByProductOptionIdInWithLock(uniqueOptionIds);
+
+        // 3. 각 옵션의 등장 횟수만큼 재고 차감 및 결제 금액 산정을 위한 리스트 추가
+
+        for (ProductOption productOption : productOptionList) {
+            long optionId = productOption.getProductOptionId();
+            long quantityToDecrease = optionIdCountMap.get(optionId);
+            productService.decreaseStock(productOption, quantityToDecrease);
+            totalOrderPrice += productService.calculateProductTotalPrice(productOption, quantityToDecrease);
+        }
 
         //쿠폰 유효성 검증 및 사용
         CouponIssuedInfo couponIssuedInfo = couponService.useCoupon(requestCouponId,requestUserId,totalOrderPrice);
@@ -71,12 +87,11 @@ public class OrderFacadeService implements OrderUseCase {
         Order afterCreateOrder = orderService.createOrder(OrderBuilder.Order.toDomain(createOrder));
 
 
-        List<OrderResponse.OrderCreateProduct> orderCreateProductResponseList = new ArrayList<>();
+        List<OrderResponse.OrderProductDTO> orderCreateProductResponseList = new ArrayList<>();
         Set<OrderBuilder.OrderProduct> seenOrderList = new HashSet<>();
         for(ProductOption productOption : productOptionList){
-            long orderQuantity = productOptionList.stream()
-                    .filter(productOptionId -> productOptionId.getProductOptionId().equals(productOption.getProductOptionId()))
-                    .count();
+            long optionId = productOption.getProductOptionId();
+            long orderQuantity = optionIdCountMap.get(optionId);
 
             //주문 상품 도메인 생성
             OrderBuilder.OrderProduct createOrderProduct = new OrderBuilder.OrderProduct(
@@ -93,7 +108,7 @@ public class OrderFacadeService implements OrderUseCase {
                 //주문 완료 상품 조회
                 Product orderProduct = productService.selectProductByProductId(productOption.getProductId());
                 //주문 상품 리턴 DTO 생성을 위함
-                orderCreateProductResponseList.add(OrderResponse.OrderCreateProduct.from(afterCreatrOrderProduct,orderProduct,productOption));
+                orderCreateProductResponseList.add(OrderResponse.OrderProductDTO.from(afterCreatrOrderProduct,orderProduct,productOption));
             }
 
         }
@@ -101,6 +116,63 @@ public class OrderFacadeService implements OrderUseCase {
         //사용 쿠폰 정보 조회
         Coupon useCoupon = couponService.selectCouponByCouponId(requestCouponId);
 
-        return OrderResponse.OrderCreate.from(afterCreateOrder,useCoupon,orderCreateProductResponseList);
+        return OrderResponse.OrderDTO.from(afterCreateOrder,useCoupon,orderCreateProductResponseList);
+    }
+
+    @Transactional
+    @Override
+    public OrderResponse.OrderDTO cancelOrder(OrderRequest.OrderCancel orderRequest) throws Exception {
+        long requestUserId = orderRequest.userId();
+        long requestOrderId = orderRequest.orderId();
+
+        //주문 취소 대상 주문 및 상품 조회
+        Order cancelOrder = orderService.selectOrderByOrderId(requestOrderId);
+        List<OrderProduct> cancelOrderProduct = orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(requestOrderId);
+
+        //상품 잔여 갯수 확인 및 복구
+        // 0. 상품 ID, 주문 수량 셋팅
+        Map<Long, Long> optionIdToQuantityMap = new HashMap<>();
+
+        for (OrderProduct orderProduct : cancelOrderProduct) {
+            Long optionId = orderProduct.getProductOptionId();
+            Long quantity = orderProduct.getProductQuantity();
+
+            optionIdToQuantityMap.merge(optionId, quantity, Long::sum);
+        }
+
+        // 1. product_option_id 오름차순으로 정렬
+        List<Long> uniqueOptionIds = new ArrayList<>(optionIdToQuantityMap.keySet()).stream().sorted().toList();
+
+        // 2. 중복 제거한 ID로 product_option 목록 조회
+        List<ProductOption> productOptionList = productService.selectProductOptionByProductOptionIdInWithLock(uniqueOptionIds);
+
+        // 3. 각 옵션의 등장 횟수만큼 재고 차감
+        List<ProductOption> afterRestoreProductOption = new ArrayList<>();
+        for (ProductOption productOption : productOptionList) {
+            long optionId = productOption.getProductOptionId();
+            long quantityToRestore = optionIdToQuantityMap.get(optionId);
+
+            afterRestoreProductOption.add(productService.restoreStock(productOption,quantityToRestore));
+        }
+
+        //쿠폰 사용 여부 확인 및 있다면 복구
+        CouponIssuedInfo afterRestoreCouponIssuedInfo = couponService.restoreCoupon(requestUserId,cancelOrder.getCouponId());
+        Coupon coupon = couponService.selectCouponByCouponId(afterRestoreCouponIssuedInfo.getCouponId());
+
+        //주문 취소
+        cancelOrder = orderService.cancelOrder(requestOrderId);
+
+        //리턴 DTO 생성
+        List<OrderResponse.OrderProductDTO> orderCancelProductResponseList = new ArrayList<>();
+        for(ProductOption productOption : afterRestoreProductOption){
+
+            //주문 취소 상품 조회
+            Product product = productService.selectProductByProductId(productOption.getProductId());
+            OrderProduct orderProduct = orderProductService.selectOrderProductByOrderIdAndProductOptionId(requestOrderId,productOption.getProductOptionId());
+
+            orderCancelProductResponseList.add(OrderResponse.OrderProductDTO.from(orderProduct,product,productOption));
+        }
+
+        return OrderResponse.OrderDTO.from(cancelOrder,coupon,orderCancelProductResponseList);
     }
 }

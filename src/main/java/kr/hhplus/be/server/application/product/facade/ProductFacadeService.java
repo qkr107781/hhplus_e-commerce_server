@@ -43,7 +43,7 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
 
         //추출일 기준 3일전~1일전 결제 완료된 주문의 주문 상품 조회
         for (Order order : orderList){
-            List<OrderProduct> orderProductList = orderProductService.selectOrderProductsByOrderId(order.getOrderId());
+            List<OrderProduct> orderProductList = orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(order.getOrderId());
             orderProductListByBefore3Days.addAll(orderProductList);
         }
 

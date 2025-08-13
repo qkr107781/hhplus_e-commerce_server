@@ -9,7 +9,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "`order`")
+@Table(
+        name = "`order`",
+        indexes = {
+                @Index(name = "idx_order_order_status_order_date", columnList = "order_status, order_date"),
+                @Index(name = "idx_order_order_id_version", columnList = "order_id, version")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order {
@@ -37,8 +43,12 @@ public class Order {
     @Column(name = "order_date", nullable = false)
     private LocalDateTime orderDate;
 
+    @Version
+    @Column(columnDefinition = "BIGINT DEFAULT 0")//테스트컨테이너에서 DDL 자동생성 시 기본값 부여를 위해
+    private Long version;
+
     @Builder
-    public Order(Long orderId, Long userId, Long couponId, Long couponDiscountPrice, Long totalPrice, String orderStatus, LocalDateTime orderDate) {
+    public Order(Long orderId, Long userId, Long couponId, Long couponDiscountPrice, Long totalPrice, String orderStatus, LocalDateTime orderDate, Long version) {
         this.orderId = orderId;
         this.userId = userId;
         this.couponId = couponId;
@@ -46,9 +56,14 @@ public class Order {
         this.totalPrice = totalPrice;
         this.orderStatus = orderStatus;
         this.orderDate = orderDate;
+        this.version = version;
     }
 
     public void updateOrderStatusToPayment(){
         this.orderStatus = "payment_completed";
+    }
+
+    public void cancelOrder(){
+        orderStatus = "cancel_order";
     }
 }

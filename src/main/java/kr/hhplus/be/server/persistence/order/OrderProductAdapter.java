@@ -16,12 +16,17 @@ public class OrderProductAdapter implements OrderProductRepository {
 
 
     @Override
-    public List<OrderProduct> findByOrderId(long orderId) {
-        return orderProductJpaRepository.findByOrderId(orderId);
+    public List<OrderProduct> findByOrderIdOrderByProductOptionIdAsc(long orderId) {
+        return orderProductJpaRepository.findByOrderIdOrderByProductOptionIdAsc(orderId);
     }
 
     @Override
     public OrderProduct save(OrderProduct orderProduct) {
         return orderProductJpaRepository.save(orderProduct);
+    }
+
+    @Override
+    public OrderProduct findByOrderIdAndProductOptionId(long requestOrderId,long productOptionId) {
+        return orderProductJpaRepository.findByOrderIdAndProductOptionId(requestOrderId,productOptionId);
     }
 }
