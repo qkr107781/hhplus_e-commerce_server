@@ -14,18 +14,39 @@ spring:
   jpa:
     open-in-view: false
     generate-ddl: false
-    show-sql: false
+    show-sql: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate.timezone.default_storage: NORMALIZE_UTC
       hibernate.jdbc.time_zone: UTC
+      hibernate.format_sql: true
+      hibernate.highlight_sql: true
 
+  redis:
+    cluster:
+      nodes:
+        - 172.20.0.2:7001
+        - 172.20.0.3:7002
+        - 172.20.0.4:7003
+        - 172.20.0.5:7004
+        - 172.20.0.6:7005
+        - 172.20.0.7:7006
+
+  redisson:
+    cluster-servers-config:
+      node-addresses:
+        - "redis://172.20.0.2:7001"
+        - "redis://172.20.0.3:7002"
+        - "redis://172.20.0.4:7003"
+        - "redis://172.20.0.5:7004"
+        - "redis://172.20.0.6:7005"
+        - "redis://172.20.0.7:7006"
 ---
 spring.config.activate.on-profile: local, test
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://hhplus-mysql:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
     username: application
     password: application

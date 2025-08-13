@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.4.1"
 	id("io.spring.dependency-management") version "1.1.7"
+	id("org.asciidoctor.jvm.convert") version "3.3.2"
 }
 
 fun getGitHash(): String {
@@ -12,6 +13,12 @@ fun getGitHash(): String {
 
 group = "kr.hhplus.be"
 version = getGitHash()
+
+configurations {
+	compileOnly {
+		extendsFrom(configurations.annotationProcessor.get())
+	}
+}
 
 java {
 	toolchain {
@@ -34,6 +41,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-aop")
 
 	// DB
 	runtimeOnly("com.mysql:mysql-connector-j")
@@ -43,6 +51,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
+	testImplementation("org.redisson:redisson:3.50.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
 	// Swagger (SpringDoc)
@@ -55,9 +64,45 @@ dependencies {
 
 	testCompileOnly("org.projectlombok:lombok:1.18.38")
 	testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
+
+	// LocalDateTime 직렬화를 위함
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2")
+
+	// QueryDSL Implementation
+	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
+	annotationProcessor("com.querydsl:querydsl-apt:5.0.0:jakarta")
+	annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+	annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+
+	// Redis
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	// Redisson
+	implementation("org.redisson:redisson-spring-boot-starter:3.50.0")
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
 	systemProperty("user.timezone", "UTC")
+}
+
+/**
+ * QueryDSL Build Options
+ */
+val querydslDir = "src/main/generated/querydsl"
+
+sourceSets {
+	getByName("main").java.srcDirs(querydslDir)
+}
+
+tasks.withType<JavaCompile> {
+	options.generatedSourceOutputDirectory = file(querydslDir)
+
+	// 위의 설정이 안되면 아래 설정 사용
+	// options.generatedSourceOutputDirectory.set(file(querydslDir))
+}
+
+tasks.named("clean") {
+	doLast {
+		file(querydslDir).deleteRecursively()
+	}
 }

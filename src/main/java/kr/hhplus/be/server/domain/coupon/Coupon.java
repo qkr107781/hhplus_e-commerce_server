@@ -8,7 +8,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="coupon")
+@Table(
+        name = "coupon",
+        indexes = {
+                @Index(name = "idx_coupon_coupon_status", columnList = "coupon_status")
+        }
+)
 @Getter
 @NoArgsConstructor
 public class Coupon {
@@ -30,17 +35,11 @@ public class Coupon {
     @Column(name = "remaining_coupon_amount", nullable = false)
     private Long remainingCouponAmount;
 
-    @Column(name = "min_use_price", nullable = false)
-    private Long minUsePrice;
-
     @Column(name = "issuance_start_time", nullable = false)
     private LocalDateTime issuanceStartTime;
 
     @Column(name = "issuance_end_time", nullable = false)
     private LocalDateTime issuanceEndTime;
-
-    @Column(name = "use_limit_time", nullable = false)
-    private Long useLimitTime;
 
     @Column(name = "coupon_status", length = 10, nullable = false)
     private String couponStatus;
@@ -50,32 +49,40 @@ public class Coupon {
 
     @Builder
     public Coupon(Long couponId, String couponName, Long discountPrice, Long totalCouponAmount,
-                  Long remainingCouponAmount, Long minUsePrice, LocalDateTime issuanceStartTime,
-                  LocalDateTime issuanceEndTime, Long useLimitTime, String couponStatus, LocalDateTime regDate) {
+                  Long remainingCouponAmount, LocalDateTime issuanceStartTime,
+                  LocalDateTime issuanceEndTime, String couponStatus, LocalDateTime regDate) {
         this.couponId = couponId;
         this.couponName = couponName;
         this.discountPrice = discountPrice;
         this.totalCouponAmount = totalCouponAmount;
         this.remainingCouponAmount = remainingCouponAmount;
-        this.minUsePrice = minUsePrice;
         this.issuanceStartTime = issuanceStartTime;
         this.issuanceEndTime = issuanceEndTime;
-        this.useLimitTime = useLimitTime;
         this.couponStatus = couponStatus;
         this.regDate = regDate;
     }
 
-    public boolean validateCouponIssuance(Coupon coupon){
-        if(coupon.getRemainingCouponAmount() == 0){
-            System.out.println("잔여 수량 부족");
-            return false;
+    /**
+     * 쿠폰 발급 유효성 검증
+     * @throws Exception
+     */
+    public void validateCouponIssuance() throws Exception {
+        if(this.remainingCouponAmount == 0){
+            throw new Exception("empty remaining coupon");
         }
         LocalDateTime now = LocalDateTime.now();
-        if(coupon.getIssuanceStartTime().isAfter(now) ||
-                coupon.getIssuanceEndTime().isBefore(now)){
-            System.out.println("발급 시간 아님");
-            return false;
+        if(this.issuanceStartTime.isAfter(now) || this.issuanceEndTime.isBefore(now)){
+            throw new Exception("not issuing time");
         }
-        return true;
+        if(!this.couponStatus.equals("issuing")){
+            throw new Exception("not issuing status");
+        }
+    }
+
+    /**
+     * 쿠폰 갯수 차감
+     */
+    public void decreaseCoupon(){
+        this.remainingCouponAmount = this.remainingCouponAmount - 1L;
     }
 }
