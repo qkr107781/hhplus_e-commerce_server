@@ -3,7 +3,6 @@ package kr.hhplus.be.server.application.product.service;
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.repository.ProductOptionRepository;
 import kr.hhplus.be.server.application.product.repository.ProductRepository;
-import kr.hhplus.be.server.domain.order.OrderProduct;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import org.springframework.stereotype.Service;
@@ -46,6 +45,15 @@ public class ProductService implements ProductUseCase {
      */
     public List<ProductOption> selectProductOptionByProductOptionIdInWithLock(List<Long> productOptionIds){
         return productOptionRepository.selectProductOptionByProductOptionIdInWithLock(productOptionIds);
+    }
+
+    /**
+     * 재고 차감/복구 전 조회
+     * @param productOptionIds: 상품 옵션 ID 목록
+     * @return List<ProductOption>
+     */
+    public List<ProductOption> selectProductOptionByProductOptionIdIn(List<Long> productOptionIds){
+        return productOptionRepository.selectProductOptionByProductOptionIdIn(productOptionIds);
     }
 
     /**

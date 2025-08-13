@@ -26,6 +26,11 @@ public class ProductOptionAdapter implements ProductOptionRepository {
     }
 
     @Override
+    public List<ProductOption> selectProductOptionByProductOptionIdIn(List<Long> productOptionIds) {
+        return productOptionJpaRepository.findByProductOptionIdIn(productOptionIds);
+    }
+
+    @Override
     public ProductOption save(ProductOption productOption) {
         return productOptionJpaRepository.save(productOption);
     }
