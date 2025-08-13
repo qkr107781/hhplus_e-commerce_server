@@ -13,6 +13,7 @@ import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.payment.service.PaymentUseCase;
 import kr.hhplus.be.server.application.product.service.ProductService;
+import kr.hhplus.be.server.common.redis.DistributedLock;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import kr.hhplus.be.server.domain.order.Order;
@@ -54,6 +55,11 @@ public class PaymentFacadeService implements PaymentUseCase {
      * @return PaymentResponse.Create
      * @throws Exception
      */
+    @DistributedLock(
+            keys = {
+                    "'user:balance:' + #request.userId"
+            }
+    )
     @Transactional
     @Override
     public PaymentResponse.Create createPayment(PaymentRequest.Create request) throws Exception {
