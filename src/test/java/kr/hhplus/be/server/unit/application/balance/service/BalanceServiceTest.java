@@ -48,7 +48,7 @@ class BalanceServiceTest {
                                             .build();
 
         when(balanceRepository.save(any(Balance.class))).thenReturn(afterChargeBalance);
-        when(balanceRepository.findByUserIdWithLock(1L)).thenReturn(balance);
+        when(balanceRepository.findByUserId(1L)).thenReturn(balance);
 
         //When
         BalanceRequest request = new BalanceRequest(userId,chargeAmount);
@@ -67,7 +67,7 @@ class BalanceServiceTest {
         long ownBalance = 990_000L;
         Balance balance = new Balance(1L,1L,ownBalance,LocalDateTime.now());
 
-        when(balanceRepository.findByUserIdWithLock(1L)).thenReturn(balance);
+        when(balanceRepository.findByUserId(1L)).thenReturn(balance);
 
         //When
         BalanceService balanceService = new BalanceService(balanceRepository);
@@ -85,7 +85,7 @@ class BalanceServiceTest {
         long ownBalance = 990_000L;
         Balance balance = new Balance(1L,1L,ownBalance,LocalDateTime.now());
 
-        when(balanceRepository.findByUserIdWithLock(1L)).thenReturn(balance);
+        when(balanceRepository.findByUserId(1L)).thenReturn(balance);
 
         //When
         BalanceService balanceService = new BalanceService(balanceRepository);
