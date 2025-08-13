@@ -3,8 +3,11 @@ package kr.hhplus.be.server.application.coupon.service;
 import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
+import kr.hhplus.be.server.common.redis.DistributedFairLock;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +17,8 @@ import java.util.List;
 
 @Service
 public class CouponService implements CouponUseCase{
+
+    private static final Logger log = LoggerFactory.getLogger(CouponService.class);
 
     private final CouponIssuedInfoRepository couponIssuedInfoRepository;
     private final CouponRepository couponRepository;
@@ -84,11 +89,14 @@ public class CouponService implements CouponUseCase{
      * @return CouponIssuedInfo
      * @throws Exception: 유효성 검사 예외
      */
+    @DistributedFairLock(key = "'coupon:issue:' + #couponId")
     @Transactional
     @Override
     public CouponResponse.Issue issuingCoupon(long couponId,long userId) throws Exception {
+        log.info("쿠폰 발급 트랜잭션 시작: userId: {}", userId);
         //발급 준비
-        Coupon coupon = couponRepository.findByCouponIdWithLock(couponId);
+//        Coupon coupon = couponRepository.findByCouponIdWithLock(couponId);
+        Coupon coupon = couponRepository.findByCouponId(couponId);
         CouponIssuedInfo issuingCoupon = CouponIssuedInfo.builder()
                 .userId(userId)
                 .useYn("N")
@@ -103,6 +111,7 @@ public class CouponService implements CouponUseCase{
         //쿠폰 잔여 갯수 차감
         coupon.decreaseCoupon();
 
+        log.info("쿠폰 발급 트랜잭션 종료");
         return CouponResponse.Issue.from(couponIssuedInfoRepository.issuingCoupon(issuingCoupon),coupon);
     }
 
