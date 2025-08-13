@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 @Table(
         name = "`order`",
         indexes = {
-                @Index(name = "idx_order_order_status_order_date", columnList = "order_status, order_date")
+                @Index(name = "idx_order_order_status_order_date", columnList = "order_status, order_date"),
+                @Index(name = "idx_order_order_id_version", columnList = "order_id, version")
         }
 )
 @Getter
