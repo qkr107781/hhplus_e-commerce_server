@@ -39,7 +39,7 @@ class OrderProductAdapterTest {
         //Given
         //사전 실행된 orderProduct.sql에서 데이터 입력했음
         //When
-        List<OrderProduct> orderProductList = orderProductAdapter.findByOrderId(1L);
+        List<OrderProduct> orderProductList = orderProductAdapter.findByOrderIdOrderByProductOptionIdAsc(1L);
         //Then
         assertEquals(1L,orderProductList.get(0).getOrderProductId());
         assertEquals(1L,orderProductList.get(0).getProductId());
@@ -97,21 +97,21 @@ class OrderProductAdapterTest {
         OrderProduct saveOrderProduct3 = orderProductAdapter.save(orderProduct3);
 
         //Then
-        assertEquals(4L,saveOrderProduct1.getOrderProductId());
+        assertEquals(7L,saveOrderProduct1.getOrderProductId());
         assertEquals(2L,saveOrderProduct3.getOrderId());
         assertEquals(3L,saveOrderProduct1.getProductId());
         assertEquals(1L,saveOrderProduct1.getProductOptionId());
         assertEquals(20_000L,saveOrderProduct1.getProductPrice());
         assertEquals(2L,saveOrderProduct1.getProductQuantity());
 
-        assertEquals(5L,saveOrderProduct2.getOrderProductId());
+        assertEquals(8L,saveOrderProduct2.getOrderProductId());
         assertEquals(2L,saveOrderProduct3.getOrderId());
         assertEquals(3L,saveOrderProduct2.getProductId());
         assertEquals(2L,saveOrderProduct2.getProductOptionId());
         assertEquals(10_000L,saveOrderProduct2.getProductPrice());
         assertEquals(1L,saveOrderProduct2.getProductQuantity());
 
-        assertEquals(6L,saveOrderProduct3.getOrderProductId());
+        assertEquals(9L,saveOrderProduct3.getOrderProductId());
         assertEquals(2L,saveOrderProduct3.getOrderId());
         assertEquals(4L,saveOrderProduct3.getProductId());
         assertEquals(1L,saveOrderProduct3.getProductOptionId());
@@ -119,6 +119,23 @@ class OrderProductAdapterTest {
         assertEquals(3L,saveOrderProduct3.getProductQuantity());
 
 
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("주문 상품 조회 - findByOrderIdAndProductOptionId()")
+    void findByOrderIdAndProductOptionId(){
+        System.out.println("findByOrderIdAndProductOptionId 쿼리");
+        //Given
+        //사전 실행된 orderProduct.sql에서 데이터 입력했음
+        //When
+        OrderProduct orderProduct = orderProductAdapter.findByOrderIdAndProductOptionId(1L,1L);
+        //Then
+        assertEquals(1L,orderProduct.getOrderProductId());
+        assertEquals(1L,orderProduct.getProductId());
+        assertEquals(1L,orderProduct.getProductOptionId());
+        assertEquals(20_000L,orderProduct.getProductPrice());
+        assertEquals(2L,orderProduct.getProductQuantity());
     }
 
 }

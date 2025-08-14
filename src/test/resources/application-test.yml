@@ -4,15 +4,14 @@ spring:
   jpa:
     open-in-view: false
     generate-ddl: true
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: create-drop
     defer-datasource-initialization: true
     properties:
       hibernate.timezone.default_storage: NORMALIZE_UTC
       hibernate.jdbc.time_zone: UTC
-      hibernate.format_sql: true
-      hibernate.highlight_sql: true
+      hibernate.format_sql: false
 
 
 logging:

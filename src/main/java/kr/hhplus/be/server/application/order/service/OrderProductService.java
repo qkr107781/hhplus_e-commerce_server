@@ -19,12 +19,16 @@ public class OrderProductService {
         this.orderProductRepository = orderProductRepository;
     }
 
-    public List<OrderProduct> selectOrderProductsByOrderId(long orderId){
-        return orderProductRepository.findByOrderId(orderId);
+    public List<OrderProduct> selectOrderProductsByOrderIdOrderByProductOptionIdAsc(long orderId){
+        return orderProductRepository.findByOrderIdOrderByProductOptionIdAsc(orderId);
     }
 
     public OrderProduct createOrderProduct(OrderProduct createOrderProduct){
         return orderProductRepository.save(createOrderProduct);
+    }
+
+    public OrderProduct selectOrderProductByOrderIdAndProductOptionId(long requestOrderId, long productOptionId){
+        return orderProductRepository.findByOrderIdAndProductOptionId(requestOrderId,productOptionId);
     }
 
     public List<OrderProductSummary> getTop5OrderProduct(List<OrderProduct> orderProductList){

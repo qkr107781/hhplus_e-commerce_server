@@ -27,6 +27,11 @@ public class OrderAdapter implements OrderRepository {
     }
 
     @Override
+    public Order findById(long orderId) {
+        return orderJpaRepository.findById(orderId);
+    }
+
+    @Override
     public List<Order> findByOrderStatusAndOrderDateBetween(String orderStatus, LocalDate startDate, LocalDate endDate) {
         return orderJpaRepository.findByOrderStatusAndOrderDateBetween(orderStatus,startDate.atStartOfDay(),endDate.atStartOfDay());
     }

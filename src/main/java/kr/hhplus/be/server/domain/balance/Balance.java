@@ -77,13 +77,13 @@ public class Balance {
 
     /**
      * 잔액 차감
-     * @param useAmount: 차감 금액
+     * @param paymentPrice: 차감 금액
      * @throws Exception
      */
-    public void useBalance(long useAmount) throws Exception {
-        if(this.balance - useAmount < 0){
+    public void useBalance(long paymentPrice) throws Exception {
+        if(this.balance - paymentPrice < 0 || this.balance == 0){
             throw new Exception("not enough balance");
         }
-        this.balance -= useAmount;
+        this.balance -= paymentPrice;
     }
 }

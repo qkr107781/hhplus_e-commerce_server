@@ -10,5 +10,5 @@ import org.springframework.http.ResponseEntity;
 public interface PaymentApiSpec {
 
     @Operation(summary = "결제")
-    ResponseEntity<PaymentResponse.Create> paymentCreate(PaymentRequest.Create request);
+    ResponseEntity<PaymentResponse.Create> paymentCreate(PaymentRequest.Create request) throws Exception;
 }
