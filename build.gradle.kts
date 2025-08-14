@@ -41,6 +41,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-aop")
 
 	// DB
 	runtimeOnly("com.mysql:mysql-connector-j")
@@ -50,6 +51,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
+	testImplementation("org.redisson:redisson:3.50.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
 	// Swagger (SpringDoc)
@@ -71,6 +73,11 @@ dependencies {
 	annotationProcessor("com.querydsl:querydsl-apt:5.0.0:jakarta")
 	annotationProcessor("jakarta.annotation:jakarta.annotation-api")
 	annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+
+	// Redis
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	// Redisson
+	implementation("org.redisson:redisson-spring-boot-starter:3.50.0")
 }
 
 tasks.withType<Test> {

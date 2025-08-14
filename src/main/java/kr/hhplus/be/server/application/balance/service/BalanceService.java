@@ -4,6 +4,7 @@ import kr.hhplus.be.server.application.balance.dto.BalanceRequest;
 import kr.hhplus.be.server.application.balance.dto.BalanceResponse;
 import kr.hhplus.be.server.application.balance.repository.BalanceRepository;
 import kr.hhplus.be.server.domain.balance.Balance;
+import kr.hhplus.be.server.common.redis.DistributedLock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,11 +33,13 @@ public class BalanceService implements BalanceUseCase{
      * @param balanceRequest: 사용자 ID, 충전 요청 금액
      * @return 사용자 ID, 충전 후 잔액, 마지막 충전일
      */
+    @DistributedLock(keys = {"'user:balance:' + #balanceRequest.userId"})
     @Transactional
     @Override
     public BalanceResponse charge(BalanceRequest balanceRequest) {
         Balance userBalance = balanceRepository.findByUserId(balanceRequest.userId());
-        
+//        Balance userBalance = balanceRepository.findByUserIdWithLock(balanceRequest.userId());
+
         //충전 금액 유효성 검증
         userBalance.validateChargeAmount(balanceRequest.chargeAmount(), userBalance.getBalance());
         //충전
@@ -48,22 +51,17 @@ public class BalanceService implements BalanceUseCase{
     }
 
     /**
-     * FacadeService에서 잔액 조회
-     * @param userId: 사용자 ID
-     * @return
-     */
-    public Balance selectBalanceByUserIdUseInFacade(long userId){
-        return balanceRepository.findByUserId(userId);
-    }
-
-    /**
      * 잔액 차감
-     * @param balance: Balance Domain
-     * @param useAmount: 차감 금액
-     * @throws Exception
+     * @param userId: 사용자 ID
+     * @param paymentPrice: 차감 금액
+     * @throws Exception: 잔액 부족
      */
-    public void useBalance(Balance balance, long useAmount) throws Exception {
-        balance.useBalance(useAmount);
+    public void useBalance(long userId, long paymentPrice) throws Exception {
+        //잔액 조회
+        Balance balance = balanceRepository.findByUserId(userId);
+//        Balance balance = balanceRepository.findByUserIdWithLock(userId);
+        //잔액 차감
+        balance.useBalance(paymentPrice);
     }
 
 }

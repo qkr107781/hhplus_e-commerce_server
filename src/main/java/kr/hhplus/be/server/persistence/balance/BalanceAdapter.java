@@ -19,6 +19,11 @@ public class BalanceAdapter implements BalanceRepository {
     }
 
     @Override
+    public Balance findByUserIdWithLock(long userId) {
+        return balanceJpaRepository.findByUserIdForUpdate(userId);
+    }
+
+    @Override
     public Balance save(Balance balance) {
         return balanceJpaRepository.save(balance);
     }

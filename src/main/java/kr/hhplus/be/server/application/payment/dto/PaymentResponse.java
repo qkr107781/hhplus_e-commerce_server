@@ -18,11 +18,11 @@ public class PaymentResponse {
             @Schema(description = "결제일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime paymentDate,
             @Schema(description = "주문 상품 정보", requiredMode = Schema.RequiredMode.REQUIRED)
-            OrderResponse.OrderCreate order
+            OrderResponse.OrderDTO order
     ){
-        public static PaymentResponse.Create from(Payment payment, Order order, Coupon coupon, List<OrderResponse.OrderCreateProduct> orderProductList){
+        public static PaymentResponse.Create from(Payment payment, Order order, Coupon coupon, List<OrderResponse.OrderProductDTO> orderProductList){
             return new PaymentResponse.Create(payment.getPaymentId(),payment.getPaymentPrice(),payment.getPaymentDate(),
-                    OrderResponse.OrderCreate.from(order,coupon, orderProductList));
+                    OrderResponse.OrderDTO.from(order,coupon, orderProductList));
         }
     }
 }

@@ -2,6 +2,8 @@ package kr.hhplus.be.server.application.coupon.service;
 
 import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
 
+import java.util.List;
+
 public interface CouponUseCase {
 
     /**
@@ -16,12 +18,12 @@ public interface CouponUseCase {
      * @param userId: 사용자 ID
      * @return CouponResponse.SelectByUserId
      */
-    CouponResponse.SelectByUserId selectCouponByUserId(long userId);
+    List<CouponResponse.SelectByUserId> selectCouponByUserId(long userId);
 
     /**
      * 쿠폰 상태별 조회
      * @param couponStatus: 쿠폰 발급 상태
      * @return CouponResponse.SelectByStatus
      */
-    CouponResponse.SelectByStatus selectCouponByStatus(String couponStatus);
+    List<CouponResponse.SelectByStatus> selectCouponByStatus(String couponStatus);
 }

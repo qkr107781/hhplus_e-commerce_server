@@ -14,6 +14,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -49,8 +51,8 @@ class CouponJpaRepositoryTest {
         //Given
         //사전 실행된 coupon.sql에서 데이터 입력했음
         //When
-        Coupon coupon = couponAdapter.findByCouponStatus("issuing");
+        List<Coupon> couponList = couponAdapter.findByCouponStatus("issuing");
         //Then
-        assertEquals("복귀 쿠폰",coupon.getCouponName());
+        assertEquals("복귀 쿠폰",couponList.get(0).getCouponName());
     }
 }

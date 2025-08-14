@@ -16,6 +16,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -67,6 +68,24 @@ class CouponIssuedInfoJpaRepositoryTest {
     @Test
     @Transactional
 //    @Commit
+    @DisplayName("쿠폰 미사용 처리 - save() - update")
+    void unuseCoupon(){
+        System.out.println("save update 쿼리");
+        //Given
+        //사전 실행된 couponIssuedInfo.sql에서 데이터 입력했음
+        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoAdapter.findByCouponIdAndUserId(4L,1L);
+        //When
+        couponIssuedInfo.unuseCoupon();
+        couponIssuedInfo = couponIssuedInfoAdapter.unuseCoupon(couponIssuedInfo);
+        //Then
+        assertEquals(4L,couponIssuedInfo.getCouponId());
+        assertEquals(2L,couponIssuedInfo.getCouponIssuedId());
+        assertEquals("N",couponIssuedInfo.getUseYn());
+    }
+
+    @Test
+    @Transactional
+//    @Commit
     @DisplayName("쿠폰 발급 - save() - insert")
     void issuingCoupon(){
         System.out.println("save insert 쿼리");
@@ -83,7 +102,7 @@ class CouponIssuedInfoJpaRepositoryTest {
         CouponIssuedInfo afterIssuingCoupon = couponIssuedInfoAdapter.issuingCoupon(couponIssuedInfo);
         //Then
         assertEquals(2L,afterIssuingCoupon.getCouponId());
-        assertEquals(2L,afterIssuingCoupon.getCouponIssuedId());
+        assertEquals(3L,afterIssuingCoupon.getCouponIssuedId());
         assertEquals("N",afterIssuingCoupon.getUseYn());
         assertEquals(issuedDateTime,afterIssuingCoupon.getIssuedAt());
     }
@@ -96,10 +115,10 @@ class CouponIssuedInfoJpaRepositoryTest {
         //Given
         //사전 실행된 couponIssuedInfo.sql에서 데이터 입력했음
         //When
-        CouponIssuedInfo couponIssuedInfo = couponIssuedInfoAdapter.findByUserId(1L);
+        List<CouponIssuedInfo> couponIssuedInfoList = couponIssuedInfoAdapter.findByUserId(1L);
         //Then
-        assertEquals(3L,couponIssuedInfo.getCouponId());
-        assertEquals(1L,couponIssuedInfo.getCouponIssuedId());
-        assertEquals("N",couponIssuedInfo.getUseYn());
+        assertEquals(3L,couponIssuedInfoList.get(0).getCouponId());
+        assertEquals(1L,couponIssuedInfoList.get(0).getCouponIssuedId());
+        assertEquals("N",couponIssuedInfoList.get(0).getUseYn());
     }
 }

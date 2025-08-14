@@ -8,7 +8,11 @@ import kr.hhplus.be.server.application.product.service.ProductStatisticsService;
 import kr.hhplus.be.server.application.product.service.ProductStatisticsUseCase;
 import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.order.OrderProduct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,12 +30,19 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
         this.orderProductService = orderProductService;
         this.productStatisticsService = productStatisticsService;
     }
-
+    private static final String CACHE_NAME = "topSalesProducts";
+    private static final String CACHE_KEY = "'top5:sales:last3days'";
     /**
      * 오늘 기준 4일 전부터 1일 전까지의 데이터 중 salesQuantity 기준 상위 5개를 조회합니다.
      * 예: 오늘이 7월 25일이면, 7월 21일 부터 7월 24일 까지의 데이터를 조회합니다.
      * @return 상위 5개 통계 데이터 리스트
      */
+    @Cacheable(
+            cacheNames = CACHE_NAME,
+            key = CACHE_KEY,
+            unless = "#result == null  || #result.isEmpty()"
+    )
+    @Transactional(readOnly = true)
     @Override
     public List<ProductResponse.Statistics> selectTop5SalesProductBySpecificRange() {
         List<OrderProduct> orderProductListByBefore3Days = new ArrayList<>();
@@ -43,7 +54,7 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
 
         //추출일 기준 3일전~1일전 결제 완료된 주문의 주문 상품 조회
         for (Order order : orderList){
-            List<OrderProduct> orderProductList = orderProductService.selectOrderProductsByOrderId(order.getOrderId());
+            List<OrderProduct> orderProductList = orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(order.getOrderId());
             orderProductListByBefore3Days.addAll(orderProductList);
         }
 
