@@ -7,7 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "order_product")
+@Table(
+        name = "order_product",
+        indexes = {
+                @Index(name = "idx_order_product_order_id", columnList = "order_id"),
+                @Index(name = "idx_order_product_product_option_id_product_quantity", columnList = "product_option_id, product_quantity")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderProduct {

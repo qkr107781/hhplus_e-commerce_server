@@ -12,7 +12,7 @@ import java.util.List;
 
 public class OrderResponse {
 
-    public record OrderCreateProduct(
+    public record OrderProductDTO(
             @Schema(description = "주문 상품 ID", requiredMode = Schema.RequiredMode.REQUIRED)
             long orderProductId,
             @Schema(description = "주문 ID", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -28,8 +28,8 @@ public class OrderResponse {
             @Schema(description = "상품 개당 가격", requiredMode = Schema.RequiredMode.REQUIRED)
             long productPrice
     ){
-        public static OrderResponse.OrderCreateProduct from(OrderProduct orderProduct, Product product, ProductOption productOption){
-            return new OrderResponse.OrderCreateProduct(orderProduct.getOrderProductId(),
+        public static OrderResponse.OrderProductDTO from(OrderProduct orderProduct, Product product, ProductOption productOption){
+            return new OrderResponse.OrderProductDTO(orderProduct.getOrderProductId(),
                                                         orderProduct.getProductId(),
                                                         product.getName(),
                                                         orderProduct.getProductOptionId(),
@@ -39,7 +39,7 @@ public class OrderResponse {
         }
     }
 
-    public record OrderCreate(
+    public record OrderDTO(
             @Schema(description = "주문 ID", requiredMode = Schema.RequiredMode.REQUIRED)
             long orderId,
             @Schema(description = "쿠폰 ID", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -55,11 +55,11 @@ public class OrderResponse {
             @Schema(description = "주문일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime orderDate,
             @Schema(description = "주문 상품", requiredMode = Schema.RequiredMode.REQUIRED)
-            List<OrderResponse.OrderCreateProduct> orderProduct
+            List<OrderResponse.OrderProductDTO> orderProduct
 
     ){
-        public static OrderResponse.OrderCreate from(Order order, Coupon coupon, List<OrderResponse.OrderCreateProduct> orderProductList){
-            return new OrderResponse.OrderCreate(order.getOrderId(),
+        public static OrderResponse.OrderDTO from(Order order, Coupon coupon, List<OrderResponse.OrderProductDTO> orderProductList){
+            return new OrderResponse.OrderDTO(order.getOrderId(),
                                                 order.getCouponId(),
                                                 coupon.getCouponName(),
                                                 order.getCouponDiscountPrice(),

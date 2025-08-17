@@ -38,7 +38,7 @@ class ProductOptionAdapterTest {
         //Given
         //사전 실행된 productOption.sql에서 balance=0으로 데이터 입력했음
         //When
-        ProductOption productOption = productOptionAdapter.selectProductOptionListByProductOptionId(1L);
+        ProductOption productOption = productOptionAdapter.selectProductOptionByProductOptionId(1L);
         //Then
         assertEquals("옵션1",productOption.getOptionName());
     }

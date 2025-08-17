@@ -5,6 +5,7 @@ import kr.hhplus.be.server.application.order.dto.OrderResponse;
 
 public interface OrderUseCase {
 
-    OrderResponse.OrderCreate createOrder(OrderRequest.OrderCreate orderRequest) throws Exception;
+    OrderResponse.OrderDTO createOrder(OrderRequest.OrderCreate orderRequest) throws Exception;
 
+    OrderResponse.OrderDTO cancelOrder(OrderRequest.OrderCancel orderRequest) throws Exception;
 }

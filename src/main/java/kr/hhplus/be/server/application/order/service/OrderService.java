@@ -20,9 +20,18 @@ public class OrderService {
     public Order selectOrderByOrderId(long orderId){
         return orderRepository.findByOrderId(orderId);
     }
+    public Order selectOrderByOrderIdWithLock(long orderId){
+        return orderRepository.findById(orderId);
+    }
 
     public Order createOrder(Order createOrder){
         return orderRepository.save(createOrder);
+    }
+
+    public Order cancelOrder(long orderId){
+        Order order = orderRepository.findById(orderId);
+        order.cancelOrder();
+        return orderRepository.save(order);
     }
 
     public void updateOrderStatusToPayment(Order order){

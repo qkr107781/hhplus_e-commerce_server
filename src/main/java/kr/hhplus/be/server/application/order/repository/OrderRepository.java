@@ -11,6 +11,8 @@ public interface OrderRepository {
 
     Order findByOrderId(long orderId);
 
+    Order findById(long orderId);
+
     List<Order> findByOrderStatusAndOrderDateBetween(String orderStatus, LocalDate startDate, LocalDate endDate);
 
 }

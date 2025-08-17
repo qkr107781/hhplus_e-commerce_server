@@ -76,16 +76,16 @@ public class DummyDataUtil {
      * 주문 요청 더미 데이터
      * @return OrderResponse.Create
      */
-    public OrderResponse.OrderCreate getOrderCreate() {
+    public OrderResponse.OrderDTO getOrderCreate() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String orderDateStr = "2025-07-16 11:00:00";
         LocalDateTime orderDate = LocalDateTime.parse(orderDateStr,formatter);
 
-        List<OrderResponse.OrderCreateProduct> orderProducts = new ArrayList<>();
-        orderProducts.add(new OrderResponse.OrderCreateProduct(1L,1L,"반팔티",1L,"XL",2,12_000L));
-        orderProducts.add(new OrderResponse.OrderCreateProduct(2L,1L,"반팔티",2L,"M",4,12_000L));
+        List<OrderResponse.OrderProductDTO> orderProducts = new ArrayList<>();
+        orderProducts.add(new OrderResponse.OrderProductDTO(1L,1L,"반팔티",1L,"XL",2,12_000L));
+        orderProducts.add(new OrderResponse.OrderProductDTO(2L,1L,"반팔티",2L,"M",4,12_000L));
 
-        return new OrderResponse.OrderCreate(1L,2L,"신규 가입 쿠폰",1_000L,72_000L,"pending_payment",orderDate,orderProducts);
+        return new OrderResponse.OrderDTO(1L,2L,"신규 가입 쿠폰",1_000L,72_000L,"pending_payment",orderDate,orderProducts);
     }
 
     //결제 더미 데이터
@@ -94,11 +94,11 @@ public class DummyDataUtil {
         String orderDateStr = "2025-07-16 11:00:00";
         LocalDateTime orderDate = LocalDateTime.parse(orderDateStr,formatter);
 
-        List<OrderResponse.OrderCreateProduct> orderProducts = new ArrayList<>();
-        orderProducts.add(new OrderResponse.OrderCreateProduct(1L,1L,"반팔티",1L,"XL",2,12_000L));
-        orderProducts.add(new OrderResponse.OrderCreateProduct(2L,1L,"반팔티",2L,"M",4,12_000L));
+        List<OrderResponse.OrderProductDTO> orderProducts = new ArrayList<>();
+        orderProducts.add(new OrderResponse.OrderProductDTO(1L,1L,"반팔티",1L,"XL",2,12_000L));
+        orderProducts.add(new OrderResponse.OrderProductDTO(2L,1L,"반팔티",2L,"M",4,12_000L));
 
-        return new PaymentResponse.Create(1L,24_000L,LocalDateTime.now(),new OrderResponse.OrderCreate(1L,2L,"신규 가입 쿠폰",1_000L,72_000L,"pending_payment",orderDate,orderProducts));
+        return new PaymentResponse.Create(1L,24_000L,LocalDateTime.now(),new OrderResponse.OrderDTO(1L,2L,"신규 가입 쿠폰",1_000L,72_000L,"pending_payment",orderDate,orderProducts));
     }
 
 
@@ -133,9 +133,9 @@ public class DummyDataUtil {
         LocalDateTime selectionDate3 = LocalDateTime.parse(selectionDateStr3,formatter);
 
         List<ProductResponse.Statistics> statisticsList = new ArrayList<>();
-        statisticsList.add(new ProductResponse.Statistics(1L,1L,"반팔 티셔츠","XL",12_000L,5L,1L,selectionDate1));
-        statisticsList.add(new ProductResponse.Statistics(1L,2L,"반팔 티셔츠","M",12_000L,2L,2L,selectionDate2));
-        statisticsList.add(new ProductResponse.Statistics(2L,3L,"반팔 티셔츠","240",32_000L,1L,3L,selectionDate3));
+        statisticsList.add(new ProductResponse.Statistics("반팔 티셔츠",5L));
+        statisticsList.add(new ProductResponse.Statistics("반팔 티셔츠",2L));
+        statisticsList.add(new ProductResponse.Statistics("반팔 티셔츠",1L));
 
         return statisticsList;
     }

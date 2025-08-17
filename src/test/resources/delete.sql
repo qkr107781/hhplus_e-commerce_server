@@ -1,8 +1,8 @@
-delete from balance;
-delete from coupon;
-delete from coupon_issued_info;
-delete from `order`;
-delete from order_product;
-delete from payment;
-delete from product;
-delete from product_option;
+TRUNCATE TABLE balance;
+TRUNCATE TABLE coupon;
+TRUNCATE TABLE coupon_issued_info;
+TRUNCATE TABLE `order`;
+TRUNCATE TABLE order_product;
+TRUNCATE TABLE payment;
+TRUNCATE TABLE product;
+TRUNCATE TABLE product_option;

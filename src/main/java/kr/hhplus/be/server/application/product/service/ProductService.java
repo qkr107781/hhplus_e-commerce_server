@@ -39,48 +39,65 @@ public class ProductService implements ProductUseCase {
     }
 
     /**
-     * 재고 차감
-     *
-     * @param requestProductOptionIds: 상품 옵션 ID 목록
+     * 재고 차감/복구 전 Lock 획득을 위한 조회
+     * @param productOptionIds: 상품 옵션 ID 목록
      * @return List<ProductOption>
+     */
+    public List<ProductOption> selectProductOptionByProductOptionIdInWithLock(List<Long> productOptionIds){
+        return productOptionRepository.selectProductOptionByProductOptionIdInWithLock(productOptionIds);
+    }
+
+    /**
+     * 재고 차감/복구 전 조회
+     * @param productOptionIds: 상품 옵션 ID 목록
+     * @return List<ProductOption>
+     */
+    public List<ProductOption> selectProductOptionByProductOptionIdIn(List<Long> productOptionIds){
+        return productOptionRepository.selectProductOptionByProductOptionIdIn(productOptionIds);
+    }
+
+    /**
+     * 재고 차감
+     * @param productOption: 상품 옵션 정보
+     * @param quantityToDecrease: 차감 수량
+     * @return ProductOption
      * @throws Exception
      */
-    public List<ProductOption> decreaseStock(List<Long> requestProductOptionIds) throws Exception {
-        //상품 잔여 갯수 확인
-        List<ProductOption> productOptionListForDecreaseStock = new ArrayList<>();
-        for (Long productOptionId : requestProductOptionIds ){
-            ProductOption productOption = productOptionRepository.selectProductOptionListByProductOptionId(productOptionId);
-
-            if (productOption.getStockQuantity() == 0) {
-                throw new Exception("stock empty");
-            } else {
-                //재고 차감을 위해 List에 할당
-                productOptionListForDecreaseStock.add(productOption);
-            }
-        }
-
+    public ProductOption decreaseStock(ProductOption productOption, long quantityToDecrease) throws Exception {
+        System.out.println(productOption.getProductOptionId()+" 재고 차감 전: "+productOption.getStockQuantity());
         //재고 차감
-        for (ProductOption productOption : productOptionListForDecreaseStock) {
-            productOption.decreaseProductQuantity();
-            productOptionRepository.save(productOption);
-        }
+        productOption.decreaseProductQuantity(quantityToDecrease);
+        System.out.println(productOption.getProductOptionId()+" 재고 차감 후: "+productOption.getStockQuantity());
+        return productOptionRepository.save(productOption);
+    }
 
-        return productOptionListForDecreaseStock;
+    /**
+     * 재고 복구
+     * @param productOption: 상품 옵션 정보
+     * @param quantityToRestore: 복구 수량
+     * @return ProductOption
+     * @throws Exception
+     */
+    public ProductOption restoreStock(ProductOption productOption, long quantityToRestore) throws Exception {
+        System.out.println(productOption.getProductOptionId()+" 재고 복구 전: "+productOption.getStockQuantity());
+        //재고 복구
+        productOption.restoreProductQuantity(quantityToRestore);
+        System.out.println(productOption.getProductOptionId()+" 재고 복구 후: "+productOption.getStockQuantity());
+
+        return productOptionRepository.save(productOption);
     }
 
     /**
      * 총 주문 금액 계산
      *
-     * @param productOptionList: 상품 옵션 목록
+     * @param productOption: 상품 옵션 목록
      * @return totalOrderPrice
      */
-    public long calculateProductTotalPrice(List<ProductOption> productOptionList) throws Exception {
+    public long calculateProductTotalPrice(ProductOption productOption, long quantityToDecrease) throws Exception {
         long totalOrderPrice = 0L;
-        if (!productOptionList.isEmpty()) {
-            for (ProductOption productOption : productOptionList) {
-                //총 주문 금액 산정
-                totalOrderPrice += productOption.getPrice();
-            }
+        if (productOption != null) {
+            //총 주문 금액 산정
+            totalOrderPrice += productOption.getPrice() * quantityToDecrease;
         }
         if(totalOrderPrice == 0L){
             throw new Exception("empty total order price");
@@ -92,7 +109,7 @@ public class ProductService implements ProductUseCase {
      * 상품 조회
      *
      * @param requestProductId: 상품 ID
-     * @return
+     * @return Product
      */
     public Product selectProductByProductId(long requestProductId) {
         return productRepository.selectProductByProductId(requestProductId);

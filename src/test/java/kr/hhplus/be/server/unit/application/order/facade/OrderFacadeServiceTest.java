@@ -3,7 +3,7 @@ package kr.hhplus.be.server.unit.application.order.facade;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.order.dto.OrderRequest;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
-import kr.hhplus.be.server.application.order.facade.OrderFacadeService;
+import kr.hhplus.be.server.application.order.facade.OrderFacadeLockService;
 import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.product.service.ProductService;
@@ -21,7 +21,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -102,20 +107,19 @@ class OrderFacadeServiceTest {
         products.add(productOption2);
         products.add(productOption3);
 
+        when(productService.selectProductOptionByProductOptionIdIn(any(List.class))).thenReturn(products);
         // 1. 재고 차감 Mocking 수정: thenAnswer로 실제 재고를 차감하는 동작 흉내
-        when(productService.decreaseStock(requestProductOptionIds)).thenAnswer(invocation -> {
-            products.forEach(option -> {
-                try {
-                    option.decreaseProductQuantity();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }); // 각 옵션의 재고를 1씩 차감하는 로직
-            return products;
+        when(productService.decreaseStock(any(ProductOption.class), anyLong())).thenAnswer(invocation -> {
+            ProductOption option = invocation.getArgument(0);
+            Long qty = invocation.getArgument(1);
+
+            option.decreaseProductQuantity(qty);
+            return option;
         });
 
+
         // 2. 총 주문 금액 계산
-        when(productService.calculateProductTotalPrice(products)).thenReturn(totalOrderPrice);
+        when(productService.calculateProductTotalPrice(any(ProductOption.class), anyLong())).thenReturn(totalOrderPrice / 3);
 
         // 쿠폰 세팅 (사용 전 상태)
         long couponId = 1L;
@@ -157,7 +161,21 @@ class OrderFacadeServiceTest {
                 .orderDate(LocalDateTime.now())
                 .build();
         when(orderService.createOrder(any(Order.class))).thenReturn(order);
-        when(orderProductService.createOrderProduct(any(OrderProduct.class))).thenAnswer(invocation -> invocation.getArgument(0, OrderProduct.class));
+        // `AtomicLong`을 사용해 호출될 때마다 ID를 1씩 증가시킴
+        AtomicLong orderProductIdCounter = new AtomicLong(1);
+
+        when(orderProductService.createOrderProduct(any(OrderProduct.class))).thenAnswer(invocation -> {
+            OrderProduct originalOrderProduct = invocation.getArgument(0, OrderProduct.class);
+            // 새로운 ID를 할당하여 반환
+            return OrderProduct.builder()
+                    .orderProductId(orderProductIdCounter.getAndIncrement())
+                    .orderId(originalOrderProduct.getOrderId())
+                    .productId(originalOrderProduct.getProductId())
+                    .productOptionId(originalOrderProduct.getProductOptionId())
+                    .productQuantity(originalOrderProduct.getProductQuantity())
+                    .productPrice(originalOrderProduct.getProductPrice())
+                    .build();
+        });
 
         //주문 완료 상품 Mocking
         Product afterOrderProduct = new Product(1L,"티셔츠");
@@ -167,8 +185,15 @@ class OrderFacadeServiceTest {
         when(couponService.selectCouponByCouponId(couponId)).thenReturn(coupon);
 
         //When
-        OrderFacadeService orderFacadeService = new OrderFacadeService(orderService, orderProductService, productService, couponService);
-        OrderResponse.OrderCreate result = orderFacadeService.createOrder(orderRequest);
+        // 0. product_option_id 오름차순으로 정렬
+        List<Long> requestProductOptionIdList = orderRequest.productOptionIds().stream().sorted().toList();
+
+        // 1. 옵션 ID 별로 등장 횟수 세기(세면서 정렬)
+        Map<Long, Long> optionIdCountMap = requestProductOptionIdList.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        OrderFacadeLockService orderFacadeLockService = new OrderFacadeLockService(orderService,orderProductService,productService,couponService);
+        OrderResponse.OrderDTO result = orderFacadeLockService.createOrderWithLock(orderRequest,optionIdCountMap);
 
         //Then
         // 재고 차감 검증 (thenAnswer가 실제 객체의 재고를 차감했으므로 검증 가능)
@@ -182,9 +207,166 @@ class OrderFacadeServiceTest {
         // 주문 검증
         assertEquals(totalOrderPrice, result.totalPrice());
 
-        verify(productService, times(1)).decreaseStock(requestProductOptionIds);
+        verify(productService, times(3)).decreaseStock(any(ProductOption.class), anyLong());
         verify(couponService, times(1)).useCoupon(requestCouponId, requestUserId, totalOrderPrice);
         verify(orderService, times(1)).createOrder(any(Order.class));
         verify(orderProductService, times(3)).createOrderProduct(any(OrderProduct.class));
+    }
+
+    @Test
+    @DisplayName("[주문 취소]Facade Service 주문 취소(재고 복구, 쿠폰 복구, 주문 취소)")
+    void cancelOrder() throws Exception {
+        //Given
+        long cancelOrderId = 1L;
+        long cancelCouponId = 1L;
+        long[] cancelProductOptionIds = {1L,2L,3L};//3개, 4개, 5개
+
+        Order order = Order.builder()
+                .orderId(cancelOrderId)
+                .userId(1L)
+                .couponId(cancelCouponId)
+                .orderStatus("pending_payment")
+                .couponDiscountPrice(100L)
+                .totalPrice(12_000L)
+                .build();
+
+        when(orderService.selectOrderByOrderId(cancelOrderId)).thenReturn(order);
+
+        OrderProduct orderProduct_1 = OrderProduct.builder()
+                .orderProductId(1L)
+                .orderId(cancelOrderId)
+                .productId(1L)
+                .productOptionId(cancelProductOptionIds[0])
+                .productQuantity(3L)
+                .productPrice(1_000L)
+                .build();
+
+        OrderProduct orderProduct_2 = OrderProduct.builder()
+                .orderProductId(2L)
+                .orderId(cancelOrderId)
+                .productId(1L)
+                .productOptionId(cancelProductOptionIds[1])
+                .productQuantity(4L)
+                .productPrice(1_000L)
+                .build();
+
+        OrderProduct orderProduct_3 = OrderProduct.builder()
+                .orderProductId(3L)
+                .orderId(cancelOrderId)
+                .productId(1L)
+                .productOptionId(cancelProductOptionIds[2])
+                .productQuantity(5L)
+                .productPrice(1_000L)
+                .build();
+
+        List<OrderProduct> orderProductList = new ArrayList<>();
+        orderProductList.add(orderProduct_1);
+        orderProductList.add(orderProduct_2);
+        orderProductList.add(orderProduct_3);
+
+        ProductOption productOption_1 = ProductOption.builder()
+                .productOptionId(1L)
+                .productId(1L)
+                .optionName("M")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
+                .build();
+
+        ProductOption productOption_2 = ProductOption.builder()
+                .productOptionId(2L)
+                .productId(1L)
+                .optionName("L")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
+                .build();
+
+        ProductOption productOption_3 = ProductOption.builder()
+                .productOptionId(3L)
+                .productId(1L)
+                .optionName("XL")
+                .totalQuantity(30L)
+                .stockQuantity(20L)
+                .build();
+
+        List<ProductOption> productOptionList = new ArrayList<>();
+        productOptionList.add(productOption_1);
+        productOptionList.add(productOption_2);
+        productOptionList.add(productOption_3);
+
+        when(productService.restoreStock(any(ProductOption.class), anyLong())).thenAnswer(invocation -> {
+            ProductOption option = invocation.getArgument(0);
+            Long qty = invocation.getArgument(1);
+
+            option.restoreProductQuantity(qty);
+            return option;
+        });
+
+        CouponIssuedInfo couponIssuedInfo = CouponIssuedInfo.builder()
+                .userId(1L)
+                .useYn("Y")
+                .couponId(cancelCouponId)
+                .build();
+
+        when(couponService.restoreCoupon(anyLong(), anyLong())).thenAnswer(invocation -> {
+            couponIssuedInfo.unuseCoupon();
+            return couponIssuedInfo;
+        });
+
+        Coupon coupon = Coupon.builder()
+                .couponId(cancelCouponId)
+                .couponName("여름 쿠폰")
+                .build();
+
+        when(couponService.selectCouponByCouponId(cancelCouponId)).thenReturn(coupon);
+
+        when(orderService.cancelOrder(cancelOrderId)).thenAnswer(invocation -> {
+            order.cancelOrder();
+            return order;
+        });
+
+        Product product = Product.builder()
+                .productId(1L)
+                .name("반팔")
+                .build();
+
+        when(productService.selectProductByProductId(any(Long.class))).thenReturn(product);
+        when(productService.selectProductOptionByProductOptionIdIn(any(List.class))).thenReturn(productOptionList);
+
+        when(orderProductService.selectOrderProductByOrderIdAndProductOptionId(cancelOrderId,1L)).thenReturn(orderProduct_1);
+        when(orderProductService.selectOrderProductByOrderIdAndProductOptionId(cancelOrderId,2L)).thenReturn(orderProduct_2);
+        when(orderProductService.selectOrderProductByOrderIdAndProductOptionId(cancelOrderId,3L)).thenReturn(orderProduct_3);
+        //When
+        OrderRequest.OrderCancel orderRequest = new OrderRequest.OrderCancel(1L,1L);
+        Map<Long, Long> optionIdToQuantityMap = new HashMap<>();
+
+        for (OrderProduct orderProduct : orderProductList) {
+            Long optionId = orderProduct.getProductOptionId();
+            Long quantity = orderProduct.getProductQuantity();
+
+            optionIdToQuantityMap.merge(optionId, quantity, Long::sum);
+        }
+
+        OrderFacadeLockService orderFacadeLockService = new OrderFacadeLockService(orderService,orderProductService,productService,couponService);
+        OrderResponse.OrderDTO result = orderFacadeLockService.cancelOrderWithLock(orderRequest,optionIdToQuantityMap);
+
+        //Then
+        // 재고 차감 검증 (thenAnswer가 실제 객체의 재고를 차감했으므로 검증 가능)
+        assertEquals(23L, productOption_1.getStockQuantity());
+        assertEquals(24L, productOption_2.getStockQuantity());
+        assertEquals(25L, productOption_3.getStockQuantity());
+
+        // 쿠폰 사용 검증 (thenAnswer가 useYn을 Y로 바꿨으므로 검증 가능)
+        assertEquals("N", couponIssuedInfo.getUseYn());
+
+        // 주문 검증
+        assertEquals("cancel_order", result.orderStatus());
+
+        verify(orderService, times(1)).selectOrderByOrderId(cancelOrderId);
+        verify(productService, times(3)).restoreStock(any(ProductOption.class), anyLong());
+        verify(couponService, times(1)).restoreCoupon(1L,cancelCouponId);
+        verify(couponService, times(1)).selectCouponByCouponId(cancelCouponId);
+        verify(orderService, times(1)).cancelOrder(cancelOrderId);
+        verify(productService, times(3)).selectProductByProductId(any(Long.class));
+        verify(orderProductService, times(3)).selectOrderProductByOrderIdAndProductOptionId(any(Long.class),any(Long.class));
     }
 }
