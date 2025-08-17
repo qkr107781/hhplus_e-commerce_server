@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.presentation.product;
 
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
+import kr.hhplus.be.server.application.product.service.ProductStatisticsUseCase;
 import kr.hhplus.be.server.application.product.service.ProductUseCase;
 import kr.hhplus.be.server.swagger.ProductApiSpec;
 import kr.hhplus.be.server.util.DummyDataUtil;
@@ -14,10 +15,12 @@ import java.util.List;
 public class ProductController implements ProductApiSpec {
 
     private final ProductUseCase productUseCase;
+    private final ProductStatisticsUseCase productStatisticsUseCase;
     private final DummyDataUtil dummyDataUtil;
 
-    public ProductController(ProductUseCase productUseCase, DummyDataUtil dummyDataUtil) {
+    public ProductController(ProductUseCase productUseCase, ProductStatisticsUseCase productStatisticsUseCase, DummyDataUtil dummyDataUtil) {
         this.productUseCase = productUseCase;
+        this.productStatisticsUseCase = productStatisticsUseCase;
         this.dummyDataUtil = dummyDataUtil;
     }
 
@@ -32,7 +35,7 @@ public class ProductController implements ProductApiSpec {
     @Override
     public ResponseEntity<List<ProductResponse.Statistics>> productStatistics(){
 //        return ResponseEntity.ok(dummyDataUtil.getProductsStatistics());
-        return ResponseEntity.ok(productUseCase.selectTop5SalesStatisticsSpecificRange());
+        return ResponseEntity.ok(productStatisticsUseCase.selectTop5SalesProductBySpecificRange());
     }
 
 }

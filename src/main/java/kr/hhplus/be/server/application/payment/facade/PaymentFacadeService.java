@@ -13,7 +13,7 @@ import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.payment.service.PaymentUseCase;
 import kr.hhplus.be.server.application.product.service.ProductService;
-import kr.hhplus.be.server.domain.balance.Balance;
+import kr.hhplus.be.server.common.redis.DistributedLock;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import kr.hhplus.be.server.domain.order.Order;
@@ -55,6 +55,11 @@ public class PaymentFacadeService implements PaymentUseCase {
      * @return PaymentResponse.Create
      * @throws Exception
      */
+    @DistributedLock(
+            keys = {
+                    "'user:balance:' + #request.userId"
+            }
+    )
     @Transactional
     @Override
     public PaymentResponse.Create createPayment(PaymentRequest.Create request) throws Exception {
@@ -63,23 +68,17 @@ public class PaymentFacadeService implements PaymentUseCase {
         long paymentPrice = 0L;
 
         //주문 조회
-        Order order = orderService.selectOrderByOrderId(orderId);
+        Order order = orderService.selectOrderByOrderIdWithLock(orderId);
         if(order == null){
             throw new Exception("order empty");
         }
         paymentPrice = order.getTotalPrice() - order.getCouponDiscountPrice();
 
-        //잔액 조회
-        Balance balance = balanceService.selectBalanceByUserIdUseInFacade(userId);
-        if(balance.getBalance() == 0 || balance.getBalance() < paymentPrice){
-            throw new Exception("not enough balance");
-        }
-
-        //잔액 차감
-        balanceService.useBalance(balance, paymentPrice);
-
         //주문 상태 변경
         orderService.updateOrderStatusToPayment(order);
+
+        //잔액 차감
+        balanceService.useBalance(userId, paymentPrice);
 
         //결제 insert
         PaymentBuilder.Payment payment = new PaymentBuilder.Payment(
@@ -97,8 +96,8 @@ public class PaymentFacadeService implements PaymentUseCase {
         Coupon coupon = couponService.selectCouponByCouponId(couponIssuedInfo.getCouponId());
 
         //주문 상품 목록 조회
-        List<OrderProduct> productOptionList = orderProductService.selectOrderProductsByOrderId(order.getOrderId());
-        List<OrderResponse.OrderCreateProduct> orderCreateProductList = new ArrayList<>();
+        List<OrderProduct> productOptionList = orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(order.getOrderId());
+        List<OrderResponse.OrderProductDTO> orderCreateProductList = new ArrayList<>();
         for(OrderProduct orderProduct : productOptionList){
             long productId = orderProduct.getProductId();
             long productOptionId = orderProduct.getProductOptionId();
@@ -106,7 +105,7 @@ public class PaymentFacadeService implements PaymentUseCase {
             Product product = productService.selectProductByProductId(productId);
             ProductOption productOption = productService.selectProductOptionByProductIdAndProductOptionId(productId,productOptionId);
 
-            orderCreateProductList.add(OrderResponse.OrderCreateProduct.from(orderProduct,product,productOption));
+            orderCreateProductList.add(OrderResponse.OrderProductDTO.from(orderProduct,product,productOption));
         }
         //Response 객체 생성 완료
         PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,coupon,orderCreateProductList);

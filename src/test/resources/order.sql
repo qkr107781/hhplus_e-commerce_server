@@ -43,3 +43,6 @@ VALUES( 0, 0, now(), 'complete_payment', 10000, 1);
 
 INSERT INTO `order`( coupon_discount_price, coupon_id, order_date, order_status, total_price, user_id)
 VALUES( 0, 0, now(), 'complete_payment', 10000, 1);
+
+INSERT INTO `order` (coupon_discount_price, coupon_id, order_date, total_price, user_id, order_status)
+VALUES(1000, 4, now(), 70000, 1, 'pending_payment');

@@ -53,7 +53,7 @@ class OrderAdapterTest {
         //When
         Order afterOrder = orderAdapter.save(order);
         //Then
-        assertEquals(16L,afterOrder.getOrderId());
+        assertEquals(17L,afterOrder.getOrderId());
         assertEquals(1L,afterOrder.getUserId());
         assertEquals(orderDate,afterOrder.getOrderDate());
         assertEquals(24_000L,afterOrder.getTotalPrice());

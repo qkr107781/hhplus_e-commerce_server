@@ -5,9 +5,10 @@ import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
 import kr.hhplus.be.server.application.coupon.service.CouponUseCase;
 import kr.hhplus.be.server.swagger.CouponApiSpec;
 import kr.hhplus.be.server.util.DummyDataUtil;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/")
@@ -30,13 +31,13 @@ public class CouponController implements CouponApiSpec {
 
     @GetMapping("/coupons/user/{userId}") // user_id -> userId
     @Override
-    public ResponseEntity<CouponResponse.SelectByUserId> selectByUserId(@PathVariable long userId){ // user_id -> userId
+    public ResponseEntity<List<CouponResponse.SelectByUserId>> selectByUserId(@PathVariable long userId){ // user_id -> userId
 //        return ResponseEntity.ok(dummyDataUtil.getCouponSelectByUserId());
         return ResponseEntity.ok(couponUseCase.selectCouponByUserId(userId));
     }
 
     @GetMapping("/coupons/{status}")
-    public ResponseEntity<CouponResponse.SelectByStatus> selectByStatus(@PathVariable String status){
+    public ResponseEntity<List<CouponResponse.SelectByStatus>> selectByStatus(@PathVariable String status){
 //        return ResponseEntity.ok(dummyDataUtil.getCouponSelectByStatus(status));
         return ResponseEntity.ok(couponUseCase.selectCouponByStatus(status));
     }
