@@ -3,7 +3,7 @@ package kr.hhplus.be.server.unit.application.order.facade;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.order.dto.OrderRequest;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
-import kr.hhplus.be.server.application.order.facade.OrderFacadeService;
+import kr.hhplus.be.server.application.order.facade.OrderFacadeLockService;
 import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.product.service.ProductService;
@@ -21,9 +21,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -104,7 +107,7 @@ class OrderFacadeServiceTest {
         products.add(productOption2);
         products.add(productOption3);
 
-        when(productService.selectProductOptionByProductOptionIdInWithLock(any(List.class))).thenReturn(products);
+        when(productService.selectProductOptionByProductOptionIdIn(any(List.class))).thenReturn(products);
         // 1. 재고 차감 Mocking 수정: thenAnswer로 실제 재고를 차감하는 동작 흉내
         when(productService.decreaseStock(any(ProductOption.class), anyLong())).thenAnswer(invocation -> {
             ProductOption option = invocation.getArgument(0);
@@ -182,8 +185,15 @@ class OrderFacadeServiceTest {
         when(couponService.selectCouponByCouponId(couponId)).thenReturn(coupon);
 
         //When
-        OrderFacadeService orderFacadeService = new OrderFacadeService(orderService, orderProductService, productService, couponService);
-        OrderResponse.OrderDTO result = orderFacadeService.createOrder(orderRequest);
+        // 0. product_option_id 오름차순으로 정렬
+        List<Long> requestProductOptionIdList = orderRequest.productOptionIds().stream().sorted().toList();
+
+        // 1. 옵션 ID 별로 등장 횟수 세기(세면서 정렬)
+        Map<Long, Long> optionIdCountMap = requestProductOptionIdList.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        OrderFacadeLockService orderFacadeLockService = new OrderFacadeLockService(orderService,orderProductService,productService,couponService);
+        OrderResponse.OrderDTO result = orderFacadeLockService.createOrderWithLock(orderRequest,optionIdCountMap);
 
         //Then
         // 재고 차감 검증 (thenAnswer가 실제 객체의 재고를 차감했으므로 검증 가능)
@@ -254,8 +264,6 @@ class OrderFacadeServiceTest {
         orderProductList.add(orderProduct_2);
         orderProductList.add(orderProduct_3);
 
-        when(orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(cancelOrderId)).thenReturn(orderProductList);
-
         ProductOption productOption_1 = ProductOption.builder()
                 .productOptionId(1L)
                 .productId(1L)
@@ -322,16 +330,24 @@ class OrderFacadeServiceTest {
                 .build();
 
         when(productService.selectProductByProductId(any(Long.class))).thenReturn(product);
-        when(productService.selectProductOptionByProductOptionIdInWithLock(any(List.class))).thenReturn(productOptionList);
+        when(productService.selectProductOptionByProductOptionIdIn(any(List.class))).thenReturn(productOptionList);
 
         when(orderProductService.selectOrderProductByOrderIdAndProductOptionId(cancelOrderId,1L)).thenReturn(orderProduct_1);
         when(orderProductService.selectOrderProductByOrderIdAndProductOptionId(cancelOrderId,2L)).thenReturn(orderProduct_2);
         when(orderProductService.selectOrderProductByOrderIdAndProductOptionId(cancelOrderId,3L)).thenReturn(orderProduct_3);
         //When
         OrderRequest.OrderCancel orderRequest = new OrderRequest.OrderCancel(1L,1L);
+        Map<Long, Long> optionIdToQuantityMap = new HashMap<>();
 
-        OrderFacadeService orderFacadeService = new OrderFacadeService(orderService, orderProductService, productService, couponService);
-        OrderResponse.OrderDTO result = orderFacadeService.cancelOrder(orderRequest);
+        for (OrderProduct orderProduct : orderProductList) {
+            Long optionId = orderProduct.getProductOptionId();
+            Long quantity = orderProduct.getProductQuantity();
+
+            optionIdToQuantityMap.merge(optionId, quantity, Long::sum);
+        }
+
+        OrderFacadeLockService orderFacadeLockService = new OrderFacadeLockService(orderService,orderProductService,productService,couponService);
+        OrderResponse.OrderDTO result = orderFacadeLockService.cancelOrderWithLock(orderRequest,optionIdToQuantityMap);
 
         //Then
         // 재고 차감 검증 (thenAnswer가 실제 객체의 재고를 차감했으므로 검증 가능)
@@ -346,7 +362,6 @@ class OrderFacadeServiceTest {
         assertEquals("cancel_order", result.orderStatus());
 
         verify(orderService, times(1)).selectOrderByOrderId(cancelOrderId);
-        verify(orderProductService, times(1)).selectOrderProductsByOrderIdOrderByProductOptionIdAsc(cancelOrderId);
         verify(productService, times(3)).restoreStock(any(ProductOption.class), anyLong());
         verify(couponService, times(1)).restoreCoupon(1L,cancelCouponId);
         verify(couponService, times(1)).selectCouponByCouponId(cancelCouponId);

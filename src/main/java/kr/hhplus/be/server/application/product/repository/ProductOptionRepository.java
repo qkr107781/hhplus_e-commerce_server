@@ -9,6 +9,8 @@ public interface ProductOptionRepository {
 
     List<ProductOption> selectProductOptionByProductOptionIdInWithLock(List<Long> productOptionIds);
 
+    List<ProductOption> selectProductOptionByProductOptionIdIn(List<Long> productOptionIds);
+
     ProductOption save(ProductOption productOption);
 
     ProductOption selectProductOptionByProductIdAndProductOptionId(long productId,long productOptionId);
