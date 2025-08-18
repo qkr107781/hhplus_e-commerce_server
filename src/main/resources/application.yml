@@ -23,30 +23,42 @@ spring:
       hibernate.format_sql: true
       hibernate.highlight_sql: true
 
-  redis:
-    cluster:
-      nodes:
-        - 172.20.0.2:7001
-        - 172.20.0.3:7002
-        - 172.20.0.4:7003
-        - 172.20.0.5:7004
-        - 172.20.0.6:7005
-        - 172.20.0.7:7006
+  data:
+    redis:
+      sentinel:
+        master: mymaster
+        nodes:
+          - localhost:26379
+          - localhost:26380
+          - localhost:26381
 
-  redisson:
-    cluster-servers-config:
-      node-addresses:
-        - "redis://172.20.0.2:7001"
-        - "redis://172.20.0.3:7002"
-        - "redis://172.20.0.4:7003"
-        - "redis://172.20.0.5:7004"
-        - "redis://172.20.0.6:7005"
-        - "redis://172.20.0.7:7006"
 ---
-spring.config.activate.on-profile: local, test
+spring.config.activate.on-profile: local
 
 spring:
   datasource:
     url: jdbc:mysql://hhplus-mysql:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
     username: application
     password: application
+
+---
+spring.config.activate.on-profile: docker
+
+spring:
+  redis:
+    sentinel:
+      master: mymaster
+      nodes:
+        - sentinel-1:26379
+        - sentinel-2:26379
+        - sentinel-3:26379
+
+redisson:
+  config: |
+    sentinelServersConfig:
+      masterName: "mymaster"
+      sentinelAddresses:
+        - "redis://sentinel-1:26379"
+        - "redis://sentinel-2:26379"
+        - "redis://sentinel-3:26379"
+      database: 0
