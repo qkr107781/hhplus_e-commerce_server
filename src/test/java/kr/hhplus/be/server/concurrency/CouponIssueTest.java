@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.concurrency;
 
+import kr.hhplus.be.server.ServerApplication;
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.domain.coupon.Coupon;
@@ -27,10 +28,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+
+
+
+@SpringBootTest(classes = {ServerApplication.class, TestContainersConfiguration.class})
+@ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
-@ActiveProfiles("test") //application-test.yml 읽어오도록 함
-@ContextConfiguration(classes = TestContainersConfiguration.class)//Spring boot Context 로딩 전 TestContainerConfiguration 읽어오게 하기 위함
 @EnableAspectJAutoProxy // AOP 활성화
 public class CouponIssueTest {
 
@@ -48,7 +51,7 @@ public class CouponIssueTest {
     @Test
     @DisplayName("선착순 쿠폰 발급 동시성 테스트 - 발급 제한 갯수 초과 요청")
     void couponIssue() throws Exception {
-    //Given
+        //Given
         //파라미터 셋팅
         long couponId = 5L; //->준비된 쿠폰은 100개
 
@@ -87,7 +90,7 @@ public class CouponIssueTest {
             });
         }
 
-    //When
+        //When
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
         //모든 스레드가 준비될 때까지 대기
@@ -102,7 +105,7 @@ public class CouponIssueTest {
         LocalDateTime endTime = LocalDateTime.now();
         System.out.println("모든 스레드 실행 종료: " + endTime.format(formatter));
 
-    //Then
+        //Then
         //발급 종료 후 잔여 쿠폰 갯수 조회 -> 0개 예상
         Coupon coupon = couponService.selectCouponByCouponId(couponId);
         //발급된 쿠폰 갯수 조회 -> 100건 조회 예상

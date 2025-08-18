@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.integration.application.order;
 
 
+import kr.hhplus.be.server.ServerApplication;
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.order.dto.OrderRequest;
@@ -26,10 +27,9 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(classes = {ServerApplication.class, TestContainersConfiguration.class})
+@ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
-@ActiveProfiles("test") //application-test.yml 읽어오도록 함
-@ContextConfiguration(classes = TestContainersConfiguration.class)//Spring boot Context 로딩 전 TestContainerConfiguration 읽어오게 하기 위함
 public class OrderFacadeServiceTest {
 
     @Autowired
