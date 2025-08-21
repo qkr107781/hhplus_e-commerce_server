@@ -8,7 +8,8 @@ public interface CouponUseCase {
 
     /**
      * 쿠폰 발급
-     * @param couponId: 쿠폰 ID, 사용자 ID
+     * @param couponId: 쿠폰 ID
+     * @param userId: 사용자 ID
      * @return CouponIssuedInfo
      */
     CouponResponse.Issue issuingCoupon(long couponId, long userId) throws Exception;
@@ -26,4 +27,12 @@ public interface CouponUseCase {
      * @return CouponResponse.SelectByStatus
      */
     List<CouponResponse.SelectByStatus> selectCouponByStatus(String couponStatus);
+
+    /**
+     * 레디스 자료구조 기반 비동기 쿠폰 발급
+     * @param couponId: 쿠폰 ID
+     * @param userId: 사용자 ID
+     * @return 발급 요청 결과
+     */
+    String issuingCouponAsync(long couponId, long userId);
 }

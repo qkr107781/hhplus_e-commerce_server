@@ -4,14 +4,18 @@ import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
 import kr.hhplus.be.server.common.redis.DistributedFairLock;
+import kr.hhplus.be.server.common.redis.LuaScript;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
+import org.redisson.api.*;
+import org.redisson.client.codec.StringCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,10 +26,16 @@ public class CouponService implements CouponUseCase{
 
     private final CouponIssuedInfoRepository couponIssuedInfoRepository;
     private final CouponRepository couponRepository;
+    private final RedissonClient redissonClient;
+    private final LuaScript luaScript;
 
-    public CouponService(CouponIssuedInfoRepository couponIssuedInfoRepository, CouponRepository couponRepository) {
+    private final String STREAM_KEY = "coupon:queue:issue:job";
+
+    public CouponService(CouponIssuedInfoRepository couponIssuedInfoRepository, CouponRepository couponRepository, RedissonClient redissonClient, LuaScript luaScript) {
         this.couponIssuedInfoRepository = couponIssuedInfoRepository;
         this.couponRepository = couponRepository;
+        this.redissonClient = redissonClient;
+        this.luaScript = luaScript;
     }
 
     /**
@@ -128,5 +138,37 @@ public class CouponService implements CouponUseCase{
     @Override
     public List<CouponResponse.SelectByStatus> selectCouponByStatus(String couponStatus) {
         return CouponResponse.SelectByStatus.from(couponRepository.findByCouponStatus(couponStatus));
+    }
+
+    /**
+     * 발급 요청 (Streams)
+     */
+    @Override
+    public String issuingCouponAsync(long couponId, long userId) {
+
+        String hashesKey = "coupon:" + couponId + ":meta";
+        String setsKey = "coupon:" + couponId + ":queue";
+        // 유효성 검사 로직 (시간 관련)은 Lua 스크립트 외부에서 처리
+        RMap<String, String> metaHashes = redissonClient.getMap(hashesKey, StringCodec.INSTANCE);
+        if (metaHashes == null) {
+            return "발급 불가";
+        }
+        LocalDateTime startDate = LocalDateTime.parse(metaHashes.get("start_date"));
+        LocalDateTime endDate = LocalDateTime.parse(metaHashes.get("end_date"));
+        LocalDateTime nowDate = LocalDateTime.now();
+        if (startDate.isAfter(nowDate) || endDate.isBefore(nowDate)) {
+            return "발급 기간이 아닙니다.";
+        }
+
+        //발급 요청 Sets TTL Seconds -> 발급 종료일 - 발급 시자일 + 1시간
+        long setsTTLSeconds = ChronoUnit.SECONDS.between(startDate, endDate) + 3600;
+
+        Long resultCode = luaScript.requestCouponIssue(redissonClient,hashesKey,setsKey,STREAM_KEY,String.valueOf(couponId),String.valueOf(userId),String.valueOf(setsTTLSeconds));
+//        System.out.println("발급 요청 완료: userid="+userId + " - lua result code: " + resultCode + " - " + LocalDateTime.now());
+        if (resultCode.intValue() == 3) return "쿠폰이 모두 소진 됐습니다.";
+        if (resultCode.intValue() == 2) return "중복된 발급 요청 입니다.";
+        if (resultCode.intValue() == 0) return "오류 발생";
+
+        return "발급 요청이 접수되었습니다. 발급 결과는 추후 확인해주세요.";
     }
 }
