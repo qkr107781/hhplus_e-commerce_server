@@ -2,6 +2,7 @@ package kr.hhplus.be.server;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.StringCodec;
 import org.redisson.config.Config;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -52,6 +53,7 @@ public class TestContainersConfiguration { // @TestConfiguration 어노테이션
 	public RedissonClient redissonClient() {
 		Config config = new Config();
 		String redisAddress = System.getProperty("redisson.address");
+		config.setCodec(StringCodec.INSTANCE);
 		config.useSingleServer().setAddress(redisAddress);
 		return Redisson.create(config);
 	}
