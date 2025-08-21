@@ -9,6 +9,7 @@ import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.facade.PaymentFacadeService;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.product.service.ProductService;
+import kr.hhplus.be.server.application.product.service.ProductStatisticsService;
 import kr.hhplus.be.server.domain.balance.Balance;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
@@ -40,6 +41,9 @@ class PaymentFacadeServiceTest {
 
     @Mock
     ProductService productService;
+
+    @Mock
+    ProductStatisticsService productStatisticsService;
 
     @Mock
     CouponService couponService;
@@ -174,7 +178,7 @@ class PaymentFacadeServiceTest {
 
         //When
         PaymentRequest.Create request = new PaymentRequest.Create(1L,1L);
-        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService);
+        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService,productStatisticsService);
         PaymentResponse.Create response = paymentFacadeService.createPayment(request);
 
 // Then

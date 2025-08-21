@@ -61,7 +61,7 @@ class ProductOptionAdapterTest {
         //When
         ProductOption afterSave = productOptionAdapter.save(productOption);
         //Then
-        assertEquals(5L,afterSave.getProductOptionId());
+        assertEquals(11L,afterSave.getProductOptionId());
         assertEquals(5_000L,afterSave.getPrice());
     }
 
