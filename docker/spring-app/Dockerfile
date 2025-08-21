@@ -1,12 +1,12 @@
-# Dockerfile 예시
-# OpenJDK 17 기반의 JRE 이미지를 사용
+# Spring App용 Dockerfile
 FROM openjdk:17-jdk-slim
-
-# 애플리케이션의 JAR 파일을 컨테이너 내부에 복사
-COPY build/libs/*.jar app.jar
-
-# 환경 변수 설정
-ENV TZ=Asia/Seoul
-
-# 컨테이너 실행 시 app.jar 파일을 실행하도록 설정
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# 컨테이너 내 작업 디렉토리 설정
+WORKDIR /app
+# 빌드된 JAR 파일을 컨테이너로 복사
+COPY build/libs/*.jar ./app.jar
+# application.yml 파일을 resources 디렉토리로 복사
+COPY src/main/resources/application.yml ./application.yml
+# 애플리케이션이 사용하는 포트 노출
+EXPOSE 8080
+# 애플리케이션 실행
+ENTRYPOINT ["java", "-jar", "app.jar"]

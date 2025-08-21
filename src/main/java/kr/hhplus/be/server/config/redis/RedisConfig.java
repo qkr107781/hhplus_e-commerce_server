@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.StringCodec;
 import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,11 +19,18 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.List;
 
 @Configuration
 @EnableCaching
 @Profile("!test")
 public class RedisConfig {
+
+    @Value("${spring.redis.sentinel.master}")
+    private String masterName;
+
+    @Value("${spring.redis.sentinel.nodes}")
+    private List<String> sentinelNodes;
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
@@ -50,14 +59,10 @@ public class RedisConfig {
     @Bean(destroyMethod = "shutdown")
     public RedissonClient redissonClient() {
         Config config = new Config();
+        config.setCodec(StringCodec.INSTANCE);
         config.useSentinelServers()
-                .setMasterName("mymaster")
-                .setCheckSentinelsList(false)
-                .addSentinelAddress(
-                        "redis://localhost:26379",
-                        "redis://localhost:26380",
-                        "redis://localhost:26381"
-                );
+                .setMasterName(masterName)
+                .addSentinelAddress(sentinelNodes.toArray(new String[0]));
         return Redisson.create(config);
     }
 }

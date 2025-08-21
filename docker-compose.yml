@@ -16,7 +16,7 @@ services:
     volumes:
       - ./data/mysql/:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "hhplus-mysql"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "mysql"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,6 +48,8 @@ services:
   # =========================
   redis-master:
     image: redis:latest
+    ports:
+      - "6379:6379"
     command: redis-server
     networks:
       - redis-net
@@ -57,6 +59,8 @@ services:
   # =========================
   redis-replica-1:
     image: redis:latest
+    ports:
+      - "6380:6380"
     command: redis-server --replicaof redis-master 6379
     links:
       - redis-master
@@ -65,6 +69,8 @@ services:
 
   redis-replica-2:
     image: redis:latest
+    ports:
+      - "6381:6381"
     command: redis-server --replicaof redis-master 6379
     links:
       - redis-master
