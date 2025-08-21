@@ -13,6 +13,7 @@ import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.payment.service.PaymentUseCase;
 import kr.hhplus.be.server.application.product.service.ProductService;
+import kr.hhplus.be.server.application.product.service.ProductStatisticsService;
 import kr.hhplus.be.server.common.redis.DistributedLock;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
@@ -39,14 +40,16 @@ public class PaymentFacadeService implements PaymentUseCase {
     private final OrderProductService orderProductService;
     private final CouponService couponService;
     private final ProductService productService;
+    private final ProductStatisticsService productStatisticsService;
 
-    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, OrderProductService orderProductService, CouponService couponService, ProductService productService) {
+    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, OrderProductService orderProductService, CouponService couponService, ProductService productService, ProductStatisticsService productStatisticsService) {
         this.balanceService = balanceService;
         this.paymentService = paymentService;
         this.orderService = orderService;
         this.orderProductService = orderProductService;
         this.couponService = couponService;
         this.productService = productService;
+        this.productStatisticsService = productStatisticsService;
     }
 
     /**
@@ -106,9 +109,13 @@ public class PaymentFacadeService implements PaymentUseCase {
             ProductOption productOption = productService.selectProductOptionByProductIdAndProductOptionId(productId,productOptionId);
 
             orderCreateProductList.add(OrderResponse.OrderProductDTO.from(orderProduct,product,productOption));
+
+            //레디스 인기상품 데이터 Sorted Sets 입력을 위한 전송
+            productStatisticsService.updateDailyRanking(productOptionId,orderProduct.getProductQuantity());
         }
         //Response 객체 생성 완료
         PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,coupon,orderCreateProductList);
+
 
         //결제 내역 데이터 플랫폼 API 전송(비동기)
         AsyncDataPlatformSender sender = new AsyncDataPlatformSender("http://testestest.com");

@@ -126,4 +126,14 @@ public class ProductService implements ProductUseCase {
         return productOptionRepository.selectProductOptionByProductIdAndProductOptionId(productId, productOptionId);
     }
 
+    /**
+     * 상품 옵션 조회
+     *
+     * @param productOptionId: 상품 옵션 ID
+     * @return ProductOption
+     */
+    public ProductOption selectProductOptionByProductOptionId(long productOptionId) {
+        return productOptionRepository.selectProductOptionByProductOptionId(productOptionId);
+    }
+
 }
