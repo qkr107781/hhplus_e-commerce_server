@@ -1,55 +1,36 @@
 package kr.hhplus.be.server;
 
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.client.codec.StringCodec;
-import org.redisson.config.Config;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
+import org.springframework.test.context.ActiveProfiles;
 
-@TestConfiguration
-public class TestContainersConfiguration { // @TestConfiguration 어노테이션은 유지
+import javax.sql.DataSource;
+import java.sql.Connection;
 
-	//########################## MySQL TestContainer Configuration ##########################//
+@ActiveProfiles("test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)//웹 환경 구성 하지 않도록 제어
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
+@Import({MySQLTestContainer.class, RedisTestContainer.class})//MySQL, Redis 로딩
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class TestContainersConfiguration {
 
-	@ServiceConnection
-	@Bean
-	public static MySQLContainer<?> mySQLContainer() {
-		return MySQLHolder.INSTANCE;
-	}
+    @Autowired
+    private ApplicationContext applicationContext;
 
-	private static class MySQLHolder {
-		private static final MySQLContainer<?> INSTANCE =
-				new MySQLContainer<>(DockerImageName.parse("mysql:8.0.33"))
-						.withDatabaseName("testdb")
-						.withUsername("test")
-						.withPassword("test");
-		static { INSTANCE.start(); }
-	}
+    @AfterAll
+    void cleanDatabase() throws Exception {
+        DataSource dataSource = applicationContext.getBean(DataSource.class);
+        try (Connection conn = dataSource.getConnection()) {
+            // delete.sql 실행
+            ScriptUtils.executeSqlScript(conn, new ClassPathResource("delete.sql"));
+        }
+    }
 
-	//########################## Redis TestContainer Configuration ##########################//
-
-
-	private static final int REDIS_PORT = 6379;
-
-	private static final GenericContainer<?> redisContainer =
-			new GenericContainer<>(DockerImageName.parse("redis:7.2.4-alpine"))
-					.withExposedPorts(REDIS_PORT);
-
-	static {
-		redisContainer.start();
-	}
-
-	@Bean
-	public RedissonClient redissonClient() {
-		Config config = new Config();
-		config.setCodec(StringCodec.INSTANCE);
-		config.useSingleServer()
-				.setAddress("redis://" + redisContainer.getHost() + ":" + redisContainer.getFirstMappedPort());
-		return Redisson.create(config);
-	}
 }
