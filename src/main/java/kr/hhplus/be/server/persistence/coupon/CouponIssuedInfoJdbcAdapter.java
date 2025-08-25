@@ -32,7 +32,6 @@ public class CouponIssuedInfoJdbcAdapter implements CouponIssuedInfoJdbcReposito
         jdbcTemplate.batchUpdate(couponIssueSql, coupons, batchSize,
                 (ps, coupon) -> {
                     LocalDateTime now = LocalDateTime.now();
-//                    System.out.println("저장 대상 데이터: "+coupon);
                     String[] arr = coupon.split(":");
                     long couponId = Long.parseLong(arr[0]);
                     long userId = Long.parseLong(arr[1]);

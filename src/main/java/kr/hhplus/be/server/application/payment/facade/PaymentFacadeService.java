@@ -128,9 +128,9 @@ public class PaymentFacadeService implements PaymentUseCase {
         CompletableFuture<Boolean> future1 = sender.sendDataAsync(jsonData);
         future1.thenAccept(success -> {
             if (success) {
-                System.out.println("Result 1: Data sent successfully!");
+                //성공
             } else {
-                System.err.println("Result 1: Failed to send data.");
+                //실패
             }
         });
 

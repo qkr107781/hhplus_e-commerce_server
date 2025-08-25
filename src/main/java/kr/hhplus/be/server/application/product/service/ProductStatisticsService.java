@@ -44,7 +44,5 @@ public class ProductStatisticsService {
 
         dailySales.addScore(productOptionId, quantity);
         dailySales.expire((86400 * 3) + 3600, TimeUnit.SECONDS);//TTL: 3일 + 1시간 보관 후 삭제
-
-        System.out.println("상품 " + productOptionId + "의 오늘 판매량이 " + quantity + "만큼 업데이트 되었습니다.");
     }
 }

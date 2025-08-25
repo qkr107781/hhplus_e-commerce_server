@@ -164,7 +164,6 @@ public class CouponService implements CouponUseCase{
         long setsTTLSeconds = ChronoUnit.SECONDS.between(startDate, endDate) + 3600;
 
         Long resultCode = luaScript.requestCouponIssue(redissonClient,hashesKey,setsKey,STREAM_KEY,String.valueOf(couponId),String.valueOf(userId),String.valueOf(setsTTLSeconds));
-//        System.out.println("발급 요청 완료: userid="+userId + " - lua result code: " + resultCode + " - " + LocalDateTime.now());
         if (resultCode.intValue() == 3) return "쿠폰이 모두 소진 됐습니다.";
         if (resultCode.intValue() == 2) return "중복된 발급 요청 입니다.";
         if (resultCode.intValue() == 0) return "오류 발생";
