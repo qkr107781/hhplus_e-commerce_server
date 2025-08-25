@@ -96,19 +96,18 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
             last3DaysKeys[i] = DAILY_SALES_PREFIX + LocalDate.now().minusDays(i + 1).format(DATE_FORMATTER);
         }
 
-        // 2. 임시 ZSET 키 생성
-        RScoredSortedSet<Long> unionSet = redissonClient.getScoredSortedSet(last3DaysKeys[0], new LongCodec());
+        // 2. 임시 ZSET 키 생성 (Redis 서버에서 union 수행용)
+        String tempUnionKey = "temp:union:last3days";
+        RScoredSortedSet<Long> unionSet = redissonClient.getScoredSortedSet(tempUnionKey, new LongCodec());
+        unionSet.delete(); // 기존 데이터 초기화
 
-        // 3. SetUnionArgs → Redisson 3.50에서는 SetReadArgs로 받기
-        SetUnionArgs unionArgs = SetUnionArgs.names(last3DaysKeys);
+        // 3. Redis 서버에서 union 수행 -> Redis ZUNIONSTORE로 합산 (AGGREGATE SUM)
+        unionSet.union(SetUnionArgs.names(last3DaysKeys));
 
-        // 4. Redis 서버에서 union 수행
-        unionSet.readUnion(unionArgs);
-
-        // 5. Top5 추출 (점수 내림차순)
+        // 4. Top5 추출 (점수 내림차순)
         Collection<Long> top5Ids = unionSet.valueRangeReversed(0, 4);
 
-        // 6. 상품명 + 판매량 변환
+        // 5. 상품명 + 판매량 변환
         List<ProductResponse.Statistics> resultList = new ArrayList<>();
         for (Long productOptionId : top5Ids) {
             Double score = unionSet.getScore(productOptionId);
@@ -117,10 +116,7 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
             ProductOption productOption = productService.selectProductOptionByProductOptionId(productOptionId);
             Product product = productService.selectProductByProductId(productOption.getProductId());
 
-            resultList.add(new ProductResponse.Statistics(
-                    product.getName() + "-" + productOption.getOptionName(),
-                    score.longValue()
-            ));
+            resultList.add(new ProductResponse.Statistics(product.getName() + "-" + productOption.getOptionName(), score.longValue()));
         }
 
         return resultList;
