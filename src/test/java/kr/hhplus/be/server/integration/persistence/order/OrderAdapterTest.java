@@ -1,18 +1,12 @@
 package kr.hhplus.be.server.integration.persistence.order;
 
-import kr.hhplus.be.server.ServerApplication;
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.persistence.order.OrderAdapter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.annotation.Commit;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +16,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {ServerApplication.class, TestContainersConfiguration.class})
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
 @Sql(scripts = "/order.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-@Sql(scripts = "/delete.sql",executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS) //이 클래스 테스트 종료 시 데이터 클랜징
 @ComponentScan(basePackageClasses = OrderAdapter.class)//@Component 사용 중인 Adapter 클래스 읽어오기 위함
-class OrderAdapterTest {
+class OrderAdapterTest extends TestContainersConfiguration {
 
     @Autowired
     OrderAdapter orderAdapter;
@@ -60,7 +50,6 @@ class OrderAdapterTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("주문 조회 - findByOrderId()")
     void findByOrderId(){
         System.out.println("findByOrderId 쿼리");
@@ -75,7 +64,6 @@ class OrderAdapterTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("상품 통계 시 결제 완료된 추출 대상일 주문 조회 - findByOrderStatusAndOrderDateBetween()")
     void findByOrderStatusAndOrderDateBetween() {
         System.out.println("findByOrderStatusAndOrderDateBetween 쿼리");

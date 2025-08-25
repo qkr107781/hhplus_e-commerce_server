@@ -1,12 +1,12 @@
-package kr.hhplus.be.server.redis;
+package kr.hhplus.be.server.integration.redis;
 
-import kr.hhplus.be.server.ServerApplication;
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
 import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.facade.PaymentFacadeService;
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.facade.ProductFacadeService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RScoredSortedSet;
@@ -14,10 +14,8 @@ import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.LongCodec;
 import org.redisson.client.protocol.ScoredEntry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -29,10 +27,14 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {ServerApplication.class, TestContainersConfiguration.class})
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
-public class RedisTop5SalesProductTest {
+@Sql(scripts = "/order.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = "/orderProduct.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = "/balance.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = "/coupon.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = "/couponIssuedInfo.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = "/product.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = "/productOption.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+public class RedisTop5SalesProductTest extends TestContainersConfiguration {
 
     @Autowired
     RedissonClient redissonClient;
@@ -46,15 +48,14 @@ public class RedisTop5SalesProductTest {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final String DAILY_SALES_PREFIX = "daily:sales:";
 
-    @Sql(scripts = "/order.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/orderProduct.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/balance.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/coupon.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/couponIssuedInfo.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/product.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/productOption.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/delete.sql",executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD) //이 클래스 테스트 종료 시 데이터 클랜징
+    @BeforeEach
+    void cleanRedis() {
+        String redisKey = DAILY_SALES_PREFIX + LocalDate.now().format(DATE_FORMATTER);
+        redissonClient.getKeys().delete(redisKey);
+    }
+
     @Test
+    @Transactional
     @DisplayName("매 결제 시 상품옵션 별 판매 수량 레디스로 전송")
     void paymentProductOptionIdSendToRedis() throws Exception {
         //Given
@@ -87,12 +88,10 @@ public class RedisTop5SalesProductTest {
         assertEquals(3.0,scoreList.get(2));
     }
 
-    @Sql(scripts = "/product.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/productOption.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/delete.sql",executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD) //이 클래스 테스트 종료 시 데이터 클랜징
     @Test
+    @Transactional
     @DisplayName("레디스 자료구조를 활용한 지난 3일간 인기 TOP5 상품 조회")
-    void redisTop5SalseProduct() throws InterruptedException {
+    void redisTop5SalseProduct(){
         //Given
         String redisKey_3_DaysAgo = DAILY_SALES_PREFIX + LocalDate.now().minusDays(3).format(DATE_FORMATTER);
         String redisKey_2_DaysAgo = DAILY_SALES_PREFIX + LocalDate.now().minusDays(2).format(DATE_FORMATTER);

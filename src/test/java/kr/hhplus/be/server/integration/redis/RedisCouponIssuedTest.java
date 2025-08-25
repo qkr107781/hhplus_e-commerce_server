@@ -1,6 +1,5 @@
-package kr.hhplus.be.server.redis;
+package kr.hhplus.be.server.integration.redis;
 
-import kr.hhplus.be.server.ServerApplication;
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.common.redis.RedisKeys;
@@ -11,9 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.redisson.api.*;
 import org.redisson.client.codec.StringCodec;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Instant;
@@ -27,10 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(classes = {ServerApplication.class, TestContainersConfiguration.class})
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
-public class RedisCouponIssuedTest {
+@Sql(scripts = "/coupon.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
+public class RedisCouponIssuedTest extends TestContainersConfiguration {
 
     @Autowired
     CouponService couponService;
@@ -38,8 +32,6 @@ public class RedisCouponIssuedTest {
     @Autowired
     RedissonClient redissonClient;
 
-    @Sql(scripts = "/coupon.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-    @Sql(scripts = "/delete.sql",executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD) //이 메소드 테스트 종료 시 데이터 클랜징
     @Test
     @DisplayName("레디스 자료구조 기반 선착순 쿠폰 발급")
     void redisCouponIssue() throws InterruptedException, BrokenBarrierException {

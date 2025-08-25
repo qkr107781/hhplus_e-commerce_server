@@ -1,6 +1,5 @@
-package kr.hhplus.be.server.concurrency;
+package kr.hhplus.be.server.integration.concurrency;
 
-import kr.hhplus.be.server.ServerApplication;
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.domain.coupon.Coupon;
@@ -9,11 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDateTime;
@@ -28,14 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
-
-
-@SpringBootTest(classes = {ServerApplication.class, TestContainersConfiguration.class})
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
 @EnableAspectJAutoProxy // AOP 활성화
-public class CouponIssueTest {
+public class CouponIssueTest extends TestContainersConfiguration {
 
     @Autowired
     CouponService couponService;
