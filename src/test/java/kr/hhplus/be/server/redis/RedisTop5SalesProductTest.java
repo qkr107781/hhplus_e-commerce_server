@@ -19,12 +19,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -165,21 +166,21 @@ public class RedisTop5SalesProductTest {
             double score = scoreList_3_DaysAgo.get(i);
             sortedSet_3_DaysAgo.add(score, productOptionId);
         }
-        sortedSet_3_DaysAgo.expire((86400 * 3) + 3600, TimeUnit.SECONDS);//TTL: 3일 + 1시간 보관 후 삭제
+        sortedSet_3_DaysAgo.expire(Instant.now().plus((86400 * 3)+ 3600, ChronoUnit.SECONDS));//TTL: 3일 + 1시간 보관 후 삭제
 
         for (int i = 0; i < productOptionIdList_2_DaysAgo.size(); i++) {
             long productOptionId = productOptionIdList_2_DaysAgo.get(i);
             double score = scoreList_2_DaysAgo.get(i);
             sortedSet_2_DaysAgo.add(score, productOptionId);
         }
-        sortedSet_2_DaysAgo.expire((86400 * 3) + 3600, TimeUnit.SECONDS);//TTL: 3일 + 1시간 보관 후 삭제
+        sortedSet_2_DaysAgo.expire(Instant.now().plus((86400 * 3) + 3600, ChronoUnit.SECONDS));//TTL: 3일 + 1시간 보관 후 삭제
 
         for (int i = 0; i < productOptionIdList_1_DaysAgo.size(); i++) {
             long productOptionId = productOptionIdList_1_DaysAgo.get(i);
             double score = scoreList_1_DaysAgo.get(i);
             sortedSet_1_DaysAgo.add(score, productOptionId);
         }
-        sortedSet_1_DaysAgo.expire((86400 * 3) + 3600, TimeUnit.SECONDS);//TTL: 3일 + 1시간 보관 후 삭제
+        sortedSet_1_DaysAgo.expire(Instant.now().plus((86400 * 3) + 3600, ChronoUnit.SECONDS));//TTL: 3일 + 1시간 보관 후 삭제
 
         //When
         List<ProductResponse.Statistics> redisStatisticsList = productFacadeService.getTop5ForLast3Days();

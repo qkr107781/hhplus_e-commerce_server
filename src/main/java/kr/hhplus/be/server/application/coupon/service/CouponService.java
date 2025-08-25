@@ -5,6 +5,7 @@ import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoReposit
 import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
 import kr.hhplus.be.server.common.redis.DistributedFairLock;
 import kr.hhplus.be.server.common.redis.LuaScript;
+import kr.hhplus.be.server.common.redis.RedisKeys;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import org.redisson.api.*;
@@ -28,8 +29,6 @@ public class CouponService implements CouponUseCase{
     private final CouponRepository couponRepository;
     private final RedissonClient redissonClient;
     private final LuaScript luaScript;
-
-    private final String STREAM_KEY = "coupon:queue:issue:job";
 
     public CouponService(CouponIssuedInfoRepository couponIssuedInfoRepository, CouponRepository couponRepository, RedissonClient redissonClient, LuaScript luaScript) {
         this.couponIssuedInfoRepository = couponIssuedInfoRepository;
@@ -146,8 +145,8 @@ public class CouponService implements CouponUseCase{
     @Override
     public String issuingCouponAsync(long couponId, long userId) {
 
-        String hashesKey = "coupon:" + couponId + ":meta";
-        String setsKey = "coupon:" + couponId + ":queue";
+        String hashesKey = RedisKeys.COUPON_META.format(couponId);
+        String setsKey = RedisKeys.COUPON_QUEUE.format(couponId);
         // 유효성 검사 로직 (시간 관련)은 Lua 스크립트 외부에서 처리
         RMap<String, String> metaHashes = redissonClient.getMap(hashesKey, StringCodec.INSTANCE);
         if (metaHashes == null) {
@@ -163,7 +162,7 @@ public class CouponService implements CouponUseCase{
         //발급 요청 Sets TTL Seconds -> 발급 종료일 - 발급 시자일 + 1시간
         long setsTTLSeconds = ChronoUnit.SECONDS.between(startDate, endDate) + 3600;
 
-        Long resultCode = luaScript.requestCouponIssue(redissonClient,hashesKey,setsKey,STREAM_KEY,String.valueOf(couponId),String.valueOf(userId),String.valueOf(setsTTLSeconds));
+        Long resultCode = luaScript.requestCouponIssue(redissonClient,hashesKey,setsKey, RedisKeys.COUPON_ISSUE_JOB.format(),String.valueOf(couponId),String.valueOf(userId),String.valueOf(setsTTLSeconds));
         if (resultCode.intValue() == 3) return "쿠폰이 모두 소진 됐습니다.";
         if (resultCode.intValue() == 2) return "중복된 발급 요청 입니다.";
         if (resultCode.intValue() == 0) return "오류 발생";

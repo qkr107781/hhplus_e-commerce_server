@@ -3,6 +3,7 @@ package kr.hhplus.be.server.redis;
 import kr.hhplus.be.server.ServerApplication;
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
+import kr.hhplus.be.server.common.redis.RedisKeys;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import org.junit.jupiter.api.DisplayName;
@@ -15,8 +16,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -47,7 +50,7 @@ public class RedisCouponIssuedTest {
         long couponId_4 = 4L; //->준비된 쿠폰은 100개
 
         //쿠폰 메타 정보 Hashes 세팅
-        String key5 = "coupon:5:meta";
+        String key5 = RedisKeys.COUPON_META.format("5");
         RMap<String, String> couponMeta5 = redissonClient.getMap(key5, StringCodec.INSTANCE);
 
         // 3. Map에 값 추가
@@ -55,10 +58,10 @@ public class RedisCouponIssuedTest {
         couponMeta5.put("remain_quantity", "100");
         couponMeta5.put("start_date", LocalDateTime.now().toString());
         couponMeta5.put("end_date", LocalDateTime.now().plusDays(1).toString());
-        couponMeta5.expire(86400 + 3600, TimeUnit.SECONDS);//TTL: 발급 종료일 - 발급 시작일 + 1시간
+        couponMeta5.expire(Instant.now().plus(86400 + 3600, ChronoUnit.SECONDS));//TTL: 발급 종료일 - 발급 시작일 + 1시간
 
         //쿠폰 메타 정보 Hashes 세팅
-        String key3 = "coupon:3:meta";
+        String key3 = RedisKeys.COUPON_META.format("3");
         RMap<String, String> couponMeta3 = redissonClient.getMap(key3, StringCodec.INSTANCE);
 
         // 3. Map에 값 추가
@@ -66,10 +69,10 @@ public class RedisCouponIssuedTest {
         couponMeta3.put("remain_quantity", "100");
         couponMeta3.put("start_date", LocalDateTime.now().toString());
         couponMeta3.put("end_date", LocalDateTime.now().plusDays(1).toString());
-        couponMeta5.expire(86400 + 3600, TimeUnit.SECONDS);//TTL: 발급 종료일 - 발급 시작일 + 1시간
+        couponMeta3.expire(Instant.now().plus(86400 + 3600, ChronoUnit.SECONDS));//TTL: 발급 종료일 - 발급 시작일 + 1시간
 
         //쿠폰 메타 정보 Hashes 세팅
-        String key4 = "coupon:4:meta";
+        String key4 = RedisKeys.COUPON_META.format("4");
         RMap<String, String> couponMeta4 = redissonClient.getMap(key4, StringCodec.INSTANCE);
 
         // 3. Map에 값 추가
@@ -77,7 +80,7 @@ public class RedisCouponIssuedTest {
         couponMeta4.put("remain_quantity", "100");
         couponMeta4.put("start_date", LocalDateTime.now().toString());
         couponMeta4.put("end_date", LocalDateTime.now().plusDays(1).toString());
-        couponMeta5.expire(86400 + 3600, TimeUnit.SECONDS);//TTL: 발급 종료일 - 발급 시작일 + 1시간
+        couponMeta4.expire(Instant.now().plus(86400 + 3600, ChronoUnit.SECONDS));//TTL: 발급 종료일 - 발급 시작일 + 1시간
 
         //동시성 테스트 준비
         int threadCount = 200; //->threadCount로 userId 대체 -> 200명의 유저가 발급 요청
@@ -133,21 +136,18 @@ public class RedisCouponIssuedTest {
 
         //Then
         //발급 요청 Sets 확인
-        String setsQueueKey = "coupon:" + couponId_5 + ":queue";
+        String setsQueueKey = RedisKeys.COUPON_QUEUE.format("5");
         RSet<String> requestSet = redissonClient.getSet(setsQueueKey);
         System.out.println("쿠폰 5 발급 요청 Sets size: "+requestSet.size());
-//        System.out.println("발급 요청 Sets: "+requestSet);
-        String setsQueueKey4 = "coupon:" + couponId_4 + ":queue";
+        String setsQueueKey4 = RedisKeys.COUPON_QUEUE.format("4");
         RSet<String> requestSet4 = redissonClient.getSet(setsQueueKey4);
         System.out.println("쿠폰 4 발급 요청 Sets size: "+requestSet4.size());
-//        System.out.println("발급 요청 Sets: "+requestSet);
-        String setsQueueKey3 = "coupon:" + couponId_3 + ":queue";
+        String setsQueueKey3 = RedisKeys.COUPON_QUEUE.format("3");
         RSet<String> requestSet3 = redissonClient.getSet(setsQueueKey3);
         System.out.println("쿠폰 3 발급 요청 Sets size: "+requestSet3.size());
-//        System.out.println("발급 요청 Sets: "+requestSet);
 
         //발급 작업 큐 Streams 확인
-        String streamsQueueKey = "coupon:queue:issue:job";
+        String streamsQueueKey = RedisKeys.COUPON_ISSUE_JOB.format();
         RStream<String, String> queueStream = redissonClient.getStream(streamsQueueKey);
         System.out.println("발급 작업 큐 Streams size: "+queueStream.size());
 //        // 0부터 ~ 끝까지 모든 메시지 가져오기

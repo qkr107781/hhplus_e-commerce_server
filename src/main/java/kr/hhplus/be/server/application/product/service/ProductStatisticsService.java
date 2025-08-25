@@ -7,10 +7,11 @@ import org.redisson.api.RScoredSortedSet;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class ProductStatisticsService {
@@ -43,6 +44,6 @@ public class ProductStatisticsService {
         RScoredSortedSet<Long> dailySales = redissonClient.getScoredSortedSet(todayKey);
 
         dailySales.addScore(productOptionId, quantity);
-        dailySales.expire((86400 * 3) + 3600, TimeUnit.SECONDS);//TTL: 3일 + 1시간 보관 후 삭제
+        dailySales.expire(Instant.now().plus((86400 * 3) + 3600, ChronoUnit.SECONDS));//TTL: 3일 + 1시간 보관 후 삭제
     }
 }

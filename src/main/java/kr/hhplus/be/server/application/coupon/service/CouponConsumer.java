@@ -3,6 +3,7 @@ package kr.hhplus.be.server.application.coupon.service;
 import jakarta.annotation.PreDestroy;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoJdbcRepository;
 import kr.hhplus.be.server.common.redis.LuaScript;
+import kr.hhplus.be.server.common.redis.RedisKeys;
 import org.redisson.api.RStream;
 import org.redisson.api.RedissonClient;
 import org.redisson.api.StreamMessageId;
@@ -12,7 +13,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +26,8 @@ public class CouponConsumer implements CommandLineRunner {
     private final RedissonClient redissonClient;
     private final LuaScript luaScript;
 
-    private final String STREAM_KEY = "coupon:queue:issue:job";
-    private final String GROUP_NAME = "couponGroup";
+    private final String GROUP_NAME = RedisKeys.COUPON_ISSUE_CONSUMER_GROUP.format();
+    private final String CONSUMER_NAME = RedisKeys.COUPON_ISSUE_CONSUMER_NAME.format();
     private ExecutorService executor;
 
     public CouponConsumer(CouponIssuedInfoJdbcRepository couponIssuedInfoJdbcRepository, RedissonClient redissonClient, LuaScript luaScript) {
@@ -47,7 +47,7 @@ public class CouponConsumer implements CommandLineRunner {
         executor = Executors.newFixedThreadPool(workerCount);
 
         for (int i = 0; i < workerCount; i++) {
-            RStream<String, String> queueStream = redissonClient.getStream(STREAM_KEY);
+            RStream<String, String> queueStream = redissonClient.getStream(RedisKeys.COUPON_ISSUE_JOB.format());
 
             try {
                 // 그룹 없으면 생성 (already exists 예외는 무시)
@@ -60,7 +60,7 @@ public class CouponConsumer implements CommandLineRunner {
                 }
             }
 
-            final String consumerName = "worker-" + i;
+            final String consumerName = CONSUMER_NAME + "-" + i;
             executor.submit(() -> {
                 while (true) {
                     try {
