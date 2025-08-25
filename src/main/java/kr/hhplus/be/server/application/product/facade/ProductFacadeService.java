@@ -7,12 +7,14 @@ import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.service.ProductService;
 import kr.hhplus.be.server.application.product.service.ProductStatisticsService;
 import kr.hhplus.be.server.application.product.service.ProductStatisticsUseCase;
+import kr.hhplus.be.server.common.redis.RedisKeys;
 import kr.hhplus.be.server.domain.order.Order;
 import kr.hhplus.be.server.domain.order.OrderProduct;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
 import org.redisson.api.RScoredSortedSet;
 import org.redisson.api.RedissonClient;
+import org.redisson.api.SetUnionArgs;
 import org.redisson.client.codec.LongCodec;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -32,9 +34,9 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
     private final RedissonClient redissonClient;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
-    private static final String DAILY_SALES_PREFIX = "daily:sales:";
-    private static final String CACHE_NAME = "topSalesProducts";
-    private static final String CACHE_KEY = "'top5:sales:last3days'";
+    private static final String DAILY_SALES_PREFIX = RedisKeys.DAILY_SALES_PREFIX.format();
+    private final String PRODUCT_STATISTICS_CACHE_KEY = "'top5:sales:last3days'";
+    private final String PRODUCT_STATISTICS_CACHE_NAME = "topSalesProducts";
 
     public ProductFacadeService(OrderService orderService, OrderProductService orderProductService, ProductStatisticsService productStatisticsService, ProductService productService, RedissonClient redissonClient) {
         this.orderService = orderService;
@@ -47,11 +49,12 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
     /**
      * 오늘 기준 4일 전부터 1일 전까지의 데이터 중 salesQuantity 기준 상위 5개를 조회합니다.
      * 예: 오늘이 7월 25일이면, 7월 21일 부터 7월 24일 까지의 데이터를 조회합니다.
+     *
      * @return 상위 5개 통계 데이터 리스트
      */
     @Cacheable(
-            cacheNames = CACHE_NAME,
-            key = CACHE_KEY,
+            cacheNames = PRODUCT_STATISTICS_CACHE_NAME,
+            key = PRODUCT_STATISTICS_CACHE_KEY,
             unless = "#result == null  || #result.isEmpty()"
     )
     @Transactional(readOnly = true)
@@ -65,7 +68,7 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
         List<Order> orderList = orderService.selectOrderByOrderStatusAndOrderDateBetween("complete_payment", startDate, endDate);
 
         //추출일 기준 3일전~1일전 결제 완료된 주문의 주문 상품 조회
-        for (Order order : orderList){
+        for (Order order : orderList) {
             List<OrderProduct> orderProductList = orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(order.getOrderId());
             orderProductListByBefore3Days.addAll(orderProductList);
         }
@@ -80,42 +83,44 @@ public class ProductFacadeService implements ProductStatisticsUseCase {
      *
      * @return 합산된 판매량 순위 목록 (점수 포함)
      */
+    @Cacheable(
+            cacheNames = PRODUCT_STATISTICS_CACHE_NAME,
+            key = PRODUCT_STATISTICS_CACHE_KEY,
+            unless = "#result == null  || #result.isEmpty()"
+    )
     @Override
     public List<ProductResponse.Statistics> getTop5ForLast3Days() {
-        Map<Long, Double> totalScores = new HashMap<>();
-
+        // 1. 지난 3일간 ZSET 키 생성
         String[] last3DaysKeys = new String[3];
         for (int i = 0; i < 3; i++) {
-            last3DaysKeys[i] = DAILY_SALES_PREFIX + LocalDate.now().minusDays(i+1).format(DATE_FORMATTER);
+            last3DaysKeys[i] = DAILY_SALES_PREFIX + LocalDate.now().minusDays(i + 1).format(DATE_FORMATTER);
         }
 
-        // 1. 각 날짜별 Sorted Sets 에서 상위 5개 데이터를 읽어와 합산
-        for (String key : last3DaysKeys) {
-            RScoredSortedSet<Long> dailySales = redissonClient.getScoredSortedSet(key, new LongCodec());
-            for (Long productId : dailySales.valueRangeReversed(0, 4)) {
-                Double score = dailySales.getScore(productId);
-                if (score != null) {
-                    totalScores.merge(productId, score, Double::sum);
-                }
-            }
-        }
+        // 2. 임시 ZSET 키 생성
+        RScoredSortedSet<Long> unionSet = redissonClient.getScoredSortedSet(last3DaysKeys[0], new LongCodec());
 
-        // 2. 합산된 맵을 스트림으로 변환하고, 점수를 기준으로 내림차순 정렬하여 상위 5개를 추출
-        List<ProductResponse.StatisticsRedis> redisStatisticsList = totalScores.entrySet().stream()
-                                                                                        .map(entry -> new ProductResponse.StatisticsRedis(entry.getKey(), entry.getValue()))
-                                                                                        .sorted(Comparator.comparingDouble(ProductResponse.StatisticsRedis::score).reversed())
-                                                                                        .limit(5)
-                                                                                        .toList();
+        // 3. SetUnionArgs → Redisson 3.50에서는 SetReadArgs로 받기
+        SetUnionArgs unionArgs = SetUnionArgs.names(last3DaysKeys);
 
-        // 3. 상품명, 수량 형식으로 변경하여 리턴
+        // 4. Redis 서버에서 union 수행
+        unionSet.readUnion(unionArgs);
+
+        // 5. Top5 추출 (점수 내림차순)
+        Collection<Long> top5Ids = unionSet.valueRangeReversed(0, 4);
+
+        // 6. 상품명 + 판매량 변환
         List<ProductResponse.Statistics> resultList = new ArrayList<>();
-        for(ProductResponse.StatisticsRedis redisStatistics : redisStatisticsList){
-            ProductOption productOption = productService.selectProductOptionByProductOptionId(redisStatistics.productOptionId());
+        for (Long productOptionId : top5Ids) {
+            Double score = unionSet.getScore(productOptionId);
+            if (score == null) continue;
+
+            ProductOption productOption = productService.selectProductOptionByProductOptionId(productOptionId);
             Product product = productService.selectProductByProductId(productOption.getProductId());
-            String productName = product.getName() + "-" + productOption.getOptionName();
-            long salesQuantity = (long)redisStatistics.score();
-            ProductResponse.Statistics statistics = new ProductResponse.Statistics(productName,salesQuantity);
-            resultList.add(statistics);
+
+            resultList.add(new ProductResponse.Statistics(
+                    product.getName() + "-" + productOption.getOptionName(),
+                    score.longValue()
+            ));
         }
 
         return resultList;
