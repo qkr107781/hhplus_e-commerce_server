@@ -12,6 +12,10 @@ spring:
       hibernate.timezone.default_storage: NORMALIZE_UTC
       hibernate.jdbc.time_zone: UTC
       hibernate.format_sql: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    timeout: 3000
 
 
 logging:
