@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.persistence.coupon;
 
+import kr.hhplus.be.server.application.coupon.dto.CouponRequest;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoJdbcRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -22,7 +23,7 @@ public class CouponIssuedInfoJdbcAdapter implements CouponIssuedInfoJdbcReposito
      * @param coupons insert할 쿠폰 발급 정보 리스트
      */
     @Override
-    public void bulkInsertCouponIssuedInfo(List<String> coupons) {
+    public void bulkInsertCouponIssuedInfo(List<CouponRequest.Issue> coupons) {
         String couponIssueSql = "INSERT INTO coupon_issued_info " +
                 "(user_id, use_yn, issued_at, end_date, coupon_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
@@ -32,9 +33,8 @@ public class CouponIssuedInfoJdbcAdapter implements CouponIssuedInfoJdbcReposito
         jdbcTemplate.batchUpdate(couponIssueSql, coupons, batchSize,
                 (ps, coupon) -> {
                     LocalDateTime now = LocalDateTime.now();
-                    String[] arr = coupon.split(":");
-                    long couponId = Long.parseLong(arr[0]);
-                    long userId = Long.parseLong(arr[1]);
+                    long couponId = coupon.couponId();
+                    long userId = coupon.userId();
 
                     ps.setLong(1, userId);
                     ps.setString(2, "N");
@@ -43,9 +43,8 @@ public class CouponIssuedInfoJdbcAdapter implements CouponIssuedInfoJdbcReposito
                     ps.setLong(5, couponId);
                 }
         );
-        for(String coupon : coupons){
-            String[] arr = coupon.split(":");
-            long couponId = Long.parseLong(arr[0]);
+        for(CouponRequest.Issue coupon : coupons){
+            long couponId = coupon.couponId();
 
             String couponDecSql = "update coupon set remaining_coupon_amount = remaining_coupon_amount - 1 where coupon_id = ?";
             jdbcTemplate.update(couponDecSql, couponId);

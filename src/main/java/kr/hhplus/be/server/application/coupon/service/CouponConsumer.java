@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.application.coupon.service;
 
 import jakarta.annotation.PreDestroy;
+import kr.hhplus.be.server.application.coupon.dto.CouponRequest;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoJdbcRepository;
 import kr.hhplus.be.server.common.redis.LuaScript;
 import kr.hhplus.be.server.common.redis.RedisKeys;
@@ -77,7 +78,7 @@ public class CouponConsumer implements CommandLineRunner {
                         }
 
                         // DB insert를 위한 리스트(coupon_issued_info 테이블)
-                        List<String> bulkInsertList = new ArrayList<>();
+                        List<CouponRequest.Issue> bulkInsertList = new ArrayList<>();
 
                         // 삭제할 메시지 ID를 저장할 리스트
                         List<StreamMessageId> messageIdsToDelete = new ArrayList<>();
@@ -95,7 +96,7 @@ public class CouponConsumer implements CommandLineRunner {
                             }
 
                             // DB bulk insert 준비
-                            bulkInsertList.add(couponId + ":" + userId);
+                            bulkInsertList.add(new CouponRequest.Issue(Long.parseLong(userId),Long.parseLong(couponId)));
 
                             // 메시지 ack
                             queueStream.ack(GROUP_NAME, messageId);
@@ -113,11 +114,8 @@ public class CouponConsumer implements CommandLineRunner {
                                 queueStream.remove(messageIdsToDelete.toArray(new StreamMessageId[0]));
                             } catch (Exception e) {
                                 // DB 실패 시 Redis 잔여 쿠폰 복구
-                                for (String item : bulkInsertList) {
-                                    String[] arr = item.split(":");
-                                    String couponId = arr[0];
-                                    String userId = arr[1];
-
+                                for (CouponRequest.Issue item : bulkInsertList) {
+                                    String couponId =  String.valueOf(item.couponId());
                                     luaScript.incStockFromRedis(redissonClient, couponId);
                                 }
                             }
