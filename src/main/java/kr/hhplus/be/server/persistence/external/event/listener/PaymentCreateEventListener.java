@@ -1,11 +1,12 @@
-package kr.hhplus.be.server.application.payment.event;
+package kr.hhplus.be.server.persistence.external.event.listener;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import kr.hhplus.be.server.persistence.external.AsyncDataPlatformSender;
-import kr.hhplus.be.server.persistence.external.AsyncRedisSender;
+import kr.hhplus.be.server.application.payment.event.publisher.PaymentCreateEventPublisher;
+import kr.hhplus.be.server.persistence.external.dataplatform.AsyncDataPlatformSender;
+import kr.hhplus.be.server.persistence.external.redis.AsyncRedisSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -16,19 +17,19 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-public class PaymentEventListener {
+public class PaymentCreateEventListener {
 
-    private static final Logger log = LoggerFactory.getLogger(PaymentEventListener.class);
+    private static final Logger log = LoggerFactory.getLogger(PaymentCreateEventListener.class);
 
     private final AsyncRedisSender asyncRedisSender;
 
-    public PaymentEventListener(AsyncRedisSender asyncRedisSender) {
+    public PaymentCreateEventListener(AsyncRedisSender asyncRedisSender) {
         this.asyncRedisSender = asyncRedisSender;
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePaymentCompletedAndSendToDataPlatform(PaymentCreateEvent.SendDataPlatform event) throws JsonProcessingException {
+    public void handlePaymentCompletedAndSendToDataPlatform(PaymentCreateEventPublisher.SendDataPlatform event) throws JsonProcessingException {
         log.info("결제 완료 후 데이터 플랫폼 API 요청");
 
         //결제 내역 데이터 플랫폼 API 전송(비동기)
@@ -53,7 +54,7 @@ public class PaymentEventListener {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePaymentCompletedAndSendToRedis(PaymentCreateEvent.SendRedis event){
+    public void handlePaymentCompletedAndSendToRedis(PaymentCreateEventPublisher.SendRedis event){
         log.info("결제 완료 후 레디스 데이터 입력 요청");
         asyncRedisSender.sendToRedisTop5ProductStatisticsData(event.redisDataList());
         log.info("결제 완료 후 레디스 데이터 입력 설공");
