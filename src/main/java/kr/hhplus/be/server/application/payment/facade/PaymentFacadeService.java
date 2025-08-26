@@ -8,7 +8,7 @@ import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.payment.dto.PaymentBuilder;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
 import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
-import kr.hhplus.be.server.application.payment.event.PaymentCreateEvent;
+import kr.hhplus.be.server.application.payment.event.publisher.PaymentCreateEventPublisher;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.payment.service.PaymentUseCase;
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
@@ -118,9 +118,9 @@ public class PaymentFacadeService implements PaymentUseCase {
         PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,coupon,orderCreateProductList);
 
         //데이터 플랫폼 API 비동기 호출
-        publisher.publishEvent(new PaymentCreateEvent.SendDataPlatform(response));
+        publisher.publishEvent(new PaymentCreateEventPublisher.SendDataPlatform(response));
         //레디스 인기상품 데이터 Sorted Sets 입력을 위한 전송
-        publisher.publishEvent(new PaymentCreateEvent.SendRedis(redisSendDataList));
+        publisher.publishEvent(new PaymentCreateEventPublisher.SendRedis(redisSendDataList));
 
         return response;
     }

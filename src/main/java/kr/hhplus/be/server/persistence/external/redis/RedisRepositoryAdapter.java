@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.persistence.redis;
+package kr.hhplus.be.server.persistence.external.redis;
 
 import kr.hhplus.be.server.application.redis.repository.RedisRepository;
 import kr.hhplus.be.server.common.redis.RedisKeys;

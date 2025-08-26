@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.persistence.external;
+package kr.hhplus.be.server.persistence.external.dataplatform;
 
 import java.net.URI;
 import java.net.http.HttpClient;

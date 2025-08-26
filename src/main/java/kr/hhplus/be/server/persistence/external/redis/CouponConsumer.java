@@ -1,7 +1,6 @@
-package kr.hhplus.be.server.persistence.redis;
+package kr.hhplus.be.server.persistence.external.redis;
 
 import jakarta.annotation.PreDestroy;
-import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.coupon.service.CouponUseCase;
 import kr.hhplus.be.server.application.redis.repository.RedisRepository;
 import kr.hhplus.be.server.common.redis.RedisKeys;

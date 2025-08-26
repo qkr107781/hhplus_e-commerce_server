@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.persistence.external;
+package kr.hhplus.be.server.persistence.external.redis;
 
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.service.ProductStatisticsService;
