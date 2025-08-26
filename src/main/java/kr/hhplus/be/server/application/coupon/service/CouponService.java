@@ -176,6 +176,7 @@ public class CouponService implements CouponUseCase{
     /**
      * Redis 자료구조 기반 발급 처리(Streams)
      */
+    @Override
     public void couponIssueProcess(RStream<String, String> queueStream, String groupName, Map<StreamMessageId, Map<String, String>> messages){
         // DB insert를 위한 리스트(coupon_issued_info 테이블)
         List<CouponRequest.Issue> bulkInsertList = new ArrayList<>();

@@ -1,6 +1,8 @@
-package kr.hhplus.be.server.application.coupon.service;
+package kr.hhplus.be.server.persistence.redis;
 
 import jakarta.annotation.PreDestroy;
+import kr.hhplus.be.server.application.coupon.service.CouponService;
+import kr.hhplus.be.server.application.coupon.service.CouponUseCase;
 import kr.hhplus.be.server.application.redis.repository.RedisRepository;
 import kr.hhplus.be.server.common.redis.RedisKeys;
 import org.redisson.api.RStream;
@@ -21,15 +23,15 @@ public class CouponConsumer implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(CouponConsumer.class);
 
-    private final CouponService couponService;
+    private final CouponUseCase couponUseCase;
     private final RedisRepository redisRepository;
 
     private ExecutorService executor;
 
     private final String GROUP_NAME = RedisKeys.COUPON_ISSUE_CONSUMER_GROUP.format();
 
-    public CouponConsumer(CouponService couponService, RedisRepository redisRepository) {
-        this.couponService = couponService;
+    public CouponConsumer(CouponUseCase couponUseCase, RedisRepository redisRepository) {
+        this.couponUseCase = couponUseCase;
         this.redisRepository = redisRepository;
     }
 
@@ -67,7 +69,7 @@ public class CouponConsumer implements CommandLineRunner {
                 );
                 if (messages == null || messages.isEmpty()) continue;
 
-                couponService.couponIssueProcess(queueStream, groupName, messages);
+                couponUseCase.couponIssueProcess(queueStream, groupName, messages);
             } catch (Exception e) {
                 log.warn("Error while reading messages, retrying...", e);
                 // Redis 끊겼을 경우를 대비해 약간 대기 후 재시도
