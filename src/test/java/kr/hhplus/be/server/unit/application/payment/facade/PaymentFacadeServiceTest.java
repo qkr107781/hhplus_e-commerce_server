@@ -9,7 +9,6 @@ import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.facade.PaymentFacadeService;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.product.service.ProductService;
-import kr.hhplus.be.server.application.product.service.ProductStatisticsService;
 import kr.hhplus.be.server.domain.balance.Balance;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
@@ -23,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -43,9 +43,6 @@ class PaymentFacadeServiceTest {
     ProductService productService;
 
     @Mock
-    ProductStatisticsService productStatisticsService;
-
-    @Mock
     CouponService couponService;
 
     @Mock
@@ -59,6 +56,9 @@ class PaymentFacadeServiceTest {
 
     @Mock
     BalanceService balanceService;
+
+    @Mock
+    ApplicationEventPublisher publisher;
 
     @Test
     @DisplayName("[결제] 결제 성공")
@@ -178,7 +178,7 @@ class PaymentFacadeServiceTest {
 
         //When
         PaymentRequest.Create request = new PaymentRequest.Create(1L,1L);
-        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService,productStatisticsService);
+        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService,publisher);
         PaymentResponse.Create response = paymentFacadeService.createPayment(request);
 
 // Then

@@ -1,7 +1,5 @@
 package kr.hhplus.be.server.application.payment.facade;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import kr.hhplus.be.server.application.balance.service.BalanceService;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
@@ -10,10 +8,11 @@ import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.payment.dto.PaymentBuilder;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
 import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
+import kr.hhplus.be.server.application.payment.event.PaymentCreateEvent;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.payment.service.PaymentUseCase;
+import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.service.ProductService;
-import kr.hhplus.be.server.application.product.service.ProductStatisticsService;
 import kr.hhplus.be.server.common.redis.DistributedLock;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
@@ -22,14 +21,13 @@ import kr.hhplus.be.server.domain.order.OrderProduct;
 import kr.hhplus.be.server.domain.payment.Payment;
 import kr.hhplus.be.server.domain.product.Product;
 import kr.hhplus.be.server.domain.product.ProductOption;
-import kr.hhplus.be.server.persistence.dataplatform.AsyncDataPlatformSender;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class PaymentFacadeService implements PaymentUseCase {
@@ -40,16 +38,16 @@ public class PaymentFacadeService implements PaymentUseCase {
     private final OrderProductService orderProductService;
     private final CouponService couponService;
     private final ProductService productService;
-    private final ProductStatisticsService productStatisticsService;
+    private final ApplicationEventPublisher publisher;
 
-    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, OrderProductService orderProductService, CouponService couponService, ProductService productService, ProductStatisticsService productStatisticsService) {
+    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, OrderProductService orderProductService, CouponService couponService, ProductService productService, ApplicationEventPublisher publisher) {
         this.balanceService = balanceService;
         this.paymentService = paymentService;
         this.orderService = orderService;
         this.orderProductService = orderProductService;
         this.couponService = couponService;
         this.productService = productService;
-        this.productStatisticsService = productStatisticsService;
+        this.publisher = publisher;
     }
 
     /**
@@ -101,6 +99,10 @@ public class PaymentFacadeService implements PaymentUseCase {
         //주문 상품 목록 조회
         List<OrderProduct> productOptionList = orderProductService.selectOrderProductsByOrderIdOrderByProductOptionIdAsc(order.getOrderId());
         List<OrderResponse.OrderProductDTO> orderCreateProductList = new ArrayList<>();
+
+        //레디스 인기상품 데이터 Sorted Sets 입력을 위한 전송 데이터
+        List<ProductResponse.StatisticsRedis> redisSendDataList = new ArrayList<>();
+
         for(OrderProduct orderProduct : productOptionList){
             long productId = orderProduct.getProductId();
             long productOptionId = orderProduct.getProductOptionId();
@@ -110,29 +112,15 @@ public class PaymentFacadeService implements PaymentUseCase {
 
             orderCreateProductList.add(OrderResponse.OrderProductDTO.from(orderProduct,product,productOption));
 
-            //레디스 인기상품 데이터 Sorted Sets 입력을 위한 전송
-            productStatisticsService.updateDailyRanking(productOptionId,orderProduct.getProductQuantity());
+            redisSendDataList.add(new ProductResponse.StatisticsRedis(productOptionId,orderProduct.getProductQuantity()));
         }
         //Response 객체 생성 완료
         PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,coupon,orderCreateProductList);
 
-
-        //결제 내역 데이터 플랫폼 API 전송(비동기)
-        AsyncDataPlatformSender sender = new AsyncDataPlatformSender("http://testestest.com");
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        String jsonData = objectMapper.writeValueAsString(response);
-
-        //데이터 전송
-        CompletableFuture<Boolean> future1 = sender.sendDataAsync(jsonData);
-        future1.thenAccept(success -> {
-            if (success) {
-                //성공
-            } else {
-                //실패
-            }
-        });
+        //데이터 플랫폼 API 비동기 호출
+        publisher.publishEvent(new PaymentCreateEvent.SendDataPlatform(response));
+        //레디스 인기상품 데이터 Sorted Sets 입력을 위한 전송
+        publisher.publishEvent(new PaymentCreateEvent.SendRedis(redisSendDataList));
 
         return response;
     }

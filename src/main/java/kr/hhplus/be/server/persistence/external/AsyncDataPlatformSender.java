@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.persistence.dataplatform;
+package kr.hhplus.be.server.persistence.external;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -36,11 +36,7 @@ public class AsyncDataPlatformSender {
                 .thenApply(response -> {
                     // thenApply는 HTTP 요청이 완료된 후 실행됩니다.
                     // 이 블록에서 응답 상태 코드를 확인하여 성공 여부를 반환합니다.
-                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return response.statusCode() >= 200 && response.statusCode() < 300;
                 })
                 .exceptionally(e -> {
                     // exceptionally는 비동기 작업 중 예외가 발생했을 때 실행됩니다.
