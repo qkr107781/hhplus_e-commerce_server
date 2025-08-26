@@ -1,7 +1,13 @@
-package kr.hhplus.be.server.common.redis;
+package kr.hhplus.be.server.persistence.redis;
 
+import kr.hhplus.be.server.application.redis.repository.RedisRepository;
+import kr.hhplus.be.server.common.redis.RedisKeys;
+import org.redisson.api.RMap;
 import org.redisson.api.RScript;
+import org.redisson.api.RStream;
 import org.redisson.api.RedissonClient;
+import org.redisson.api.stream.StreamCreateGroupArgs;
+import org.redisson.client.codec.Codec;
 import org.redisson.client.codec.StringCodec;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +18,33 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @Component
-public class LuaScript {
+public class RedisRepositoryAdapter implements RedisRepository {
+    private final RedissonClient redissonClient;
+
+    public RedisRepositoryAdapter(RedissonClient redissonClient) {
+        this.redissonClient = redissonClient;
+    }
+
+    @Override
+    public RStream<String, String> initConsumerGroup(String groupName){
+        RStream<String, String> queueStream = redissonClient.getStream(RedisKeys.COUPON_ISSUE_JOB.format());
+
+        try {
+            // 그룹 없으면 생성 (already exists 예외는 무시)
+            queueStream.createGroup(StreamCreateGroupArgs.name(groupName).makeStream());
+        } catch (Exception e) {
+            if (e.getMessage() == null || !e.getMessage().contains("BUSYGROUP")) {
+                throw e;
+            }
+        }
+
+        return queueStream;
+    }
+
+    @Override
+    public RMap<String, String> getHashes(String key, Codec codec) {
+        return redissonClient.getMap(key, codec);
+    }
 
     private String loadLua(String path) {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(path)) {
@@ -26,7 +58,8 @@ public class LuaScript {
         }
     }
 
-    public Long decStockFromRedis(RedissonClient redissonClient,String couponId){
+    @Override
+    public Long decStockFromRedis(String couponId){
         try {
             return redissonClient.getScript().eval(
                     RScript.Mode.READ_WRITE,
@@ -40,7 +73,8 @@ public class LuaScript {
         }
     }
 
-    public Long incStockFromRedis(RedissonClient redissonClient,String couponId){
+    @Override
+    public Long incStockFromRedis(String couponId){
         try {
             return redissonClient.getScript().eval(
                     RScript.Mode.READ_WRITE,
@@ -54,7 +88,8 @@ public class LuaScript {
         }
     }
 
-    public Long requestCouponIssue(RedissonClient redissonClient, String hashesKey, String setsKey, String streamsKey, String couponId, String userId, String setsTTLSeconds){
+    @Override
+    public Long requestCouponIssue(String hashesKey, String setsKey, String streamsKey, String couponId, String userId, String setsTTLSeconds){
         try {
             // Lua 스크립트 내용
             return redissonClient.getScript(StringCodec.INSTANCE).eval(

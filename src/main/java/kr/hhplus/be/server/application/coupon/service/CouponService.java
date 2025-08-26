@@ -1,10 +1,12 @@
 package kr.hhplus.be.server.application.coupon.service;
 
+import kr.hhplus.be.server.application.coupon.dto.CouponRequest;
 import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
+import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoJdbcRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
+import kr.hhplus.be.server.application.redis.repository.RedisRepository;
 import kr.hhplus.be.server.common.redis.DistributedFairLock;
-import kr.hhplus.be.server.common.redis.LuaScript;
 import kr.hhplus.be.server.common.redis.RedisKeys;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CouponService implements CouponUseCase{
@@ -27,14 +30,14 @@ public class CouponService implements CouponUseCase{
 
     private final CouponIssuedInfoRepository couponIssuedInfoRepository;
     private final CouponRepository couponRepository;
-    private final RedissonClient redissonClient;
-    private final LuaScript luaScript;
+    private final CouponIssuedInfoJdbcRepository couponIssuedInfoJdbcRepository;
+    private final RedisRepository redisRepository;
 
-    public CouponService(CouponIssuedInfoRepository couponIssuedInfoRepository, CouponRepository couponRepository, RedissonClient redissonClient, LuaScript luaScript) {
+    public CouponService(CouponIssuedInfoRepository couponIssuedInfoRepository, CouponRepository couponRepository, CouponIssuedInfoJdbcRepository couponIssuedInfoJdbcRepository, RedisRepository redisRepository) {
         this.couponIssuedInfoRepository = couponIssuedInfoRepository;
         this.couponRepository = couponRepository;
-        this.redissonClient = redissonClient;
-        this.luaScript = luaScript;
+        this.couponIssuedInfoJdbcRepository = couponIssuedInfoJdbcRepository;
+        this.redisRepository = redisRepository;
     }
 
     /**
@@ -140,7 +143,7 @@ public class CouponService implements CouponUseCase{
     }
 
     /**
-     * 발급 요청 (Streams)
+     * Redis 자료구조 기반 발급 요청 (Streams)
      */
     @Override
     public String issuingCouponAsync(long couponId, long userId) {
@@ -148,7 +151,7 @@ public class CouponService implements CouponUseCase{
         String hashesKey = RedisKeys.COUPON_META.format(couponId);
         String setsKey = RedisKeys.COUPON_QUEUE.format(couponId);
         // 유효성 검사 로직 (시간 관련)은 Lua 스크립트 외부에서 처리
-        RMap<String, String> metaHashes = redissonClient.getMap(hashesKey, StringCodec.INSTANCE);
+        RMap<String, String> metaHashes = redisRepository.getHashes(hashesKey,StringCodec.INSTANCE);
         if (metaHashes == null) {
             return "발급 불가";
         }
@@ -162,11 +165,61 @@ public class CouponService implements CouponUseCase{
         //발급 요청 Sets TTL Seconds -> 발급 종료일 - 발급 시자일 + 1시간
         long setsTTLSeconds = ChronoUnit.SECONDS.between(startDate, endDate) + 3600;
 
-        Long resultCode = luaScript.requestCouponIssue(redissonClient,hashesKey,setsKey, RedisKeys.COUPON_ISSUE_JOB.format(),String.valueOf(couponId),String.valueOf(userId),String.valueOf(setsTTLSeconds));
+        Long resultCode = redisRepository.requestCouponIssue(hashesKey,setsKey, RedisKeys.COUPON_ISSUE_JOB.format(),String.valueOf(couponId),String.valueOf(userId),String.valueOf(setsTTLSeconds));
         if (resultCode.intValue() == 3) return "쿠폰이 모두 소진 됐습니다.";
         if (resultCode.intValue() == 2) return "중복된 발급 요청 입니다.";
         if (resultCode.intValue() == 0) return "오류 발생";
 
         return "발급 요청이 접수되었습니다. 발급 결과는 추후 확인해주세요.";
+    }
+
+    /**
+     * Redis 자료구조 기반 발급 처리(Streams)
+     */
+    public void couponIssueProcess(RStream<String, String> queueStream, String groupName, Map<StreamMessageId, Map<String, String>> messages){
+        // DB insert를 위한 리스트(coupon_issued_info 테이블)
+        List<CouponRequest.Issue> bulkInsertList = new ArrayList<>();
+        // 삭제할 메시지 ID를 저장할 리스트
+        List<StreamMessageId> messageIdsToDelete = new ArrayList<>();
+
+        for (Map.Entry<StreamMessageId, Map<String, String>> entry : messages.entrySet()) {
+            StreamMessageId messageId = entry.getKey();
+            Map<String, String> data = entry.getValue();
+
+            String couponId = data.get("couponId");
+            String userId = data.get("userId");
+
+            // 재고 감소 처리
+            Number result = redisRepository.decStockFromRedis(couponId);
+            if (result.intValue() != 1) {
+                continue;
+            }
+
+            // 메시지 ack
+            queueStream.ack(groupName, messageId);
+
+            // DB bulk insert 준비
+            bulkInsertList.add(new CouponRequest.Issue(Long.parseLong(userId),Long.parseLong(couponId)));
+
+            // 삭제 리스트에 ID 추가
+            messageIdsToDelete.add(messageId);
+        }
+
+        // 배치 DB insert
+        if (!bulkInsertList.isEmpty()) {
+            try {
+                couponIssuedInfoJdbcRepository.bulkInsertCouponIssuedInfo(bulkInsertList);
+
+                // DB 저장 성공 시에만 스트림에서 메시지 삭제
+                queueStream.remove(messageIdsToDelete.toArray(new StreamMessageId[0]));
+            } catch (Exception e) {
+                log.error("Bulk insert failed, rolling back stock", e);
+                // DB 실패 시 Redis 잔여 쿠폰 복구
+                for (CouponRequest.Issue item : bulkInsertList) {
+                    String couponId =  String.valueOf(item.couponId());
+                    redisRepository.incStockFromRedis(couponId);
+                }
+            }
+        }
     }
 }
