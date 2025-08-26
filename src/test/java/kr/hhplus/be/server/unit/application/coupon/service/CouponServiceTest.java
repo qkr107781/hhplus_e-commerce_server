@@ -1,10 +1,11 @@
 package kr.hhplus.be.server.unit.application.coupon.service;
 
 import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
+import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoJdbcRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
-import kr.hhplus.be.server.common.redis.LuaScript;
+import kr.hhplus.be.server.application.redis.repository.RedisRepository;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.redisson.api.RedissonClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,10 +33,10 @@ class CouponServiceTest {
     CouponIssuedInfoRepository couponIssuedInfoRepository;
 
     @Mock
-    RedissonClient redissonClient;
+    CouponIssuedInfoJdbcRepository couponIssuedInfoJdbcRepository;
 
     @Mock
-    LuaScript luaScript;
+    RedisRepository redisRepository;
 
     @Test
     @DisplayName("[쿠폰 발급]쿠폰 유효성 검증 후 발급 처리")
@@ -87,7 +87,7 @@ class CouponServiceTest {
         when(couponIssuedInfoRepository.issuingCoupon(any(CouponIssuedInfo.class))).thenReturn(couponIssuedInfo);
 
         //When
-        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository,redissonClient,luaScript);
+        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository,couponIssuedInfoJdbcRepository,redisRepository);
         CouponResponse.Issue result = couponService.issuingCoupon(couponId,userId);
 
         //Then
@@ -157,7 +157,7 @@ class CouponServiceTest {
         });
 
         //When
-        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository,redissonClient,luaScript);
+        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository,couponIssuedInfoJdbcRepository,redisRepository);
         CouponIssuedInfo result = couponService.useCoupon(couponId,userId,totalOrderPrice);
 
         //Then
@@ -222,7 +222,7 @@ class CouponServiceTest {
         });
 
         //When
-        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository,redissonClient,luaScript);
+        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository,couponIssuedInfoJdbcRepository,redisRepository);
         CouponIssuedInfo result = couponService.restoreCoupon(couponId,userId);
 
         //Then
