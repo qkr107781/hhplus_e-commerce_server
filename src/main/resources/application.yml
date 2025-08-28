@@ -1,15 +1,16 @@
 spring:
   application:
     name: hhplus
-  profiles:
-    active: local
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "docker"
   datasource:
-    name: HangHaePlusDataSource
-    type: com.zaxxer.hikari.HikariDataSource
-    hikari:
-      maximum-pool-size: 3
-      connection-timeout: 10000
-      max-lifetime: 60000
+    url: jdbc:mysql://mysql:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
+    username: application
+    password: application
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     open-in-view: false
@@ -22,31 +23,23 @@ spring:
       hibernate.jdbc.time_zone: UTC
       hibernate.format_sql: true
       hibernate.highlight_sql: true
-
   redis:
-    cluster:
+    sentinel:
+      master: mymaster
       nodes:
-        - 172.20.0.2:7001
-        - 172.20.0.3:7002
-        - 172.20.0.4:7003
-        - 172.20.0.5:7004
-        - 172.20.0.6:7005
-        - 172.20.0.7:7006
+        - sentinel-1:26379
+        - sentinel-2:26379
+        - sentinel-3:26379
 
-  redisson:
-    cluster-servers-config:
-      node-addresses:
-        - "redis://172.20.0.2:7001"
-        - "redis://172.20.0.3:7002"
-        - "redis://172.20.0.4:7003"
-        - "redis://172.20.0.5:7004"
-        - "redis://172.20.0.6:7005"
-        - "redis://172.20.0.7:7006"
----
-spring.config.activate.on-profile: local, test
-
-spring:
-  datasource:
-    url: jdbc:mysql://hhplus-mysql:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
-    username: application
-    password: application
+redisson:
+  config: |
+    sentinelServersConfig:
+      masterName: "mymaster"
+      sentinelAddresses:
+        - "redis://sentinel-1:26379"
+        - "redis://sentinel-2:26379"
+        - "redis://sentinel-3:26379"
+      database: 0
+  logging:
+    level:
+      org.springframework.boot: DEBUG

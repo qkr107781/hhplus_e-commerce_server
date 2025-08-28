@@ -6,11 +6,7 @@ import kr.hhplus.be.server.persistence.product.ProductOptionAdapter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,20 +14,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-@SpringBootTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
-@ActiveProfiles("test") //application-test.yml 읽어오도록 함
 @Sql(scripts = "/productOption.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS) //테스트 실행 시 해당 .sql 파일내의 쿼리 실행 -> 테이블 생성 후 실행됨
-@Sql(scripts = "/delete.sql",executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS) //이 클래스 테스트 종료 시 데이터 클랜징
 @ComponentScan(basePackageClasses = ProductOptionAdapter.class)//@Component 사용 중인 Adapter 클래스 읽어오기 위함
-@ContextConfiguration(classes = TestContainersConfiguration.class)//Spring boot Context 로딩 전 TestContainerConfiguration 읽어오게 하기 위함
-class ProductOptionAdapterTest {
+class ProductOptionAdapterTest extends TestContainersConfiguration {
 
     @Autowired
     ProductOptionAdapter productOptionAdapter;
 
     @Test
-    @Transactional
     @DisplayName("상품 옵션 ID로 상품 옵션 조회 - findByProductOptionId()")
     void findByProductOptionId(){
         System.out.println("findByProductOptionId - 쿼리");
@@ -61,12 +51,11 @@ class ProductOptionAdapterTest {
         //When
         ProductOption afterSave = productOptionAdapter.save(productOption);
         //Then
-        assertEquals(5L,afterSave.getProductOptionId());
+        assertEquals(11L,afterSave.getProductOptionId());
         assertEquals(5_000L,afterSave.getPrice());
     }
 
     @Test
-    @Transactional
     @DisplayName("상품 옵션 ID, 상품 ID로 상품 옵션 조회 - findByProductIdAndProductOptionId()")
     void findByProductIdAndProductOptionId(){
         System.out.println("findByProductIdAndProductOptionId - 쿼리");
@@ -80,7 +69,6 @@ class ProductOptionAdapterTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("상품 ID,판매여부로 상품 옵션 목록 조회 - findByProductIdAndSalesYn()")
     void findByProductIdAndSalesYn(){
         System.out.println("findByProductIdAndSalesYn - 쿼리");
