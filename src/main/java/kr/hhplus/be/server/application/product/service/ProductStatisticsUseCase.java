@@ -11,4 +11,11 @@ public interface ProductStatisticsUseCase {
      * @return List<ProductStatistics>
      */
     List<ProductResponse.Statistics> selectTop5SalesProductBySpecificRange();
+
+    /**
+     * 지난 3일간 판매 TOP 5 순위를 계산
+     *
+     * @return 합산된 판매량 순위 목록 (점수 포함)
+     */
+    List<ProductResponse.Statistics> getTop5ForLast3Days();
 }

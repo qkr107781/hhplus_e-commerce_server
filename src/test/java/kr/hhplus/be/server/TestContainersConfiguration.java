@@ -1,58 +1,36 @@
 package kr.hhplus.be.server;
 
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.utility.DockerImageName;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
+import org.springframework.test.context.ActiveProfiles;
 
-@TestConfiguration
-public class TestContainersConfiguration { // @TestConfiguration 어노테이션은 유지
+import javax.sql.DataSource;
+import java.sql.Connection;
 
-	//########################## MySQL TestContainer Configuration ##########################//
+@ActiveProfiles("test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)//웹 환경 구성 하지 않도록 제어
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
+@Import({MySQLTestContainer.class, RedisTestContainer.class})//MySQL, Redis 로딩
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class TestContainersConfiguration {
 
-	@Bean // Spring 빈으로 등록
-	@ServiceConnection // <<-- MySQLContainer를 DataSource에 자동으로 연결하도록 지시
-	public MySQLContainer<?> mySQLContainer() {
-		System.out.println("########## TestcontainersConfiguration: @ServiceConnection MySQL 컨테이너 빈 생성 시작 ##########");
-		MySQLContainer<?> container = new MySQLContainer<>(DockerImageName.parse("mysql:8.0.33"))
-				.withDatabaseName("testdb")
-				.withUsername("test")
-				.withPassword("test");
-		// 컨테이너.start()는 @ServiceConnection이 알아서 해줍니다. 여기에 명시적으로 호출하지 마세요.
-		System.out.println("########## TestcontainersConfiguration: @ServiceConnection MySQL 컨테이너 빈 생성 완료 ##########");
-		return container;
-	}
+    @Autowired
+    private ApplicationContext applicationContext;
 
-	//########################## Redis TestContainer Configuration ##########################//
+    @AfterAll
+    void cleanDatabase() throws Exception {
+        DataSource dataSource = applicationContext.getBean(DataSource.class);
+        try (Connection conn = dataSource.getConnection()) {
+            // delete.sql 실행
+            ScriptUtils.executeSqlScript(conn, new ClassPathResource("delete.sql"));
+        }
+    }
 
-	private static final int REDIS_PORT = 6379;
-
-	// Testcontainers로 Redis 컨테이너 정의. Redis 클러스터가 아닌 단일 서버를 사용
-	// Redis의 기본 포트인 6379를 노출
-	@Container
-	private static final GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:7.2.4-alpine"))
-			.withExposedPorts(6379);
-
-	static {
-		// Testcontainers 컨테이너를 시작하고,
-		// 시스템 프로퍼티에 동적으로 할당된 Redis 서버 주소를 설정
-		redis.start();
-		String redisAddress = "redis://" + redis.getHost() + ":" + redis.getFirstMappedPort();
-		System.setProperty("redisson.address", redisAddress);
-	}
-
-	// RedissonClient 빈을 직접 생성하고 동적 주소를 설정
-	@Bean
-	public RedissonClient redissonClient() {
-		Config config = new Config();
-		String redisAddress = System.getProperty("redisson.address");
-		config.useSingleServer().setAddress(redisAddress);
-		return Redisson.create(config);
-	}
 }
