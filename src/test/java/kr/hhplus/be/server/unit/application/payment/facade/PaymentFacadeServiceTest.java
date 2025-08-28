@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -55,6 +56,9 @@ class PaymentFacadeServiceTest {
 
     @Mock
     BalanceService balanceService;
+
+    @Mock
+    ApplicationEventPublisher publisher;
 
     @Test
     @DisplayName("[결제] 결제 성공")
@@ -174,7 +178,7 @@ class PaymentFacadeServiceTest {
 
         //When
         PaymentRequest.Create request = new PaymentRequest.Create(1L,1L);
-        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService);
+        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService,publisher);
         PaymentResponse.Create response = paymentFacadeService.createPayment(request);
 
 // Then
