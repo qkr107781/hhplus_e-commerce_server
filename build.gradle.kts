@@ -106,3 +106,11 @@ tasks.named("clean") {
 		file(querydslDir).deleteRecursively()
 	}
 }
+
+tasks.test {
+	// 논리 코어 수의 절반을 계산하여 maxParallelForks에 할당
+	maxParallelForks = Runtime.getRuntime().availableProcessors() / 2
+
+	// JVM 당 메모리 설정 (테스트의 복잡성에 따라 조정)
+	jvmArgs("-Xmx1g")
+}
