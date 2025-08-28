@@ -1,9 +1,11 @@
 package kr.hhplus.be.server.unit.application.coupon.service;
 
 import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
+import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoJdbcRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
+import kr.hhplus.be.server.application.redis.repository.RedisRepository;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +31,12 @@ class CouponServiceTest {
 
     @Mock
     CouponIssuedInfoRepository couponIssuedInfoRepository;
+
+    @Mock
+    CouponIssuedInfoJdbcRepository couponIssuedInfoJdbcRepository;
+
+    @Mock
+    RedisRepository redisRepository;
 
     @Test
     @DisplayName("[쿠폰 발급]쿠폰 유효성 검증 후 발급 처리")
@@ -79,7 +87,7 @@ class CouponServiceTest {
         when(couponIssuedInfoRepository.issuingCoupon(any(CouponIssuedInfo.class))).thenReturn(couponIssuedInfo);
 
         //When
-        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository);
+        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository,couponIssuedInfoJdbcRepository,redisRepository);
         CouponResponse.Issue result = couponService.issuingCoupon(couponId,userId);
 
         //Then
@@ -149,7 +157,7 @@ class CouponServiceTest {
         });
 
         //When
-        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository);
+        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository,couponIssuedInfoJdbcRepository,redisRepository);
         CouponIssuedInfo result = couponService.useCoupon(couponId,userId,totalOrderPrice);
 
         //Then
@@ -214,7 +222,7 @@ class CouponServiceTest {
         });
 
         //When
-        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository);
+        CouponService couponService = new CouponService(couponIssuedInfoRepository,couponRepository,couponIssuedInfoJdbcRepository,redisRepository);
         CouponIssuedInfo result = couponService.restoreCoupon(couponId,userId);
 
         //Then

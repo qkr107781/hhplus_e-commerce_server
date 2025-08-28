@@ -93,4 +93,11 @@ public class ProductResponse {
             )).toList();
         }
     }
+
+    public record StatisticsRedis(
+            @Schema(description = "상품옵션 ID", requiredMode = Schema.RequiredMode.REQUIRED)
+            long productOptionId,
+            @Schema(description = "판매 수량", requiredMode = Schema.RequiredMode.REQUIRED)
+            double score
+    ){}
 }

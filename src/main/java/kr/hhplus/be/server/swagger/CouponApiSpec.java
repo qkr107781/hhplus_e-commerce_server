@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.hhplus.be.server.application.coupon.dto.CouponRequest;
 import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -18,4 +19,7 @@ public interface CouponApiSpec {
 
     @Operation(summary = "쿠폰 상태별 조회")
     ResponseEntity<List<CouponResponse.SelectByStatus>> selectByStatus(String status);
+
+    @Operation(summary = "쿠폰 상태별 조회(비동기)")
+    ResponseEntity<String> issueAsync(@RequestBody CouponRequest.Issue request) throws Exception;
 }

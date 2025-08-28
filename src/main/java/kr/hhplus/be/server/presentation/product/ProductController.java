@@ -35,7 +35,7 @@ public class ProductController implements ProductApiSpec {
     @Override
     public ResponseEntity<List<ProductResponse.Statistics>> productStatistics(){
 //        return ResponseEntity.ok(dummyDataUtil.getProductsStatistics());
-        return ResponseEntity.ok(productStatisticsUseCase.selectTop5SalesProductBySpecificRange());
+        return ResponseEntity.ok(productStatisticsUseCase.getTop5ForLast3Days());
+//        return ResponseEntity.ok(productStatisticsUseCase.selectTop5SalesProductBySpecificRange());
     }
-
 }

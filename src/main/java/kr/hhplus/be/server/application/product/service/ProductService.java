@@ -64,10 +64,8 @@ public class ProductService implements ProductUseCase {
      * @throws Exception
      */
     public ProductOption decreaseStock(ProductOption productOption, long quantityToDecrease) throws Exception {
-        System.out.println(productOption.getProductOptionId()+" 재고 차감 전: "+productOption.getStockQuantity());
         //재고 차감
         productOption.decreaseProductQuantity(quantityToDecrease);
-        System.out.println(productOption.getProductOptionId()+" 재고 차감 후: "+productOption.getStockQuantity());
         return productOptionRepository.save(productOption);
     }
 
@@ -79,10 +77,8 @@ public class ProductService implements ProductUseCase {
      * @throws Exception
      */
     public ProductOption restoreStock(ProductOption productOption, long quantityToRestore) throws Exception {
-        System.out.println(productOption.getProductOptionId()+" 재고 복구 전: "+productOption.getStockQuantity());
         //재고 복구
         productOption.restoreProductQuantity(quantityToRestore);
-        System.out.println(productOption.getProductOptionId()+" 재고 복구 후: "+productOption.getStockQuantity());
 
         return productOptionRepository.save(productOption);
     }
@@ -124,6 +120,16 @@ public class ProductService implements ProductUseCase {
      */
     public ProductOption selectProductOptionByProductIdAndProductOptionId(long productId, long productOptionId) {
         return productOptionRepository.selectProductOptionByProductIdAndProductOptionId(productId, productOptionId);
+    }
+
+    /**
+     * 상품 옵션 조회
+     *
+     * @param productOptionId: 상품 옵션 ID
+     * @return ProductOption
+     */
+    public ProductOption selectProductOptionByProductOptionId(long productOptionId) {
+        return productOptionRepository.selectProductOptionByProductOptionId(productOptionId);
     }
 
 }
