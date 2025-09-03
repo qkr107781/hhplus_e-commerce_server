@@ -2,6 +2,7 @@ package kr.hhplus.be.server.application.payment.facade;
 
 import kr.hhplus.be.server.application.balance.service.BalanceService;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
+import kr.hhplus.be.server.application.kafka.repository.producer.KafkaProducerRepository;
 import kr.hhplus.be.server.application.order.dto.OrderResponse;
 import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
@@ -13,6 +14,7 @@ import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.payment.service.PaymentUseCase;
 import kr.hhplus.be.server.application.product.dto.ProductResponse;
 import kr.hhplus.be.server.application.product.service.ProductService;
+import kr.hhplus.be.server.common.kafka.KafkaConstants;
 import kr.hhplus.be.server.common.redis.DistributedLock;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
@@ -39,8 +41,9 @@ public class PaymentFacadeService implements PaymentUseCase {
     private final CouponService couponService;
     private final ProductService productService;
     private final ApplicationEventPublisher publisher;
+    private final KafkaProducerRepository<PaymentResponse.Create> kafkaProducerRepository;
 
-    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, OrderProductService orderProductService, CouponService couponService, ProductService productService, ApplicationEventPublisher publisher) {
+    public PaymentFacadeService(BalanceService balanceService, PaymentService paymentService, OrderService orderService, OrderProductService orderProductService, CouponService couponService, ProductService productService, ApplicationEventPublisher publisher, KafkaProducerRepository<PaymentResponse.Create> kafkaProducerRepository) {
         this.balanceService = balanceService;
         this.paymentService = paymentService;
         this.orderService = orderService;
@@ -48,6 +51,7 @@ public class PaymentFacadeService implements PaymentUseCase {
         this.couponService = couponService;
         this.productService = productService;
         this.publisher = publisher;
+        this.kafkaProducerRepository = kafkaProducerRepository;
     }
 
     /**
@@ -118,7 +122,8 @@ public class PaymentFacadeService implements PaymentUseCase {
         PaymentResponse.Create response = PaymentResponse.Create.from(afterCreatePayment,order,coupon,orderCreateProductList);
 
         //데이터 플랫폼 API 비동기 호출
-        publisher.publishEvent(new PaymentCreateEventPublisher.SendDataPlatform(response));
+//        publisher.publishEvent(new PaymentCreateEventPublisher.SendDataPlatform(response));
+        kafkaProducerRepository.send(KafkaConstants.PAYMENT_COMPLETE_TOPIC,response);
         //레디스 인기상품 데이터 Sorted Sets 입력을 위한 전송
         publisher.publishEvent(new PaymentCreateEventPublisher.SendRedis(redisSendDataList));
 

@@ -51,6 +51,7 @@ class KafkaIntegrationTest extends TestContainersConfiguration {
     @Mock PaymentService paymentService;
     @Mock BalanceService balanceService;
     @Mock ApplicationEventPublisher publisher;
+    @Mock KafkaProducerRepository<PaymentResponse.Create> kafkaProducerRepository;
     @Autowired
     KafkaProducerRepository<PaymentResponse.Create> kafkaProducer;
     @MockitoSpyBean
@@ -140,7 +141,7 @@ class KafkaIntegrationTest extends TestContainersConfiguration {
 
         //When
         PaymentRequest.Create request = new PaymentRequest.Create(1L, 1L);
-        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService, paymentService,orderService, orderProductService,couponService, productService, publisher);
+        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService, paymentService,orderService, orderProductService,couponService, productService, publisher, kafkaProducerRepository);
         PaymentResponse.Create response = paymentFacadeService.createPayment(request);
 
         //Then

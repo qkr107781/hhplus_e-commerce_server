@@ -2,10 +2,12 @@ package kr.hhplus.be.server.unit.application.payment.facade;
 
 import kr.hhplus.be.server.application.balance.service.BalanceService;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
+import kr.hhplus.be.server.application.kafka.repository.producer.KafkaProducerRepository;
 import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
 import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
+import kr.hhplus.be.server.application.payment.event.publisher.PaymentCreateEventPublisher;
 import kr.hhplus.be.server.application.payment.facade.PaymentFacadeService;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.product.service.ProductService;
@@ -59,6 +61,9 @@ class PaymentFacadeServiceTest {
 
     @Mock
     ApplicationEventPublisher publisher;
+
+    @Mock
+    KafkaProducerRepository<PaymentResponse.Create> kafkaProducerRepository;
 
     @Test
     @DisplayName("[결제] 결제 성공")
@@ -178,7 +183,7 @@ class PaymentFacadeServiceTest {
 
         //When
         PaymentRequest.Create request = new PaymentRequest.Create(1L,1L);
-        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService,publisher);
+        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService,publisher,kafkaProducerRepository);
         PaymentResponse.Create response = paymentFacadeService.createPayment(request);
 
 // Then
@@ -226,6 +231,10 @@ class PaymentFacadeServiceTest {
         verify(productService, times(2)).selectProductByProductId(1L);
         verify(productService, times(1)).selectProductOptionByProductIdAndProductOptionId(1L, 1L);
         verify(productService, times(1)).selectProductOptionByProductIdAndProductOptionId(1L, 2L);
+
+// 3-6. 이벤트 호출 여부 체크
+        verify(kafkaProducerRepository, times(1)).send(any(String.class),any(PaymentResponse.Create.class));
+        verify(publisher, times(1)).publishEvent(any(PaymentCreateEventPublisher.SendRedis.class));
     }
 
 }
