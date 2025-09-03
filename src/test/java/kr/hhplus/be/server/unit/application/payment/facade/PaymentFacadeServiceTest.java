@@ -2,7 +2,6 @@ package kr.hhplus.be.server.unit.application.payment.facade;
 
 import kr.hhplus.be.server.application.balance.service.BalanceService;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
-import kr.hhplus.be.server.application.kafka.repository.producer.KafkaProducerRepository;
 import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
@@ -30,13 +29,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.doAnswer;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentFacadeServiceTest {
@@ -61,9 +57,6 @@ class PaymentFacadeServiceTest {
 
     @Mock
     ApplicationEventPublisher publisher;
-
-    @Mock
-    KafkaProducerRepository<PaymentResponse.Create> kafkaProducerRepository;
 
     @Test
     @DisplayName("[결제] 결제 성공")
@@ -183,7 +176,7 @@ class PaymentFacadeServiceTest {
 
         //When
         PaymentRequest.Create request = new PaymentRequest.Create(1L,1L);
-        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService,publisher,kafkaProducerRepository);
+        PaymentFacadeService paymentFacadeService = new PaymentFacadeService(balanceService,paymentService,orderService,orderProductService,couponService,productService,publisher);
         PaymentResponse.Create response = paymentFacadeService.createPayment(request);
 
 // Then
@@ -233,7 +226,7 @@ class PaymentFacadeServiceTest {
         verify(productService, times(1)).selectProductOptionByProductIdAndProductOptionId(1L, 2L);
 
 // 3-6. 이벤트 호출 여부 체크
-        verify(kafkaProducerRepository, times(1)).send(any(String.class),any(PaymentResponse.Create.class));
+        verify(publisher, times(1)).publishEvent(any(PaymentCreateEventPublisher.SendDataPlatform.class));
         verify(publisher, times(1)).publishEvent(any(PaymentCreateEventPublisher.SendRedis.class));
     }
 
