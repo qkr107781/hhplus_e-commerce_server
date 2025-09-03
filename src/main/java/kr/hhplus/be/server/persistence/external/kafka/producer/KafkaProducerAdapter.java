@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import kr.hhplus.be.server.application.kafka.repository.KafkaProducerRepository;
+import kr.hhplus.be.server.application.kafka.repository.producer.KafkaProducerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -16,7 +16,7 @@ public class KafkaProducerAdapter<T> implements KafkaProducerRepository<T> {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public KafkaProducerAdapter(@Qualifier("kafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
+    public KafkaProducerAdapter(@Qualifier("recordKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 

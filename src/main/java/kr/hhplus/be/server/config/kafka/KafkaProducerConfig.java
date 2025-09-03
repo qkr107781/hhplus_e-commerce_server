@@ -27,15 +27,15 @@ public class KafkaProducerConfig {
         return props;
     }
 
-    // 배치 Producer
-    @Bean(name = "batchKafkaTemplate")
-    public KafkaTemplate<String, Object> batchKafkaTemplate() {
+    // record Producer
+    @Bean(name = "recordKafkaTemplate")
+    public KafkaTemplate<String, Object> recordKafkaTemplate() {
         return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(baseProducerConfig()));
     }
 
-    // 일반 Producer
-    @Bean(name = "kafkaTemplate")
-    public KafkaTemplate<String, Object> normalKafkaTemplate() {
+    // batch Producer
+    @Bean(name = "batchKafkaTemplate")
+    public KafkaTemplate<String, Object> batchKafkaTemplate() {
         return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(baseProducerConfig()));
     }
 }
