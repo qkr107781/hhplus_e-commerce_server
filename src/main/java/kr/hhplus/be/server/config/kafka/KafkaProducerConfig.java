@@ -27,15 +27,15 @@ public class KafkaProducerConfig {
         return props;
     }
 
-    // 쿠폰(Coupon) Producer
-    @Bean(name = "couponKafkaTemplate")
-    public KafkaTemplate<String, Object> couponKafkaTemplate() {
+    // 배치 Producer
+    @Bean(name = "batchKafkaTemplate")
+    public KafkaTemplate<String, Object> batchKafkaTemplate() {
         return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(baseProducerConfig()));
     }
 
-    // 결제(Payment) Producer
-    @Bean(name = "paymentKafkaTemplate")
-    public KafkaTemplate<String, Object> paymentKafkaTemplate() {
+    // 일반 Producer
+    @Bean(name = "kafkaTemplate")
+    public KafkaTemplate<String, Object> normalKafkaTemplate() {
         return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(baseProducerConfig()));
     }
 }
