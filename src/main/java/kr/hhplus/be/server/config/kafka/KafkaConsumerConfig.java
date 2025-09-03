@@ -20,29 +20,29 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    private Map<String, Object> baseConsumerConfig(String groupId) {
+    private Map<String, Object> baseConsumerConfig() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return props;
     }
 
-    // 쿠폰(Coupon) Consumer Group
-    @Bean(name = "couponKafkaListenerContainerFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, String> couponKafkaListenerContainerFactory() {
-        var factory = new ConcurrentKafkaListenerContainerFactory<String, String>();
-        factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(baseConsumerConfig("coupon-group")));
+    // record Consumer Group
+    @Bean(name = "recordKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, Object> recordKafkaListenerContainerFactory() {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, Object>();
+        factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(baseConsumerConfig()));
         return factory;
     }
 
-    // 결제(Payment) Consumer Group
-    @Bean(name = "paymentKafkaListenerContainerFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, String> paymentKafkaListenerContainerFactory() {
-        var factory = new ConcurrentKafkaListenerContainerFactory<String, String>();
-        factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(baseConsumerConfig("payment-complete-group")));
+    // batch Consumer Group
+    @Bean(name = "batchKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, Object> batchKafkaListenerContainerFactory() {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, Object>();
+        factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(baseConsumerConfig()));
+        factory.setBatchListener(true);
         return factory;
     }
 }
