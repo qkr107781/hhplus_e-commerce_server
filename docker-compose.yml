@@ -21,7 +21,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - redis-net
+      - app-net
 
   # =========================
   # Spring App
@@ -38,10 +38,12 @@ services:
         condition: service_healthy
       redis-master:
         condition: service_started
+      kafka:
+        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: docker
     networks:
-      - redis-net
+      - app-net
 
   # =========================
   # Redis Master
@@ -52,7 +54,7 @@ services:
       - "6379:6379"
     command: redis-server
     networks:
-      - redis-net
+      - app-net
 
   # =========================
   # Redis Replica
@@ -65,7 +67,7 @@ services:
     links:
       - redis-master
     networks:
-      - redis-net
+      - app-net
 
   redis-replica-2:
     image: redis:latest
@@ -75,7 +77,7 @@ services:
     links:
       - redis-master
     networks:
-      - redis-net
+      - app-net
 
   # =========================
   # Redis Sentinels
@@ -93,7 +95,7 @@ services:
       - redis-replica-1
       - redis-replica-2
     networks:
-      - redis-net
+      - app-net
 
   sentinel-2:
     build:
@@ -108,7 +110,7 @@ services:
       - redis-replica-1
       - redis-replica-2
     networks:
-      - redis-net
+      - app-net
 
   sentinel-3:
     build:
@@ -123,8 +125,65 @@ services:
       - redis-replica-1
       - redis-replica-2
     networks:
-      - redis-net
+      - app-net
 
+  # =========================
+  # Kafka (KRaft 모드)
+  # =========================
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
+    ports:
+      - "9092:9092"   # 호스트(localhost) 접근용
+      - "29092:29092" # 도커 내부 네트워크 접근용
+    environment:
+      # -------------------- KRaft 모드 --------------------
+      - KAFKA_ENABLE_KRAFT=yes                  # Zookeeper 없이 KRaft 모드 실행
+      - KAFKA_CFG_NODE_ID=1                     # 노드 ID (단일 노드 = 1)
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      # 이 노드가 Controller + Broker 역할 모두 수행
+
+      # -------------------- Listener 설정 --------------------
+      # 9092 → Kafka 브로커 클라이언트 접속용
+      # 29093 → KRaft Controller 내부 통신용
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:29092,CONTROLLER://:29093
+      # 도커 내부 컨테이너에서 접근할 때 → kafka:9092
+      # 로컬 호스트에서 접근할 때 → localhost:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      # 각 Listener별 보안 프로토콜 지정 (모두 PLAINTEXT)
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+
+      # -------------------- Controller Quorum --------------------
+      # Controller 합의 그룹 (단일 노드: ID=1, 주소=kafka:29093)
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:29093
+      # Controller는 CONTROLLER Listener 사용
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+
+      # -------------------- 일반 설정 --------------------
+      # 암호화 없는 PLAINTEXT 허용
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      # 없는 토픽에 publish 요청 시 자동 생성
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      # consumer group offset 저장 토픽 복제본 수 (단일 노드라 1)
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      # 트랜잭션 로그 복제본 수도 1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      # 트랜잭션 로그 최소 ISR도 1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
+
+    volumes:
+      # Kafka 데이터 영구 저장 (컨테이너 재시작해도 유지)
+      - kafka_data:/apache/kafka
+    networks:
+      - app-net
+
+# =========================
+# 네트워크 & 볼륨 정의
+# =========================
 networks:
-  redis-net:
+  app-net:
     driver: bridge
+
+volumes:
+  kafka_data:
+    driver: local
