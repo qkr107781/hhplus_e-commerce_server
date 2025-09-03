@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.application.kafka.repository;
+package kr.hhplus.be.server.application.kafka.repository.producer;
 
 public interface KafkaProducerRepository<T> {
 
