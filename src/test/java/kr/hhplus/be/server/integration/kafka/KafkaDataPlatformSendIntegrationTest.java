@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.integration.kafka;
 
-import kr.hhplus.be.server.KafkaTestContainer;
 import kr.hhplus.be.server.TestContainersConfiguration;
 import kr.hhplus.be.server.application.balance.service.BalanceService;
 import kr.hhplus.be.server.application.coupon.service.CouponService;
@@ -26,8 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.time.LocalDateTime;
@@ -37,12 +34,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class KafkaIntegrationTest extends TestContainersConfiguration {
-
-    @DynamicPropertySource
-    static void overrideKafkaBootstrap(DynamicPropertyRegistry registry) {
-        registry.add("spring.kafka.bootstrap-servers", KafkaTestContainer::getBootstrapServers);
-    }
+class KafkaDataPlatformSendIntegrationTest extends TestContainersConfiguration {
 
     @Mock ProductService productService;
     @Mock CouponService couponService;
