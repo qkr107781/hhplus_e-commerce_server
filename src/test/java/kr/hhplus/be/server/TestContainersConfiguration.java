@@ -17,7 +17,7 @@ import java.sql.Connection;
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)//웹 환경 구성 하지 않도록 제어
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 테스트컨테이너에서 외부 DB 사용하도록 함
-@Import({MySQLTestContainer.class, RedisTestContainer.class, KafkaTestContainer.class})//MySQL, Redis, Kafka 로딩
+@Import({ TestContainerConnections.class})//MySQL, Redis, Kafka 로딩
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestContainersConfiguration {
 
