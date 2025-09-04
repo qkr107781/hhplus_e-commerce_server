@@ -36,6 +36,9 @@ public class KafkaProducerConfig {
     // batch Producer
     @Bean(name = "batchKafkaTemplate")
     public KafkaTemplate<String, Object> batchKafkaTemplate() {
-        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(baseProducerConfig()));
+        Map<String, Object> batchConfig = new HashMap<>(baseProducerConfig());
+        batchConfig.put(ProducerConfig.LINGER_MS_CONFIG, 100); // 100ms 대기 (linger.ms)
+        batchConfig.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384); // 16KB 배치 크기 (batch.size)
+        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(batchConfig));
     }
 }
