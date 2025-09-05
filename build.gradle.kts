@@ -52,6 +52,7 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
 	testImplementation("org.redisson:redisson:3.50.0")
+	testImplementation("org.testcontainers:kafka")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
 	// Swagger (SpringDoc)
@@ -78,6 +79,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	// Redisson
 	implementation("org.redisson:redisson-spring-boot-starter:3.50.0")
+	//Kafka
+	implementation("org.springframework.kafka:spring-kafka")
 }
 
 tasks.withType<Test> {

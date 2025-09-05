@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.hhplus.be.server.application.coupon.dto.CouponRequest;
 import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -13,6 +14,9 @@ public interface CouponApiSpec {
 
     @Operation(summary = "쿠폰 발급")
     ResponseEntity<CouponResponse.Issue> issue(CouponRequest.Issue request) throws Exception;
+
+    @PostMapping("/coupon/issue/kafka")
+    ResponseEntity<String> issueKafka(@RequestBody CouponRequest.Issue request) throws Exception;
 
     @Operation(summary = "본인 쿠폰 조회")
     ResponseEntity<List<CouponResponse.SelectByUserId>> selectByUserId(long user_id);

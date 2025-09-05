@@ -2,6 +2,7 @@ package kr.hhplus.be.server.persistence.coupon;
 
 import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
 import kr.hhplus.be.server.domain.coupon.Coupon;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,5 +28,10 @@ public class CouponAdapter implements CouponRepository {
     @Override
     public List<Coupon> findByCouponStatus(String status) {
         return couponJpaRepository.findByCouponStatus(status);
+    }
+
+    @Override
+    public int decreaseRemainingCoupon(long couponId){
+        return couponJpaRepository.decreaseRemainingCoupon(couponId);
     }
 }

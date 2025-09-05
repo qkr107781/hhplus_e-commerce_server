@@ -35,6 +35,12 @@ public class CouponController implements CouponApiSpec {
         return ResponseEntity.ok(couponUseCase.issuingCouponAsync(request.couponId(),request.userId()));
     }
 
+    @PostMapping("/coupon/issue/kafka")
+    @Override
+    public ResponseEntity<String> issueKafka(@RequestBody CouponRequest.Issue request) throws Exception {
+        return ResponseEntity.ok(couponUseCase.issuingCouponKafka(request.couponId(),request.userId()));
+    }
+
     @GetMapping("/coupons/user/{userId}") // user_id -> userId
     @Override
     public ResponseEntity<List<CouponResponse.SelectByUserId>> selectByUserId(@PathVariable long userId){ // user_id -> userId

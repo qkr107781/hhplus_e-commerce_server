@@ -6,6 +6,7 @@ import kr.hhplus.be.server.application.order.service.OrderProductService;
 import kr.hhplus.be.server.application.order.service.OrderService;
 import kr.hhplus.be.server.application.payment.dto.PaymentRequest;
 import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
+import kr.hhplus.be.server.application.payment.event.publisher.PaymentCreateEventPublisher;
 import kr.hhplus.be.server.application.payment.facade.PaymentFacadeService;
 import kr.hhplus.be.server.application.payment.service.PaymentService;
 import kr.hhplus.be.server.application.product.service.ProductService;
@@ -28,13 +29,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.doAnswer;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentFacadeServiceTest {
@@ -226,6 +224,10 @@ class PaymentFacadeServiceTest {
         verify(productService, times(2)).selectProductByProductId(1L);
         verify(productService, times(1)).selectProductOptionByProductIdAndProductOptionId(1L, 1L);
         verify(productService, times(1)).selectProductOptionByProductIdAndProductOptionId(1L, 2L);
+
+// 3-6. 이벤트 호출 여부 체크
+        verify(publisher, times(1)).publishEvent(any(PaymentCreateEventPublisher.SendDataPlatform.class));
+        verify(publisher, times(1)).publishEvent(any(PaymentCreateEventPublisher.SendRedis.class));
     }
 
 }
