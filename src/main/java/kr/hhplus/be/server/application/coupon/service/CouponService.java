@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,19 @@ import java.util.Map;
 public class CouponService implements CouponUseCase{
 
     private static final Logger log = LoggerFactory.getLogger(CouponService.class);
+
+    private static final DateTimeFormatter REDIS_DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private static LocalDateTime parseRedisDate(String value) {
+        if (value == null) return null;
+        try {
+            // Try ISO-8601 first (e.g., 2025-09-08T16:19:53)
+            return LocalDateTime.parse(value);
+        } catch (DateTimeParseException e) {
+            // Fallback for space-separated format (e.g., 2025-09-08 16:19:53)
+            return LocalDateTime.parse(value, REDIS_DT);
+        }
+    }
 
     private final CouponIssuedInfoRepository couponIssuedInfoRepository;
     private final CouponRepository couponRepository;
@@ -157,12 +172,19 @@ public class CouponService implements CouponUseCase{
         String hashesKey = RedisKeys.COUPON_META.format(couponId);
         String setsKey = RedisKeys.COUPON_QUEUE.format(couponId);
         // 유효성 검사 로직 (시간 관련)은 Lua 스크립트 외부에서 처리
-        RMap<String, String> metaHashes = redisRepository.getHashes(hashesKey,StringCodec.INSTANCE);
-        if (metaHashes == null) {
+        RMap<String, String> metaHashes = redisRepository.getHashes(hashesKey, StringCodec.INSTANCE);
+        if (metaHashes == null || metaHashes.get("issuance_start_time") == null || metaHashes.get("issuance_end_time") == null) {
+            log.warn("쿠폰 메타 시간값이 비어있습니다. start={}, end={}",
+                     metaHashes == null ? null : metaHashes.get("issuance_start_time"),
+                     metaHashes == null ? null : metaHashes.get("issuance_end_time"));
             return "발급 불가";
         }
-        LocalDateTime startDate = LocalDateTime.parse(metaHashes.get("start_date"));
-        LocalDateTime endDate = LocalDateTime.parse(metaHashes.get("end_date"));
+        LocalDateTime startDate = parseRedisDate(metaHashes.get("issuance_start_time"));
+        LocalDateTime endDate   = parseRedisDate(metaHashes.get("issuance_end_time"));
+        if (startDate == null || endDate == null) {
+            log.warn("쿠폰 메타 시간값 파싱 실패. start={}, end={}", metaHashes.get("issuance_start_time"), metaHashes.get("issuance_end_time"));
+            return "발급 불가";
+        }
         LocalDateTime nowDate = LocalDateTime.now();
         if (startDate.isAfter(nowDate) || endDate.isBefore(nowDate)) {
             return "발급 기간이 아닙니다.";
@@ -171,7 +193,14 @@ public class CouponService implements CouponUseCase{
         //발급 요청 Sets TTL Seconds -> 발급 종료일 - 발급 시자일 + 1시간
         long setsTTLSeconds = ChronoUnit.SECONDS.between(startDate, endDate) + 3600;
 
-        Long resultCode = redisRepository.requestCouponIssue(hashesKey,setsKey, RedisKeys.COUPON_ISSUE_JOB.format(),String.valueOf(couponId),String.valueOf(userId),String.valueOf(setsTTLSeconds));
+        Long resultCode = redisRepository.requestCouponIssue(
+                hashesKey,
+                setsKey,
+                RedisKeys.COUPON_ISSUE_JOB.format(),
+                String.valueOf(couponId),
+                String.valueOf(userId),
+                String.valueOf(setsTTLSeconds)
+        );
         if (resultCode.intValue() == 3) return "쿠폰이 모두 소진 됐습니다.";
         if (resultCode.intValue() == 2) return "중복된 발급 요청 입니다.";
         if (resultCode.intValue() == 0) return "오류 발생";
@@ -243,17 +272,20 @@ public class CouponService implements CouponUseCase{
             return "쿠폰이 모두 소진 됐습니다.";
         }
 
+        String jsonPayload = String.format("{\"coupon_id\":%d,\"user_id\":%d}", couponId, userId);
+
         //2. Outbox 테이블 insert
         CouponOutboxBuilder.Create outbox = new CouponOutboxBuilder.Create(
                 userId,
                 couponId,
                 "pending",
                 LocalDateTime.now(),
-                "coupon_"+couponId+"_"+userId+"_outbox"
+                "coupon_"+couponId+"_"+userId+"_outbox",
+                jsonPayload
         );
         couponOutboxRepository.save(CouponOutboxBuilder.Create.toDomain(outbox));
 
-        System.out.println("==============쿠폰 발급 outbox insert 성공 "+userId+"_"+couponId+"===========");
+        log.info("==============쿠폰 발급 outbox insert 성공 "+userId+"_"+couponId+"===========");
 
         return "발급 요청이 접수되었습니다. 발급 결과는 추후 확인해주세요.";
     }
