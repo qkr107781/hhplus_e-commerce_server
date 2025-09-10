@@ -30,6 +30,13 @@ spring:
         - sentinel-1:26379
         - sentinel-2:26379
         - sentinel-3:26379
+  kafka:
+    # ================================
+    # Kafka 브로커 주소 (도커 네트워크 내부)
+    # docker-compose.yml의 kafka 서비스 이름 + 포트
+    # => kafka:9092 로 접근 가능
+    # ================================
+    bootstrap-servers: kafka:9092
 
 redisson:
   config: |

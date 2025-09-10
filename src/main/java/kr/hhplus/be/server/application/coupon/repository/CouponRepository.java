@@ -11,4 +11,6 @@ public interface CouponRepository{
     Coupon findByCouponIdWithLock(long couponId);
 
     List<Coupon> findByCouponStatus(String status);
+
+    int decreaseRemainingCoupon(long couponId);
 }
