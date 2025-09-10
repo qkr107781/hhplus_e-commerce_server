@@ -1,16 +1,20 @@
 package kr.hhplus.be.server.application.coupon.service;
 
+import kr.hhplus.be.server.application.coupon.dto.CouponOutboxBuilder;
 import kr.hhplus.be.server.application.coupon.dto.CouponRequest;
 import kr.hhplus.be.server.application.coupon.dto.CouponResponse;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoJdbcRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoRepository;
+import kr.hhplus.be.server.application.coupon.repository.CouponOutboxRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
 import kr.hhplus.be.server.application.redis.repository.RedisRepository;
 import kr.hhplus.be.server.common.redis.DistributedFairLock;
 import kr.hhplus.be.server.common.redis.RedisKeys;
 import kr.hhplus.be.server.domain.coupon.Coupon;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
-import org.redisson.api.*;
+import org.redisson.api.RMap;
+import org.redisson.api.RStream;
+import org.redisson.api.StreamMessageId;
 import org.redisson.client.codec.StringCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +36,14 @@ public class CouponService implements CouponUseCase{
     private final CouponRepository couponRepository;
     private final CouponIssuedInfoJdbcRepository couponIssuedInfoJdbcRepository;
     private final RedisRepository redisRepository;
+    private final CouponOutboxRepository couponOutboxRepository;
 
-    public CouponService(CouponIssuedInfoRepository couponIssuedInfoRepository, CouponRepository couponRepository, CouponIssuedInfoJdbcRepository couponIssuedInfoJdbcRepository, RedisRepository redisRepository) {
+    public CouponService(CouponIssuedInfoRepository couponIssuedInfoRepository, CouponRepository couponRepository, CouponIssuedInfoJdbcRepository couponIssuedInfoJdbcRepository, RedisRepository redisRepository, CouponOutboxRepository couponOutboxRepository) {
         this.couponIssuedInfoRepository = couponIssuedInfoRepository;
         this.couponRepository = couponRepository;
         this.couponIssuedInfoJdbcRepository = couponIssuedInfoJdbcRepository;
         this.redisRepository = redisRepository;
+        this.couponOutboxRepository = couponOutboxRepository;
     }
 
     /**
@@ -222,5 +228,33 @@ public class CouponService implements CouponUseCase{
                 }
             }
         }
+    }
+
+    /**
+     * Kafka 선착순 쿠폰 발급
+     */
+    @Override
+    @Transactional
+    public String issuingCouponKafka(long couponId, long userId) {
+
+        //1.쿠폰 잔여 갯수 검증 DB락 없이 조회
+        Coupon coupon = couponRepository.findByCouponId(couponId);
+        if(coupon.getRemainingCouponAmount() <= 0){
+            return "쿠폰이 모두 소진 됐습니다.";
+        }
+
+        //2. Outbox 테이블 insert
+        CouponOutboxBuilder.Create outbox = new CouponOutboxBuilder.Create(
+                userId,
+                couponId,
+                "pending",
+                LocalDateTime.now(),
+                "coupon_"+couponId+"_"+userId+"_outbox"
+        );
+        couponOutboxRepository.save(CouponOutboxBuilder.Create.toDomain(outbox));
+
+        System.out.println("==============쿠폰 발급 outbox insert 성공 "+userId+"_"+couponId+"===========");
+
+        return "발급 요청이 접수되었습니다. 발급 결과는 추후 확인해주세요.";
     }
 }

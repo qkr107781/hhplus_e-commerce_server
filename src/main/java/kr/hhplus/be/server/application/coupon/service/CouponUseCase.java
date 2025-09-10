@@ -46,4 +46,12 @@ public interface CouponUseCase {
      * @param messages: 추출 메세지
      */
     void couponIssueProcess(RStream<String, String> queueStream, String groupName, Map<StreamMessageId, Map<String, String>> messages);
+
+    /**
+     * Kafka 선착순 쿠폰 발급
+     * @param couponId: 쿠폰 ID
+     * @param userId: 사용자 ID
+     * @return 발급 요청 결과
+     */
+    String issuingCouponKafka(long couponId, long userId);
 }
