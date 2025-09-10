@@ -15,7 +15,9 @@ public class CouponOutboxBuilder {
             @Schema(description = "요청일", requiredMode = Schema.RequiredMode.REQUIRED)
             LocalDateTime createdAt,
             @Schema(description = "카프카 토픽 키", requiredMode = Schema.RequiredMode.REQUIRED)
-            String topicKey
+            String topicKey,
+            @Schema(description = "카프카 토픽 값", requiredMode = Schema.RequiredMode.REQUIRED)
+            String payload
 
     ){
         public static kr.hhplus.be.server.domain.coupon.CouponOutbox toDomain(CouponOutboxBuilder.Create requestCouponOutbox){
@@ -25,6 +27,7 @@ public class CouponOutboxBuilder {
                     .status(requestCouponOutbox.status())
                     .createdAt(requestCouponOutbox.createdAt())
                     .topicKey(requestCouponOutbox.topicKey())
+                    .payload(requestCouponOutbox.payload())
                     .build();
         }
 
