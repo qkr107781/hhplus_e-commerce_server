@@ -23,7 +23,13 @@ spring:
     # Kafka 브로커 주소
     # => 기본 값을 설정 했지만 테스트컨테이너가 동적으로 생성하면서 값을 덮어씌움
     # ================================
-    bootstrap-servers: localhost:9093
+    bootstrap-servers: ${TEST_KAFKA_BOOTSTRAP_SERVERS:#{null}}
+    admin:
+      properties:
+        allow:
+          auto:
+            create:
+              topics: false
 
 logging:
   level:
