@@ -8,6 +8,7 @@ import kr.hhplus.be.server.application.coupon.dto.CouponOutboxBuilder;
 import kr.hhplus.be.server.application.coupon.repository.CouponIssuedInfoRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponOutboxRepository;
 import kr.hhplus.be.server.application.coupon.repository.CouponRepository;
+import kr.hhplus.be.server.application.payment.dto.PaymentResponse;
 import kr.hhplus.be.server.application.payment.event.publisher.PaymentCreateEventPublisher;
 import kr.hhplus.be.server.common.kafka.KafkaConstants;
 import kr.hhplus.be.server.domain.coupon.CouponIssuedInfo;
@@ -47,8 +48,8 @@ public class KafkaConsumer {
     )
     public void consumePaymentComplete(String message) {
         try {
-            PaymentCreateEventPublisher.SendDataPlatform response = objectMapper.readValue(message, PaymentCreateEventPublisher.SendDataPlatform.class);
-            log.info("Consumed payment event from Kafka. paymentId={}, payload={}",response.response().paymentId(), message);
+            PaymentResponse.Create response = objectMapper.readValue(message, PaymentResponse.Create.class);
+            log.info("Consumed payment event from Kafka. paymentId={}, payload={}",response.paymentId(), message);
 
             log.info("결제 완료 후 데이터 플랫폼 API 요청");
 
@@ -57,7 +58,7 @@ public class KafkaConsumer {
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
-            String jsonData = objectMapper.writeValueAsString(response.response());
+            String jsonData = objectMapper.writeValueAsString(response);
 
             //데이터 전송
             CompletableFuture<Boolean> future1 = sender.sendDataAsync(jsonData);
@@ -76,26 +77,34 @@ public class KafkaConsumer {
     }
 
     @KafkaListener(
-            topics = "outbox.hhplus.outbox_event", //동적으로 생성해서 outbox 테이블 topicKey 컬럼에 추가한거 읽어옴
+            topics = "outbox.hhplus.coupon_outbox",
             groupId = KafkaConstants.COUPON_ISSUED_GROUP,
             containerFactory = "recordKafkaListenerContainerFactory"
     )
     @Transactional
-    public void consumeCouponIssuing(ConsumerRecord<String, String> record){
-
+    public void consumeCouponIssuing(ConsumerRecord<String, Object> record){
         String dynamicKey = record.key(); // "coupon_{couponId}_{userId}_outbox"
-        String value = record.value();
+        Object valueObj = record.value();
+        log.info("consume outbox: key={}, raw={}", dynamicKey, valueObj);
 
         try {
-            JsonNode root = objectMapper.readTree(value);
-            JsonNode after = root.path("after"); // Insert/Update된 row 데이터
-            if (after.isMissingNode()) {
-                return; // Delete 이벤트 등은 무시
+            JsonNode root;
+            if (valueObj instanceof String s) {
+                root = objectMapper.readTree(s);
+            } else {
+                // Typically a LinkedHashMap from JsonDeserializer(Object.class)
+                root = objectMapper.valueToTree(valueObj);
             }
+            // EventRouter + expand.json.payload=true 이면 payload 필드가 root로 펼쳐짐.
+            // 추가 배치된 컬럼들은 value 루트에 존재(outbox_id, created_at, status, coupon_id, user_id).
 
-            long couponId = after.path("coupon_id").asLong();
-            long userId = after.path("user_id").asLong();
-            long outboxId = after.path("outbox_id").asLong();
+            long couponId = root.path("coupon_id").asLong(root.path("couponId").asLong());
+            long userId   = root.path("user_id").asLong(root.path("userId").asLong());
+
+            if (couponId == 0L || userId == 0L) {
+                log.warn("Outbox message missing required fields. value={}", valueObj);
+                return;
+            }
 
             log.info("######### consume from outbox table ###########");
             log.info("Dynamic Key: {}", dynamicKey);
@@ -112,7 +121,7 @@ public class KafkaConsumer {
             issueCoupon(couponId, userId);
 
             //3. outbox 데이터 status 변경 - pending -> completed
-            updateOutboxStatus(couponId,userId,outboxId);
+            updateOutboxStatus(couponId,userId);
 
         } catch (Exception e) {
             log.error("DLQ로 전송");
@@ -137,14 +146,13 @@ public class KafkaConsumer {
         log.info("쿠폰 발급 완료: {} -> {}", couponId, userId);
     }
 
-    private void updateOutboxStatus(long couponId, long userId, long outboxId) {
-        CouponOutboxBuilder.Update outbox = new CouponOutboxBuilder.Update(
-                outboxId,
-                userId,
-                couponId,
-                "completed"
-        );
-        couponOutboxRepository.save(CouponOutboxBuilder.Update.toDomain(outbox));
-        log.info("Outbox 상태(pending -> completed) 업데이트 완료: {}", outboxId);
+    private void updateOutboxStatus(long couponId, long userId) {
+        int updated = couponOutboxRepository.updateStatus(couponId, userId, "completed");
+        if (updated != 1) {
+            log.warn("Outbox status update affected {} rows (expected 1). couponId={}, userId={}",
+                    updated, couponId, userId);
+        } else {
+            log.info("Outbox 상태(pending -> completed) 업데이트 완료: couponId={}, userId={}", couponId, userId);
+        }
     }
 }

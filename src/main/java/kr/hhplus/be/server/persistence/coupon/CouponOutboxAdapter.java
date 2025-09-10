@@ -17,4 +17,9 @@ public class CouponOutboxAdapter implements CouponOutboxRepository {
     public CouponOutbox save(CouponOutbox couponOutbox) {
         return couponOutboxJpaRepository.save(couponOutbox);
     }
+
+    @Override
+    public int updateStatus(long couponId, long userId, String status) {
+        return couponOutboxJpaRepository.updateStatus(couponId,userId,status);
+    }
 }
