@@ -1,32 +1,47 @@
 spring:
-  application:
-    name: hhplus
+  config:
+    activate:
+      on-profile: "test"
+
+  datasource:
+    url: jdbc:mysql://mysql:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
+    username: application
+    password: application
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
+    # ✅ Hibernate가 JDBC 메타데이터 없이도 부팅 가능하도록 Dialect 명시
+    database-platform: org.hibernate.dialect.MySQLDialect
     open-in-view: false
-    generate-ddl: true
-    show-sql: false
+    generate-ddl: false
+    show-sql: true
     hibernate:
       ddl-auto: create-drop
     defer-datasource-initialization: true
     properties:
       hibernate.timezone.default_storage: NORMALIZE_UTC
       hibernate.jdbc.time_zone: UTC
-      hibernate.format_sql: false
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  redis:
-    host: localhost
-    port: 6379
-    timeout: 3000
+      hibernate.format_sql: true
+      hibernate.highlight_sql: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:coupon-data-init.sql
   kafka:
-    # ================================
-    # Kafka 브로커 주소
-    # => 기본 값을 설정 했지만 테스트컨테이너가 동적으로 생성하면서 값을 덮어씌움
-    # ================================
-    bootstrap-servers: localhost:9093
+    bootstrap-servers: kafka:29092
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+    listener:
+      missing-topics-fatal: false
+
+  data:
+    redis:
+      host: redis
+      port: 6379
 
 logging:
   level:
-    org.hibernate.SQL: INFO # Hibernate가 생성하는 CREATE TABLE 등 DDL 쿼리를 볼 수 있습니다.
-    org.hibernate.type.descriptor.sql.BasicBinder: INFO # SQL 바인딩 파라미터도 볼 수 있습니다.
-    org.springframework.jdbc.datasource.init: INFO # data.sql 실행 관련 로그를 더 자세히 볼 수 있습니다.
+    org.springframework.jdbc.datasource.init: DEBUG
+    org.springframework.boot.autoconfigure: INFO

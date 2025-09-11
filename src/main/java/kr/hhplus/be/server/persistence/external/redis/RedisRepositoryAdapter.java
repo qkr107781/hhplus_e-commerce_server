@@ -66,7 +66,7 @@ public class RedisRepositoryAdapter implements RedisRepository {
                     loadLua("lua/decStock.lua"),// Lua 스크립트 내용
                     RScript.ReturnType.INTEGER,// 반환 타입
                     Collections.singletonList("coupon:"+couponId+":meta"),// KEYS[1]
-                    "remain_quantity",// ARGV[1]
+                    "remaining_coupon_amount",// ARGV[1]
                     1);
         }catch (Exception e){
             return 0L;
@@ -81,7 +81,7 @@ public class RedisRepositoryAdapter implements RedisRepository {
                     loadLua("lua/incStock.lua"),// Lua 스크립트 내용
                     RScript.ReturnType.INTEGER,// 반환 타입
                     Collections.singletonList("coupon:"+couponId+":meta"),// KEYS[1]
-                    "remain_quantity",// ARGV[1]
+                    "remaining_coupon_amount",// ARGV[1]
                     1);
         }catch (Exception e){
             return 0L;

@@ -1,8 +1,9 @@
 package kr.hhplus.be.server.config.kafka;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.KafkaConnectionDetails;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -15,13 +16,20 @@ import java.util.Map;
 @Configuration
 public class KafkaProducerConfig {
 
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String bootstrapServers;
+    private final KafkaConnectionDetails kafkaConnectionDetails;
+
+    public KafkaProducerConfig(KafkaConnectionDetails kafkaConnectionDetails) {
+        this.kafkaConnectionDetails = kafkaConnectionDetails;
+    }
 
     // 기본 ProducerFactory
     private Map<String, Object> baseProducerConfig() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        String bootstrap = String.join(",", kafkaConnectionDetails.getBootstrapServers());
+        if (bootstrap.isBlank()) {
+            throw new IllegalStateException("No Kafka bootstrap servers provided. If you're running tests, ensure @ServiceConnection KafkaContainer is present OR set TEST_KAFKA_BOOTSTRAP_SERVERS.");
+        }
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrap);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         return props;

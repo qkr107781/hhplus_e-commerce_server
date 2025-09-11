@@ -9,10 +9,12 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "coupon_outbox",
-        indexes = {
-                @Index(name = "idx_unique_coupon_outbox_coupon_id_user_id", columnList = "coupon_id, user_id")
-        }
+        name = "coupon_outbox"
+        ,uniqueConstraints = {
+        @UniqueConstraint(
+                name="unique_coupon_outbox_coupon_id_user_id",
+                columnNames={"coupon_id","user_id"}
+        )}
 )
 @Getter
 @NoArgsConstructor
@@ -21,7 +23,7 @@ public class CouponOutbox {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "outbox_id")
-    private Long couponIssuedId;
+    private Long outboxId;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
@@ -38,15 +40,18 @@ public class CouponOutbox {
     @Column(name = "topic_key", nullable = false)
     private String topicKey;
 
+    @Column(name = "payload", nullable = false)
+    private String payload;
+
 
     @Builder
-
-    public CouponOutbox(Long couponIssuedId, Long userId, Long couponId, String status, LocalDateTime createdAt, String topicKey) {
-        this.couponIssuedId = couponIssuedId;
+    public CouponOutbox(Long outboxId, Long userId, Long couponId, String status, LocalDateTime createdAt, String topicKey, String payload) {
+        this.outboxId = outboxId;
         this.userId = userId;
         this.couponId = couponId;
         this.status = status;
         this.createdAt = createdAt;
         this.topicKey = topicKey;
+        this.payload = payload;
     }
 }

@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.StringCodec;
+import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
+import org.redisson.config.SingleServerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -26,11 +28,19 @@ import java.util.List;
 @Profile("!test")
 public class RedisConfig {
 
-    @Value("${spring.redis.sentinel.master}")
-    private String masterName;
 
-    @Value("${spring.redis.sentinel.nodes}")
-    private List<String> sentinelNodes;
+    @Value("${app.redisson.host:${spring.data.redis.host:redis}}")
+    private String host;
+
+    @Value("${app.redisson.port:${spring.data.redis.port:6379}}")
+    private int port;
+
+    @Value("${spring.data.redis.password:}")
+    private String password;
+
+    private String address() {
+        return "redis://" + host + ":" + port;
+    }
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
@@ -59,10 +69,20 @@ public class RedisConfig {
     @Bean(destroyMethod = "shutdown")
     public RedissonClient redissonClient() {
         Config config = new Config();
-        config.setCodec(StringCodec.INSTANCE);
-        config.useSentinelServers()
-                .setMasterName(masterName)
-                .addSentinelAddress(sentinelNodes.toArray(new String[0]));
+        config.setCodec(new StringCodec());
+
+        SingleServerConfig single = config.useSingleServer()
+                .setAddress(address())
+                .setTimeout(3000)
+                .setRetryAttempts(3)
+                .setRetryInterval(1500)
+                .setConnectionPoolSize(16)
+                .setConnectionMinimumIdleSize(4);
+
+        if (password != null && !password.isBlank()) {
+            single.setPassword(password);
+        }
+
         return Redisson.create(config);
     }
 }

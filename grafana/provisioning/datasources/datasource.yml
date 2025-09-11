@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources:
+  - name: influxdb
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    database: k6
+    # v1 인증을 쓰지 않으면 user/password는 생략
+    # user: admin
+    # password: admin1234
+    isDefault: true
+    jsonData:
+      httpMode: POST         # InfluxQL

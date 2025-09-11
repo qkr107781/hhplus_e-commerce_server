@@ -1,219 +1,303 @@
-version: '3'
-
 services:
   # =========================
-  # MySQL
-  # =========================
-  mysql:
-    image: mysql:8.0
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_USER=application
-      - MYSQL_PASSWORD=application
-      - MYSQL_DATABASE=hhplus
-    volumes:
-      - ./data/mysql/:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "mysql"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-net
-
-  # =========================
-  # Spring App
+  # Spring Boot App
   # =========================
   spring-app:
     build:
-      context: . # 빌드 컨텍스트를 프로젝트 루트 디렉토리로 변경
-      dockerfile: ./docker/spring-app/Dockerfile # Dockerfile의 경로를 명시
-    image: hhplus-e-commerce
-    ports:
-      - "8080:8080"
+      context: .
+      dockerfile: ./docker/spring-app/Dockerfile
+    container_name: spring-app
+    ports: [ "8080:8080" ]
     depends_on:
       mysql:
         condition: service_healthy
-      redis-master:
-        condition: service_started
+      redis:
+        condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
+      connect:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
-    networks:
-      - app-net
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus,metrics"
+      MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: "true"
+      MANAGEMENT_ENDPOINT_METRICS_ENABLED: "true"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
+    networks: [ app-net ]
 
   # =========================
-  # Redis Master
+  # MySQL 8 (binlog ON)
   # =========================
-  redis-master:
-    image: redis:latest
-    ports:
-      - "6379:6379"
-    command: redis-server
-    networks:
-      - app-net
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports: ["3306:3306"]
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: application
+      MYSQL_PASSWORD: application
+      MYSQL_DATABASE: hhplus
+    command:
+      [
+        "--server-id=223344",
+        "--log-bin=mysql-bin",
+        "--binlog_format=ROW",
+        "--binlog_row_image=FULL",
+        "--binlog_expire_logs_seconds=86400",
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_general_ci"
+      ]
+    volumes:
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/init:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "mysql", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks: [app-net]
 
   # =========================
-  # Redis Replica
+  # Redis (단일 노드)
   # =========================
-  redis-replica-1:
-    image: redis:latest
+  redis:
+    image: redis:7
+    container_name: redis
     ports:
-      - "6380:6380"
-    command: redis-server --replicaof redis-master 6379
-    links:
-      - redis-master
-    networks:
-      - app-net
-
-  redis-replica-2:
-    image: redis:latest
-    ports:
-      - "6381:6381"
-    command: redis-server --replicaof redis-master 6379
-    links:
-      - redis-master
-    networks:
-      - app-net
+      - "6379:6379" # 로컬 접속용. 스프링 앱은 도커 네트워크 이름 'redis:6379'로 붙음
+    command: ["redis-server", "--appendonly", "yes"] # 영속성(AOF) 유지
+    volumes:
+      - ./data/redis:/data                    # 데이터 영속화
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks: [app-net]
 
   # =========================
-  # Redis Sentinels
+  # Redis 초기 데이터 세팅
   # =========================
-  sentinel-1:
-    build:
-      context: ./docker/sentinel
-      dockerfile: Dockerfile
-    ports:
-      - "26379:26379"
-    env_file:
-      - .env
+  redis-init:
+    image: redis:7
+    container_name: redis-init
     depends_on:
-      - redis-master
-      - redis-replica-1
-      - redis-replica-2
-    networks:
-      - app-net
-
-  sentinel-2:
-    build:
-      context: ./docker/sentinel
-      dockerfile: Dockerfile
-    ports:
-      - "26380:26379"
-    env_file:
-      - .env
-    depends_on:
-      - redis-master
-      - redis-replica-1
-      - redis-replica-2
-    networks:
-      - app-net
-
-  sentinel-3:
-    build:
-      context: ./docker/sentinel
-      dockerfile: Dockerfile
-    ports:
-      - "26381:26379"
-    env_file:
-      - .env
-    depends_on:
-      - redis-master
-      - redis-replica-1
-      - redis-replica-2
-    networks:
-      - app-net
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./redis/init:/opt/redis-init
+    entrypoint: ["/bin/sh","-c","chmod +x /opt/redis-init/seed.sh && /opt/redis-init/seed.sh"]
+    networks: [app-net]
+    restart: "no"   # 원샷 컨테이너
 
   # =========================
-  # Kafka (KRaft 모드)
+  # Kafka (KRaft 단일 노드)
   # =========================
   kafka:
     image: bitnami/kafka:3.7.0
     container_name: kafka
     ports:
-      - "9092:9092"   # 호스트(localhost) 접근용
-      - "29092:29092" # 도커 내부 네트워크 접근용
+      - "9092:9092"   # 호스트 접근용
+      - "29092:29092" # 도커 내부 접근용
+      - "29093:29093" # 컨트롤러
     environment:
-      # -------------------- KRaft 모드 --------------------
-      - KAFKA_ENABLE_KRAFT=yes                # Zookeeper 없이 KRaft 모드 실행
-      - KAFKA_CFG_NODE_ID=1                   # 노드 ID (단일 노드라서 1)
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_NODE_ID=1
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      # 이 노드가 Broker + Controller 역할 모두 수행
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:29093
-      # Controller 합의 그룹 (단일 노드라서 1개만 등록)
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      # Controller는 CONTROLLER Listener를 사용
-
-      # -------------------- Listener 설정 --------------------
-      # 29092 → 내부 컨테이너 간 통신
-      # 9092 → 로컬 호스트(localhost)에서 접근
-      # 29093 → KRaft Controller 내부 통신
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:29092,PLAINTEXT_HOST://:9092,CONTROLLER://:29093
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      # 컨테이너 내부에서는 kafka:29092 로 접근
-      # 호스트 PC에서는 localhost:9092 로 접근
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      # 모든 Listener를 PLAINTEXT(암호화 없음)으로 지정
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-      # 브로커 간 통신 시 사용할 Listener 지정
-
-      # -------------------- 토픽 & 트랜잭션 설정 --------------------
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
-      # 없는 토픽에 publish 요청 시 자동 생성
       - KAFKA_CFG_NUM_PARTITIONS=3
-      # 기본 파티션 개수 (토픽 생성 시)
       - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-      # consumer group offset 저장용 토픽 복제본 수 (단일 브로커 → 1)
       - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
-      # 트랜잭션 로그 복제본 수 (단일 브로커 → 1)
       - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
-      # 트랜잭션 로그 최소 ISR (단일 브로커 → 1)
-
     volumes:
       - kafka_data:/bitnami/kafka
-      # Kafka 데이터 영구 저장 (컨테이너 재시작해도 데이터 유지)
-
-    networks:
-      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:29092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks: [app-net]
 
   # =========================
-  # Kafka Connect
+  # Kafka Connect (Debezium)
   # =========================
   connect:
-    image: debezium/connect:2.5
-    container_name: kafka-connect
-    ports:
-      - "8083:8083"
+    image: quay.io/debezium/connect:2.5
+    container_name: connect
+    ports: ["8083:8083"]
     environment:
       BOOTSTRAP_SERVERS: kafka:29092
-      GROUP_ID: 1
+      GROUP_ID: connect-cluster
       CONFIG_STORAGE_TOPIC: connect-configs
       OFFSET_STORAGE_TOPIC: connect-offsets
       STATUS_STORAGE_TOPIC: connect-status
-      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
+      KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
       VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
-      CONNECT_ERRORS_DEADLETTERQUEUE_TOPIC_NAME: dlq-outbox
-      CONNECT_ERRORS_DEADLETTERQUEUE_CONTEXT_HEADERS_ENABLE: "true"
-    volumes:
-      - ./src/main/resources/kr/hhplus/be/server/config:/kafka/connectors
+      PLUGIN_PATH: /kafka/connect
     depends_on:
+      kafka:
+        condition: service_healthy
       mysql:
         condition: service_healthy
-      kafka:
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8083/connector-plugins || wget -qO- http://localhost:8083/connector-plugins"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+    networks: [app-net]
+
+  # =========================
+  # 커넥터 자동 등록
+  # =========================
+  connect-init:
+    image: curlimages/curl:8.9.1
+    container_name: connect-init
+    depends_on:
+      connect:
+        condition: service_healthy
+    volumes:
+      - ./connect:/opt/connect
+    entrypoint: ["/bin/sh","-c","set -e; sed -i 's/\\r$//' /opt/connect/register-outbox.sh /opt/connect/outbox-connector.json; chmod +x /opt/connect/register-outbox.sh || true; /bin/sh /opt/connect/register-outbox.sh"]
+    networks: [app-net]
+
+  # =========================
+  # K6
+  # =========================
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    working_dir: /scripts
+    command: ["sleep", "infinity"]  # 필요 시 run으로 교체
+    volumes:
+      - ./k6/scripts:/scripts
+    networks: [app-net]
+
+  # =========================
+  # Grafana
+  # =========================
+  grafana:
+    image: grafana/grafana:10.4.5
+    container_name: grafana
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro   # ← 추가
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    networks: [app-net]
+
+  # =========================
+  # InfluxDB
+  # =========================
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+    networks: [app-net]
+
+  # =========================
+  # InfluxDB K6 DB 초기화
+  # =========================
+  influxdb-init:
+    image: alpine:3.19
+    container_name: influxdb-init
+    restart: "no"
+    depends_on:
+      influxdb:
         condition: service_started
-    networks:
-      - app-net
-# =========================
-# 네트워크 & 볼륨 정의
-# =========================
+    environment:
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_DB: k6
+      # 인증을 쓰는 v1이면 주석 해제
+      # INFLUX_USER: admin
+      # INFLUX_PASS: admin1234
+    volumes:
+      - ./influxdb:/init:ro
+    entrypoint:
+      - /bin/sh
+      - -lc
+      - |
+        set -e
+        apk add --no-cache curl >/dev/null 2>&1 || true
+        /bin/sh /init/init-script.sh
+    networks: [app-net]
+
+  # =========================
+  # InfluxDB 리소스 모니터링 DB 초기화
+  # =========================
+  influxdb-init-metrics:
+    image: alpine:3.19
+    container_name: influxdb-init-metrics
+    restart: "no"
+    depends_on:
+      influxdb:
+        condition: service_started
+    entrypoint:
+      - /bin/sh
+      - -lc
+      - |
+        set -e
+        apk add --no-cache curl >/dev/null 2>&1 || true
+        echo "CREATE DATABASE \"metrics\"" | curl -sS -G http://influxdb:8086/query --data-urlencode @- >/dev/null || true
+        echo "✅ ensured metrics database exists"
+    networks: [app-net]
+
+  # =========================
+  # Telegraf 리소스 매트릭 감지
+  # =========================
+  telegraf:
+    image: telegraf:1.30
+    container_name: telegraf
+    restart: unless-stopped
+    depends_on:
+      influxdb:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      spring-app:
+        condition: service_started
+    environment:
+      - HOST_PROC=/rootfs/proc
+      - HOST_SYS=/rootfs/sys
+      - HOST_ETC=/rootfs/etc
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /:/rootfs:ro
+    networks: [app-net]
+
 networks:
   app-net:
     driver: bridge
 
 volumes:
+  grafana-data:
+  mysql_data:
   kafka_data:
-    driver: local
+  influxdb-data:

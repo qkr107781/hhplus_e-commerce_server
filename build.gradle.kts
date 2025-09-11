@@ -81,6 +81,12 @@ dependencies {
 	implementation("org.redisson:redisson-spring-boot-starter:3.50.0")
 	//Kafka
 	implementation("org.springframework.kafka:spring-kafka")
+
+	// Actuator (헬스체크, 메트릭 등)
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+	// Micrometer Prometheus 레지스트리
+	runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 }
 
 tasks.withType<Test> {

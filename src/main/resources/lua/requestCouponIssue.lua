@@ -14,8 +14,8 @@ local userId = ARGV[2]
 local setsTTLSeconds = ARGV[3]
 
 -- 유효성 검증
-local remain = redis.call('HGET', metaKey, 'remain_quantity')
-local total = redis.call('HGET', metaKey, 'total_quantity')
+local remain = redis.call('HGET', metaKey, 'remaining_coupon_amount')
+local total = redis.call('HGET', metaKey, 'total_coupon_amount')
 local requestCount = redis.call('SCARD', setsKey)
 
 -- remain과 total이 nil일 경우 0으로 처리하는 방어 코드 추가
