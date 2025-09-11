@@ -25,6 +25,7 @@ import java.util.List;
 
 @Configuration
 @EnableCaching
+@Profile("!test")
 public class RedisConfig {
 
 
