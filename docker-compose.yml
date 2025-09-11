@@ -1,6 +1,30 @@
-version: "3.8"
-
 services:
+  # =========================
+  # Spring Boot App
+  # =========================
+  spring-app:
+    build:
+      context: .
+      dockerfile: ./docker/spring-app/Dockerfile
+    container_name: spring-app
+    ports: [ "8080:8080" ]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      connect:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus,metrics"
+      MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: "true"
+      MANAGEMENT_ENDPOINT_METRICS_ENABLED: "true"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
+    networks: [ app-net ]
+
   # =========================
   # MySQL 8 (binlog ON)
   # =========================
@@ -54,7 +78,7 @@ services:
     networks: [app-net]
 
   # =========================
-  # Redis 초기 데이터 시드
+  # Redis 초기 데이터 세팅
   # =========================
   redis-init:
     image: redis:7
@@ -136,7 +160,9 @@ services:
       start_period: 20s
     networks: [app-net]
 
-  # (원샷) 커넥터 자동 등록
+  # =========================
+  # 커넥터 자동 등록
+  # =========================
   connect-init:
     image: curlimages/curl:8.9.1
     container_name: connect-init
@@ -149,45 +175,129 @@ services:
     networks: [app-net]
 
   # =========================
-  # Spring Boot App
+  # K6
   # =========================
-  spring-app:
-    build:
-      context: .
-      dockerfile: ./docker/spring-app/Dockerfile
-    container_name: spring-app
-    ports: ["8080:8080"]
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    working_dir: /scripts
+    command: ["sleep", "infinity"]  # 필요 시 run으로 교체
+    volumes:
+      - ./k6/scripts:/scripts
+    networks: [app-net]
+
+  # =========================
+  # Grafana
+  # =========================
+  grafana:
+    image: grafana/grafana:10.4.5
+    container_name: grafana
+    restart: unless-stopped
     depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro   # ← 추가
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    networks: [app-net]
+
+  # =========================
+  # InfluxDB
+  # =========================
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+    networks: [app-net]
+
+  # =========================
+  # InfluxDB K6 DB 초기화
+  # =========================
+  influxdb-init:
+    image: alpine:3.19
+    container_name: influxdb-init
+    restart: "no"
+    depends_on:
+      influxdb:
+        condition: service_started
+    environment:
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_DB: k6
+      # 인증을 쓰는 v1이면 주석 해제
+      # INFLUX_USER: admin
+      # INFLUX_PASS: admin1234
+    volumes:
+      - ./influxdb:/init:ro
+    entrypoint:
+      - /bin/sh
+      - -lc
+      - |
+        set -e
+        apk add --no-cache curl >/dev/null 2>&1 || true
+        /bin/sh /init/init-script.sh
+    networks: [app-net]
+
+  # =========================
+  # InfluxDB 리소스 모니터링 DB 초기화
+  # =========================
+  influxdb-init-metrics:
+    image: alpine:3.19
+    container_name: influxdb-init-metrics
+    restart: "no"
+    depends_on:
+      influxdb:
+        condition: service_started
+    entrypoint:
+      - /bin/sh
+      - -lc
+      - |
+        set -e
+        apk add --no-cache curl >/dev/null 2>&1 || true
+        echo "CREATE DATABASE \"metrics\"" | curl -sS -G http://influxdb:8086/query --data-urlencode @- >/dev/null || true
+        echo "✅ ensured metrics database exists"
+    networks: [app-net]
+
+  # =========================
+  # Telegraf 리소스 매트릭 감지
+  # =========================
+  telegraf:
+    image: telegraf:1.30
+    container_name: telegraf
+    restart: unless-stopped
+    depends_on:
+      influxdb:
+        condition: service_started
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
-      kafka:
-        condition: service_healthy
-      connect:
-        condition: service_healthy
+      spring-app:
+        condition: service_started
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-    networks: [app-net]
-
-  # =========================
-  # K6 부하테스트
-  # =========================
-  k6:
-    image: grafana/k6
-    container_name: k6
+      - HOST_PROC=/rootfs/proc
+      - HOST_SYS=/rootfs/sys
+      - HOST_ETC=/rootfs/etc
     volumes:
-      - ./k6:/scripts         # 로컬 ./k6 폴더 → 컨테이너 /scripts
-    working_dir: /scripts
-    networks:
-      - app-net
-    # 기본 실행 명령어는 안 적어두고, 필요할 때 override 가능
-    entrypoint: ["k6"]
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /:/rootfs:ro
+    networks: [app-net]
 
 networks:
   app-net:
     driver: bridge
 
 volumes:
+  grafana-data:
   mysql_data:
   kafka_data:
+  influxdb-data:
